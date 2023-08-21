@@ -1,0 +1,681 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6F82A81E15600E29EBD /* The_North_40App.swift */; };
+		0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6FA2A81E15600E29EBD /* ContentView.swift */; };
+		0768C6FD2A81E15600E29EBD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0768C6FC2A81E15600E29EBD /* Assets.xcassets */; };
+		0768C7002A81E15600E29EBD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0768C6FF2A81E15600E29EBD /* Preview Assets.xcassets */; };
+		0768C7022A81E15600E29EBD /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7012A81E15600E29EBD /* Persistence.swift */; };
+		0768C7052A81E15600E29EBD /* The_North_40.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7032A81E15600E29EBD /* The_North_40.xcdatamodeld */; };
+		0768C7102A81E15600E29EBD /* The_North_40Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C70F2A81E15600E29EBD /* The_North_40Tests.swift */; };
+		0768C71A2A81E15600E29EBD /* The_North_40UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7192A81E15600E29EBD /* The_North_40UITests.swift */; };
+		0768C71C2A81E15600E29EBD /* The_North_40UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C71B2A81E15600E29EBD /* The_North_40UITestsLaunchTests.swift */; };
+		0768C7702A87188C00E29EBD /* N40Person+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7682A87188C00E29EBD /* N40Person+CoreDataClass.swift */; };
+		0768C7712A87188C00E29EBD /* N40Person+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7692A87188C00E29EBD /* N40Person+CoreDataProperties.swift */; };
+		0768C7722A87188C00E29EBD /* N40Event+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76A2A87188C00E29EBD /* N40Event+CoreDataClass.swift */; };
+		0768C7732A87188C00E29EBD /* N40Event+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76B2A87188C00E29EBD /* N40Event+CoreDataProperties.swift */; };
+		0768C7742A87188C00E29EBD /* N40Group+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76C2A87188C00E29EBD /* N40Group+CoreDataClass.swift */; };
+		0768C7752A87188C00E29EBD /* N40Group+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76D2A87188C00E29EBD /* N40Group+CoreDataProperties.swift */; };
+		0768C7762A87188C00E29EBD /* N40Goal+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76E2A87188C00E29EBD /* N40Goal+CoreDataClass.swift */; };
+		0768C7772A87188C00E29EBD /* N40Goal+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76F2A87188C00E29EBD /* N40Goal+CoreDataProperties.swift */; };
+		0768C77E2A89B2DE00E29EBD /* PersonListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C77D2A89B2DE00E29EBD /* PersonListView.swift */; };
+		0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C77F2A89B2F400E29EBD /* GoalListView.swift */; };
+		0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7812A89B4E900E29EBD /* CalendarView.swift */; };
+		0768C7842A89B63500E29EBD /* AddPersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7832A89B63500E29EBD /* AddPersonView.swift */; };
+		0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7872A89C02900E29EBD /* InformationProcessing.swift */; };
+		079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F068D2A8ED14A009A01F5 /* ToDoView.swift */; };
+		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0768C70C2A81E15600E29EBD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0768C6ED2A81E15500E29EBD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0768C6F42A81E15600E29EBD;
+			remoteInfo = "The North 40";
+		};
+		0768C7162A81E15600E29EBD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0768C6ED2A81E15500E29EBD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0768C6F42A81E15600E29EBD;
+			remoteInfo = "The North 40";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0768C6F52A81E15600E29EBD /* The North 40.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "The North 40.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0768C6F82A81E15600E29EBD /* The_North_40App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40App.swift; sourceTree = "<group>"; };
+		0768C6FA2A81E15600E29EBD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		0768C6FC2A81E15600E29EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0768C6FF2A81E15600E29EBD /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		0768C7012A81E15600E29EBD /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		0768C7042A81E15600E29EBD /* The_North_40.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = The_North_40.xcdatamodel; sourceTree = "<group>"; };
+		0768C7062A81E15600E29EBD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0768C70B2A81E15600E29EBD /* The North 40Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "The North 40Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0768C70F2A81E15600E29EBD /* The_North_40Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40Tests.swift; sourceTree = "<group>"; };
+		0768C7152A81E15600E29EBD /* The North 40UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "The North 40UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0768C7192A81E15600E29EBD /* The_North_40UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40UITests.swift; sourceTree = "<group>"; };
+		0768C71B2A81E15600E29EBD /* The_North_40UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		0768C7682A87188C00E29EBD /* N40Person+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Person+CoreDataClass.swift"; sourceTree = "<group>"; };
+		0768C7692A87188C00E29EBD /* N40Person+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Person+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		0768C76A2A87188C00E29EBD /* N40Event+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Event+CoreDataClass.swift"; sourceTree = "<group>"; };
+		0768C76B2A87188C00E29EBD /* N40Event+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Event+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		0768C76C2A87188C00E29EBD /* N40Group+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Group+CoreDataClass.swift"; sourceTree = "<group>"; };
+		0768C76D2A87188C00E29EBD /* N40Group+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Group+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		0768C76E2A87188C00E29EBD /* N40Goal+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Goal+CoreDataClass.swift"; sourceTree = "<group>"; };
+		0768C76F2A87188C00E29EBD /* N40Goal+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Goal+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		0768C77D2A89B2DE00E29EBD /* PersonListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonListView.swift; sourceTree = "<group>"; };
+		0768C77F2A89B2F400E29EBD /* GoalListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalListView.swift; sourceTree = "<group>"; };
+		0768C7812A89B4E900E29EBD /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		0768C7832A89B63500E29EBD /* AddPersonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPersonView.swift; sourceTree = "<group>"; };
+		0768C7872A89C02900E29EBD /* InformationProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationProcessing.swift; sourceTree = "<group>"; };
+		079F068D2A8ED14A009A01F5 /* ToDoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView.swift; sourceTree = "<group>"; };
+		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0768C6F22A81E15600E29EBD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0768C7082A81E15600E29EBD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0768C7122A81E15600E29EBD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0768C6EC2A81E15500E29EBD = {
+			isa = PBXGroup;
+			children = (
+				0768C7782A871C6700E29EBD /* DataModel */,
+				0768C6F72A81E15600E29EBD /* The North 40 */,
+				0768C70E2A81E15600E29EBD /* The North 40Tests */,
+				0768C7182A81E15600E29EBD /* The North 40UITests */,
+				0768C6F62A81E15600E29EBD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0768C6F62A81E15600E29EBD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0768C6F52A81E15600E29EBD /* The North 40.app */,
+				0768C70B2A81E15600E29EBD /* The North 40Tests.xctest */,
+				0768C7152A81E15600E29EBD /* The North 40UITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0768C6F72A81E15600E29EBD /* The North 40 */ = {
+			isa = PBXGroup;
+			children = (
+				079F068F2A8ED215009A01F5 /* Views */,
+				0768C6F82A81E15600E29EBD /* The_North_40App.swift */,
+				0768C7872A89C02900E29EBD /* InformationProcessing.swift */,
+				0768C6FC2A81E15600E29EBD /* Assets.xcassets */,
+				0768C7062A81E15600E29EBD /* Info.plist */,
+				0768C6FE2A81E15600E29EBD /* Preview Content */,
+			);
+			path = "The North 40";
+			sourceTree = "<group>";
+		};
+		0768C6FE2A81E15600E29EBD /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				0768C6FF2A81E15600E29EBD /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		0768C70E2A81E15600E29EBD /* The North 40Tests */ = {
+			isa = PBXGroup;
+			children = (
+				0768C70F2A81E15600E29EBD /* The_North_40Tests.swift */,
+			);
+			path = "The North 40Tests";
+			sourceTree = "<group>";
+		};
+		0768C7182A81E15600E29EBD /* The North 40UITests */ = {
+			isa = PBXGroup;
+			children = (
+				0768C7192A81E15600E29EBD /* The_North_40UITests.swift */,
+				0768C71B2A81E15600E29EBD /* The_North_40UITestsLaunchTests.swift */,
+			);
+			path = "The North 40UITests";
+			sourceTree = "<group>";
+		};
+		0768C7782A871C6700E29EBD /* DataModel */ = {
+			isa = PBXGroup;
+			children = (
+				0768C7032A81E15600E29EBD /* The_North_40.xcdatamodeld */,
+				0768C7012A81E15600E29EBD /* Persistence.swift */,
+				0768C7682A87188C00E29EBD /* N40Person+CoreDataClass.swift */,
+				0768C7692A87188C00E29EBD /* N40Person+CoreDataProperties.swift */,
+				0768C76E2A87188C00E29EBD /* N40Goal+CoreDataClass.swift */,
+				0768C76F2A87188C00E29EBD /* N40Goal+CoreDataProperties.swift */,
+				0768C76A2A87188C00E29EBD /* N40Event+CoreDataClass.swift */,
+				0768C76B2A87188C00E29EBD /* N40Event+CoreDataProperties.swift */,
+				0768C76C2A87188C00E29EBD /* N40Group+CoreDataClass.swift */,
+				0768C76D2A87188C00E29EBD /* N40Group+CoreDataProperties.swift */,
+			);
+			path = DataModel;
+			sourceTree = "<group>";
+		};
+		079F068F2A8ED215009A01F5 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
+				079F068D2A8ED14A009A01F5 /* ToDoView.swift */,
+				079F06CC2A8F19B2009A01F5 /* EditEventView.swift */,
+				0768C7832A89B63500E29EBD /* AddPersonView.swift */,
+				0768C7812A89B4E900E29EBD /* CalendarView.swift */,
+				0768C77F2A89B2F400E29EBD /* GoalListView.swift */,
+				0768C77D2A89B2DE00E29EBD /* PersonListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0768C6F42A81E15600E29EBD /* The North 40 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0768C71F2A81E15600E29EBD /* Build configuration list for PBXNativeTarget "The North 40" */;
+			buildPhases = (
+				0768C6F12A81E15600E29EBD /* Sources */,
+				0768C6F22A81E15600E29EBD /* Frameworks */,
+				0768C6F32A81E15600E29EBD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "The North 40";
+			productName = "The North 40";
+			productReference = 0768C6F52A81E15600E29EBD /* The North 40.app */;
+			productType = "com.apple.product-type.application";
+		};
+		0768C70A2A81E15600E29EBD /* The North 40Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0768C7222A81E15600E29EBD /* Build configuration list for PBXNativeTarget "The North 40Tests" */;
+			buildPhases = (
+				0768C7072A81E15600E29EBD /* Sources */,
+				0768C7082A81E15600E29EBD /* Frameworks */,
+				0768C7092A81E15600E29EBD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0768C70D2A81E15600E29EBD /* PBXTargetDependency */,
+			);
+			name = "The North 40Tests";
+			productName = "The North 40Tests";
+			productReference = 0768C70B2A81E15600E29EBD /* The North 40Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		0768C7142A81E15600E29EBD /* The North 40UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0768C7252A81E15600E29EBD /* Build configuration list for PBXNativeTarget "The North 40UITests" */;
+			buildPhases = (
+				0768C7112A81E15600E29EBD /* Sources */,
+				0768C7122A81E15600E29EBD /* Frameworks */,
+				0768C7132A81E15600E29EBD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0768C7172A81E15600E29EBD /* PBXTargetDependency */,
+			);
+			name = "The North 40UITests";
+			productName = "The North 40UITests";
+			productReference = 0768C7152A81E15600E29EBD /* The North 40UITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0768C6ED2A81E15500E29EBD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					0768C6F42A81E15600E29EBD = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
+					0768C70A2A81E15600E29EBD = {
+						CreatedOnToolsVersion = 14.3.1;
+						TestTargetID = 0768C6F42A81E15600E29EBD;
+					};
+					0768C7142A81E15600E29EBD = {
+						CreatedOnToolsVersion = 14.3.1;
+						TestTargetID = 0768C6F42A81E15600E29EBD;
+					};
+				};
+			};
+			buildConfigurationList = 0768C6F02A81E15500E29EBD /* Build configuration list for PBXProject "The North 40" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0768C6EC2A81E15500E29EBD;
+			productRefGroup = 0768C6F62A81E15600E29EBD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0768C6F42A81E15600E29EBD /* The North 40 */,
+				0768C70A2A81E15600E29EBD /* The North 40Tests */,
+				0768C7142A81E15600E29EBD /* The North 40UITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0768C6F32A81E15600E29EBD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0768C7002A81E15600E29EBD /* Preview Assets.xcassets in Resources */,
+				0768C6FD2A81E15600E29EBD /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0768C7092A81E15600E29EBD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0768C7132A81E15600E29EBD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0768C6F12A81E15600E29EBD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0768C7022A81E15600E29EBD /* Persistence.swift in Sources */,
+				0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */,
+				0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */,
+				0768C7722A87188C00E29EBD /* N40Event+CoreDataClass.swift in Sources */,
+				0768C7772A87188C00E29EBD /* N40Goal+CoreDataProperties.swift in Sources */,
+				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
+				0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */,
+				0768C7712A87188C00E29EBD /* N40Person+CoreDataProperties.swift in Sources */,
+				0768C7752A87188C00E29EBD /* N40Group+CoreDataProperties.swift in Sources */,
+				079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */,
+				0768C7702A87188C00E29EBD /* N40Person+CoreDataClass.swift in Sources */,
+				0768C7842A89B63500E29EBD /* AddPersonView.swift in Sources */,
+				0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */,
+				0768C7762A87188C00E29EBD /* N40Goal+CoreDataClass.swift in Sources */,
+				0768C77E2A89B2DE00E29EBD /* PersonListView.swift in Sources */,
+				0768C7732A87188C00E29EBD /* N40Event+CoreDataProperties.swift in Sources */,
+				0768C7052A81E15600E29EBD /* The_North_40.xcdatamodeld in Sources */,
+				079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */,
+				0768C7742A87188C00E29EBD /* N40Group+CoreDataClass.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0768C7072A81E15600E29EBD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0768C7102A81E15600E29EBD /* The_North_40Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0768C7112A81E15600E29EBD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0768C71C2A81E15600E29EBD /* The_North_40UITestsLaunchTests.swift in Sources */,
+				0768C71A2A81E15600E29EBD /* The_North_40UITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0768C70D2A81E15600E29EBD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0768C6F42A81E15600E29EBD /* The North 40 */;
+			targetProxy = 0768C70C2A81E15600E29EBD /* PBXContainerItemProxy */;
+		};
+		0768C7172A81E15600E29EBD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0768C6F42A81E15600E29EBD /* The North 40 */;
+			targetProxy = 0768C7162A81E15600E29EBD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0768C71D2A81E15600E29EBD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		0768C71E2A81E15600E29EBD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0768C7202A81E15600E29EBD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0768C7212A81E15600E29EBD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		0768C7232A81E15600E29EBD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/The North 40.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/The North 40";
+			};
+			name = Debug;
+		};
+		0768C7242A81E15600E29EBD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/The North 40.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/The North 40";
+			};
+			name = Release;
+		};
+		0768C7262A81E15600E29EBD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "The North 40";
+			};
+			name = Debug;
+		};
+		0768C7272A81E15600E29EBD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "The North 40";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0768C6F02A81E15500E29EBD /* Build configuration list for PBXProject "The North 40" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0768C71D2A81E15600E29EBD /* Debug */,
+				0768C71E2A81E15600E29EBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0768C71F2A81E15600E29EBD /* Build configuration list for PBXNativeTarget "The North 40" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0768C7202A81E15600E29EBD /* Debug */,
+				0768C7212A81E15600E29EBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0768C7222A81E15600E29EBD /* Build configuration list for PBXNativeTarget "The North 40Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0768C7232A81E15600E29EBD /* Debug */,
+				0768C7242A81E15600E29EBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0768C7252A81E15600E29EBD /* Build configuration list for PBXNativeTarget "The North 40UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0768C7262A81E15600E29EBD /* Debug */,
+				0768C7272A81E15600E29EBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		0768C7032A81E15600E29EBD /* The_North_40.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				0768C7042A81E15600E29EBD /* The_North_40.xcdatamodel */,
+			);
+			currentVersion = 0768C7042A81E15600E29EBD /* The_North_40.xcdatamodel */;
+			path = The_North_40.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 0768C6ED2A81E15500E29EBD /* Project object */;
+}

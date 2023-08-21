@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22F66" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="N40Event" representedClassName=".N40Event" syncable="YES">
+        <attribute name="contactMethod" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="duration" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="eventType" attributeType="Integer 16" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="information" attributeType="String" defaultValueString=""/>
+        <attribute name="isScheduled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="location" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="-31604400" usesScalarValueType="NO"/>
+        <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="summary" attributeType="String" defaultValueString=""/>
+        <relationship name="attachedGoals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="timelineEvents" inverseEntity="N40Goal"/>
+        <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="timelineEvents" inverseEntity="N40Person"/>
+    </entity>
+    <entity name="N40Goal" representedClassName=".N40Goal" syncable="YES">
+        <attribute name="deadline" attributeType="Date" defaultDateTimeInterval="-31604400" usesScalarValueType="NO"/>
+        <attribute name="hasDeadline" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="information" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Group" inverseName="goals" inverseEntity="N40Group"/>
+        <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedGoals" inverseEntity="N40Event"/>
+    </entity>
+    <entity name="N40Group" representedClassName=".N40Group" syncable="YES">
+        <attribute name="information" optional="YES" attributeType="String"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="goals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="groups" inverseEntity="N40Goal"/>
+        <relationship name="people" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="groups" inverseEntity="N40Person"/>
+    </entity>
+    <entity name="N40Person" representedClassName=".N40Person" syncable="YES">
+        <attribute name="address" attributeType="String" defaultValueString=""/>
+        <attribute name="contactInfos" attributeType="String" defaultValueString=""/>
+        <attribute name="firstName" attributeType="String" defaultValueString=""/>
+        <attribute name="lastName" attributeType="String" defaultValueString=""/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Group" inverseName="people" inverseEntity="N40Group"/>
+        <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedPeople" inverseEntity="N40Event"/>
+    </entity>
+</model>
