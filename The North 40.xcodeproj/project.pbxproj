@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D262A9596B2009DE0E0 /* PersonDetailView.swift */; };
+		07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D292A98E983009DE0E0 /* OfficeView.swift */; };
+		075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */; };
 		0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6F82A81E15600E29EBD /* The_North_40App.swift */; };
 		0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6FA2A81E15600E29EBD /* ContentView.swift */; };
 		0768C6FD2A81E15600E29EBD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0768C6FC2A81E15600E29EBD /* Assets.xcassets */; };
@@ -27,7 +30,7 @@
 		0768C77E2A89B2DE00E29EBD /* PersonListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C77D2A89B2DE00E29EBD /* PersonListView.swift */; };
 		0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C77F2A89B2F400E29EBD /* GoalListView.swift */; };
 		0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7812A89B4E900E29EBD /* CalendarView.swift */; };
-		0768C7842A89B63500E29EBD /* AddPersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7832A89B63500E29EBD /* AddPersonView.swift */; };
+		0768C7842A89B63500E29EBD /* EditPersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7832A89B63500E29EBD /* EditPersonView.swift */; };
 		0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7872A89C02900E29EBD /* InformationProcessing.swift */; };
 		079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F068D2A8ED14A009A01F5 /* ToDoView.swift */; };
 		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
@@ -51,6 +54,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		07241D262A9596B2009DE0E0 /* PersonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetailView.swift; sourceTree = "<group>"; };
+		07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_8-23-23.xcdatamodel"; sourceTree = "<group>"; };
+		07241D292A98E983009DE0E0 /* OfficeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeView.swift; sourceTree = "<group>"; };
+		075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGoalView.swift; sourceTree = "<group>"; };
 		0768C6F52A81E15600E29EBD /* The North 40.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "The North 40.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0768C6F82A81E15600E29EBD /* The_North_40App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40App.swift; sourceTree = "<group>"; };
 		0768C6FA2A81E15600E29EBD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,7 +82,7 @@
 		0768C77D2A89B2DE00E29EBD /* PersonListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonListView.swift; sourceTree = "<group>"; };
 		0768C77F2A89B2F400E29EBD /* GoalListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalListView.swift; sourceTree = "<group>"; };
 		0768C7812A89B4E900E29EBD /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
-		0768C7832A89B63500E29EBD /* AddPersonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPersonView.swift; sourceTree = "<group>"; };
+		0768C7832A89B63500E29EBD /* EditPersonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPersonView.swift; sourceTree = "<group>"; };
 		0768C7872A89C02900E29EBD /* InformationProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationProcessing.swift; sourceTree = "<group>"; };
 		079F068D2A8ED14A009A01F5 /* ToDoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView.swift; sourceTree = "<group>"; };
 		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
@@ -188,7 +195,10 @@
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
 				079F068D2A8ED14A009A01F5 /* ToDoView.swift */,
 				079F06CC2A8F19B2009A01F5 /* EditEventView.swift */,
-				0768C7832A89B63500E29EBD /* AddPersonView.swift */,
+				07241D292A98E983009DE0E0 /* OfficeView.swift */,
+				07241D262A9596B2009DE0E0 /* PersonDetailView.swift */,
+				075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */,
+				0768C7832A89B63500E29EBD /* EditPersonView.swift */,
 				0768C7812A89B4E900E29EBD /* CalendarView.swift */,
 				0768C77F2A89B2F400E29EBD /* GoalListView.swift */,
 				0768C77D2A89B2DE00E29EBD /* PersonListView.swift */,
@@ -326,18 +336,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */,
 				0768C7022A81E15600E29EBD /* Persistence.swift in Sources */,
 				0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */,
 				0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */,
 				0768C7722A87188C00E29EBD /* N40Event+CoreDataClass.swift in Sources */,
 				0768C7772A87188C00E29EBD /* N40Goal+CoreDataProperties.swift in Sources */,
+				075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */,
+				07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */,
 				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
 				0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */,
 				0768C7712A87188C00E29EBD /* N40Person+CoreDataProperties.swift in Sources */,
 				0768C7752A87188C00E29EBD /* N40Group+CoreDataProperties.swift in Sources */,
 				079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */,
 				0768C7702A87188C00E29EBD /* N40Person+CoreDataClass.swift in Sources */,
-				0768C7842A89B63500E29EBD /* AddPersonView.swift in Sources */,
+				0768C7842A89B63500E29EBD /* EditPersonView.swift in Sources */,
 				0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */,
 				0768C7762A87188C00E29EBD /* N40Goal+CoreDataClass.swift in Sources */,
 				0768C77E2A89B2DE00E29EBD /* PersonListView.swift in Sources */,
@@ -503,6 +516,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
+				DEVELOPMENT_TEAM = 48WAHN8QB9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -531,6 +545,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
+				DEVELOPMENT_TEAM = 48WAHN8QB9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -668,9 +683,10 @@
 		0768C7032A81E15600E29EBD /* The_North_40.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */,
 				0768C7042A81E15600E29EBD /* The_North_40.xcdatamodel */,
 			);
-			currentVersion = 0768C7042A81E15600E29EBD /* The_North_40.xcdatamodel */;
+			currentVersion = 07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */;
 			path = The_North_40.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

@@ -38,7 +38,9 @@ struct ToDoView: View {
                                 .padding(30)
                         }
                         .sheet(isPresented: $showingEditEventSheet) {
-                            EditEventView()
+                            EditEventView(isScheduled: false, eventType: ["To-Do", "checklist"])
+                            //Here I passed in some default values that I know you would want probably want when making a to-do item
+                            
                         }
                     }
                 }
@@ -94,7 +96,13 @@ struct SortedToDoList: View {
                             
                             Spacer()
                             if (todo.isScheduled) {
-                                Text(todo.startDate, formatter: itemFormatter)
+                                if (todo.startDate < Date()) {
+                                    Text(todo.startDate, formatter: itemFormatter)
+                                        .foregroundColor(.red)
+                                } else {
+                                    Text(todo.startDate, formatter: itemFormatter)
+                                    //Don't change color if it's not overdue
+                                }
                             }
                         }
                     })
@@ -124,7 +132,7 @@ struct SortedToDoList: View {
                 if (toDo.status == 2) {
                     //This means it was checked off but hasn't been finally hidden
                     toDo.status = 3
-                    
+                    toDo.startDate = Date() //Set it as completed now. 
                     do {
                         try viewContext.save()
                     } catch {

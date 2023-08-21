@@ -18,6 +18,7 @@ extension N40Goal {
 
     @NSManaged public var name: String
     @NSManaged public var deadline: Date
+    @NSManaged public var dateCompleted: Date
     @NSManaged public var information: String
     @NSManaged public var address: String
     @NSManaged public var hasDeadline: Bool

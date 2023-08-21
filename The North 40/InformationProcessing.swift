@@ -5,7 +5,27 @@
 //  Created by Addison Ballif on 8/13/23.
 //
 
+// THIS FILE IS NOT BEING USED RIGHT NOW. 
+
 import Foundation
+
+
+public struct ContactInfo {
+    let id = UUID()
+    
+    public static let PHONE_NUMBER = 0
+    public static let EMAIL = 1
+    public static let SOCIAL_MEDIA = 2
+    public static let OTHER = 3
+    
+    public var contactType: Int // One of the three above
+    public var info: String
+    
+    init(contactType: Int, info: String) {
+        self.contactType = contactType
+        self.info = info
+    }
+}
 
 // ----------- for formatting phone numbers
 public func formatPhoneNumber(inputString: String) -> String {
@@ -20,7 +40,7 @@ public func formatPhoneNumber(inputString: String) -> String {
 }
 
 // ------ converts an array of phone numbers to a cvs phone nunmber string for storing in core data
-public func getContactInfos(phoneNumberString: String) -> [[String]] {
+public func getContactInfos(phoneNumberString: String) -> [ContactInfo] {
     var outlist: [String] = []
     
     //remove empty values
@@ -28,45 +48,50 @@ public func getContactInfos(phoneNumberString: String) -> [[String]] {
         if (pn != "") { outlist.append(pn) }
     }
     
-    var phoneNumbers: [String] = []
-    var emailAddresses: [String] = []
-    var socialMedias: [String] = []
-    var unknowns: [String] = []
+    var contactInfos: [ContactInfo] = []
     
     outlist.forEach { contact in
         if (contact.prefix(1) == "P") {
             var passContact = contact
             passContact.remove(at: passContact.startIndex)
-            phoneNumbers.append(passContact) }
-        else if (contact.prefix(1) == "E") {
+            contactInfos.append(ContactInfo(contactType: ContactInfo.PHONE_NUMBER, info: passContact))
+        } else if (contact.prefix(1) == "E") {
             var passContact = contact
             passContact.remove(at: passContact.startIndex)
-            emailAddresses.append(passContact) }
-        else if (contact.prefix(1) == "S") {
+            contactInfos.append(ContactInfo(contactType: ContactInfo.EMAIL, info: passContact))
+        } else if (contact.prefix(1) == "S") {
             var passContact = contact
             passContact.remove(at: passContact.startIndex)
-            socialMedias.append(passContact) }
-        else {
-            unknowns.append(contact)
+            contactInfos.append(ContactInfo(contactType: ContactInfo.SOCIAL_MEDIA, info: passContact))
+        } else {
+            contactInfos.append(ContactInfo(contactType: ContactInfo.OTHER, info: contact))
             print("Item type unknown: ",contact)
         }
     }
     
-    return [phoneNumbers, emailAddresses, socialMedias, unknowns]
+    return contactInfos
     
     
 }
 
-public func storeContactInfos(phoneNumbers: [String], emailAddresses: [String], socialMedias: [String]) -> String {
+public func storeContactInfos(contactInfos: [ContactInfo]) -> String {
+    
     var sum = ""
-    phoneNumbers.forEach { pn in
-        sum += ",P" + formatPhoneNumber(inputString: pn)
+    
+    contactInfos.forEach { contact in
+        if contact.contactType == ContactInfo.PHONE_NUMBER {
+            sum += ",P" + formatPhoneNumber(inputString: contact.info)
+        } else if contact.contactType == ContactInfo.EMAIL {
+            sum += ",E" + formatPhoneNumber(inputString: contact.info)
+        } else if contact.contactType == ContactInfo.SOCIAL_MEDIA {
+            sum += ",S" + formatPhoneNumber(inputString: contact.info)
+        } else {
+            sum += "," + formatPhoneNumber(inputString: contact.info)
+        }
     }
-    emailAddresses.forEach { em in
-        sum += ",E" + em    }
-    socialMedias.forEach { sm in
-        sum += ",S" + sm
-        
-    }
+    
     return sum
 }
+
+
+

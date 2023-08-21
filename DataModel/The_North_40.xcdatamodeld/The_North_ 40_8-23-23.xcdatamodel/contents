@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22F66" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
     <entity name="N40Event" representedClassName=".N40Event" syncable="YES">
+        <attribute name="color" attributeType="String" defaultValueString="#FF7051"/>
         <attribute name="contactMethod" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="duration" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="eventType" attributeType="Integer 16" defaultValueString="YES" usesScalarValueType="YES"/>
@@ -8,6 +9,7 @@
         <attribute name="isScheduled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="location" attributeType="String" defaultValueString=""/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
         <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="315537915600" usesScalarValueType="NO"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="summary" attributeType="String" defaultValueString=""/>
@@ -15,6 +17,7 @@
         <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="timelineEvents" inverseEntity="N40Person"/>
     </entity>
     <entity name="N40Goal" representedClassName=".N40Goal" syncable="YES">
+        <attribute name="dateCompleted" attributeType="Date" defaultDateTimeInterval="-31554000" usesScalarValueType="NO"/>
         <attribute name="deadline" attributeType="Date" defaultDateTimeInterval="315537915600" usesScalarValueType="NO"/>
         <attribute name="hasDeadline" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="information" attributeType="String" defaultValueString=""/>

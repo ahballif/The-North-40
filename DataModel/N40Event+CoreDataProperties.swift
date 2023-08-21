@@ -26,8 +26,16 @@ extension N40Event {
     @NSManaged public var contactMethod: Int16
     @NSManaged public var location: String
     @NSManaged public var isScheduled: Bool
+    @NSManaged public var color: String
+    @NSManaged public var recurringTag: String
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?
+    
+    //event types
+    public static let REPORTABLE_TYPE = 0
+    public static let NON_REPORTABLE_TYPE = 1
+    public static let INFORMATION_TYPE = 2
+    public static let TODO_TYPE = 3
     
     
     public var getAttachedPeople: [N40Person] {

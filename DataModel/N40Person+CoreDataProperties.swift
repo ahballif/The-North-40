@@ -18,9 +18,15 @@ extension N40Person {
 
     @NSManaged public var firstName: String
     @NSManaged public var lastName: String
-    @NSManaged public var contactInfos: String
     @NSManaged public var address: String
-    @NSManaged public var title: String?
+    @NSManaged public var title: String
+    @NSManaged public var phoneNumber1: String
+    @NSManaged public var phoneNumber2: String
+    @NSManaged public var email1: String
+    @NSManaged public var email2: String
+    @NSManaged public var socialMedia1: String
+    @NSManaged public var socialMedia2: String
+    
     @NSManaged public var groups: NSSet?
     @NSManaged public var timelineEvents: NSSet?
 

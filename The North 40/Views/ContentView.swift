@@ -37,6 +37,11 @@ struct ContentView: View {
                 .tabItem{
                     Label("Goals", systemImage: "pencil.and.ruler.fill")
                 }
+            OfficeView()
+                .environment(\.managedObjectContext, viewContext)
+                .tabItem{
+                    Label("Office", systemImage: "books.vertical")
+                }
         }
     }
 }
