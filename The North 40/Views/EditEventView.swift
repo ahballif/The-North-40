@@ -14,9 +14,6 @@ struct EditEventView: View {
     
     
     public var editEvent: N40Event?
-    public var duplicate = false
-    
-    private let contactOptions = [["In Person", "person.2.fill"],["Phone Call","phone.fill"],["Text Message","message"],["Social Media", "ellipsis.bubble"],["Email", "envelope"],["Other", "bubble.middle.top"]]
     
     private let eventTypeOptions = [["Reportable", "rectangle.and.pencil.and.ellipsis"], ["Non-Reportable","calendar.day.timeline.leading"], ["Radar Event", "dot.radiowaves.left.and.right"], ["To-Do", "checklist"]]
     
@@ -40,6 +37,9 @@ struct EditEventView: View {
     @State private var attachedPeople: [N40Person] = []
     @State private var showingAttachPeopleSheet = false
     
+    @State private var attachedGoals: [N40Goal] = []
+    @State private var showingAttachGoalSheet = false
+    
     @State private var selectedColor = Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
     
     @State private var isAlreadyRepeating = false
@@ -47,10 +47,15 @@ struct EditEventView: View {
     @State private var numberOfRepeats = 3 // in months
     @State private var isShowingEditAllConfirm: Bool = false
     
+    @State private var isShowingSaveAsCopyConfirm: Bool = false
+    
     //for the delete button
     @State private var isPresentingConfirm: Bool = false
     @State private var isPresentingRecurringDeleteConfirm: Bool = false
     
+    // used to pass in a person or goal (for example if event created from person or goal)
+    public var attachingGoal: N40Goal? = nil
+    public var attachingPerson: N40Person? = nil
     
     var body: some View {
         VStack {
@@ -125,7 +130,7 @@ struct EditEventView: View {
                 VStack {
                     HStack {
                         Picker("Contact Method: ", selection: $contactMethod) {
-                            ForEach(contactOptions, id: \.self) {
+                            ForEach(N40Event.contactOptions, id: \.self) {
                                 Label($0[0], systemImage: $0[1])
                             }
                         }
@@ -235,6 +240,37 @@ struct EditEventView: View {
                     
                 }
                 
+                VStack {
+                    HStack{
+                        Text("Attached Goals:")
+                            .font(.title3)
+                        Spacer()
+                    }
+                    
+                    ForEach(attachedGoals) { goal in
+                        HStack {
+                            Text(goal.name)
+                            Spacer()
+                            Button {
+                                removeGoal(removedGoal: goal)
+                            } label: {
+                                Image(systemName: "multiply")
+                            }
+                        }.padding()
+                    }
+                    
+                    Button(action: {
+                        showingAttachGoalSheet.toggle()
+                    }) {
+                        Label("Attach Goal", systemImage: "plus").padding()
+                    }.sheet(isPresented: $showingAttachGoalSheet) {
+                        SelectGoalView(editEventView: self)
+                    }
+                    
+                        
+                    
+                }
+                
                 
             }
             
@@ -246,8 +282,18 @@ struct EditEventView: View {
                 if (editEvent != nil) {
                     
                     ToolbarItemGroup {
-                        Text(("Edit " + (eventType != ["To-Do", "checklist"] ? "Event" : "To-Do")))
-                        Spacer()
+                        
+                        
+                        Button {
+                            isShowingSaveAsCopyConfirm = true
+                        } label: {
+                            Image(systemName: "doc.on.doc")
+                        }.confirmationDialog("Save Changes As New Copy?", isPresented: $isShowingSaveAsCopyConfirm) {
+                            Button("Save Changes As New Copy") {
+                                saveEvent(saveAsCopy: true)
+                                dismiss()
+                            }
+                        }
                         
                         if (editEvent!.recurringTag != "") {
                             
@@ -272,7 +318,7 @@ struct EditEventView: View {
                                 Text("Delete this event and all following?")
                             }
                             
-                            Button("Done") {
+                            Button("Update") {
                                 isShowingEditAllConfirm = true
                             }.confirmationDialog("Save To All Occurances?", isPresented: $isShowingEditAllConfirm) {
                                 Button("Just this one") {
@@ -304,7 +350,7 @@ struct EditEventView: View {
                                 Text("Delete This Event?")
                             }
                             
-                            Button("Done") {
+                            Button("Update") {
                                 saveEvent()
                                 dismiss()
                             }
@@ -336,15 +382,19 @@ struct EditEventView: View {
             
             editEvent?.removeFromAttachedPeople(removedPerson)
             
-            do {
-                try viewContext.save()
-            }
-            catch {
-                // Handle Error
-                print("Error info: \(error)")
-                
-            }
+        }
+    }
+    
+    public func attachGoal (addGoal: N40Goal)  {
+        //attaches a goal to the attachedGoal array.
+        attachedGoals.append(addGoal)
+    }
+    public func removeGoal (removedGoal: N40Goal) {
+        let idx = attachedGoals.firstIndex(of: removedGoal) ?? -1
+        if idx != -1 {
+            attachedGoals.remove(at: idx)
             
+            editEvent?.removeFromAttachedGoals(removedGoal)
         }
     }
     
@@ -360,18 +410,32 @@ struct EditEventView: View {
             chosenStartDate = editEvent!.startDate
             
             duration = Int(editEvent?.duration ?? 0)
-            contactMethod = contactOptions[Int(editEvent?.contactMethod ?? 0)]
+            contactMethod = N40Event.contactOptions[Int(editEvent?.contactMethod ?? 0)]
             eventType = eventTypeOptions[Int(editEvent?.eventType ?? 1)]
             
             status = Int(editEvent?.status ?? 0)
             
+            
             editEvent?.attachedPeople?.forEach {person in
                 attachedPeople.append(person as! N40Person)
             }
+            editEvent?.attachedGoals?.forEach {goal in
+                attachedGoals.append(goal as! N40Goal)
+            }
+            
             
             if editEvent!.recurringTag != "" {
                 isAlreadyRepeating = true
             }
+        } else {
+            
+            if attachingGoal != nil {
+                attachedGoals.append(attachingGoal!)
+            }
+            if attachingPerson != nil {
+                attachedPeople.append(attachingPerson!)
+            }
+            
         }
         
         selectedColor = Color(hex: editEvent?.color ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
@@ -380,11 +444,11 @@ struct EditEventView: View {
         
     }
     
-    private func saveEvent () {
+    private func saveEvent (saveAsCopy: Bool = false) {
         withAnimation {
             
             var newEvent = editEvent ?? N40Event(context: viewContext)
-            if duplicate {
+            if saveAsCopy {
                 //If duplicate is set to true, remove the reference to the old editEvent so that it creates a new one.
                 newEvent = N40Event(context: viewContext)
             }
@@ -407,11 +471,35 @@ struct EditEventView: View {
             newEvent.status = Int16(self.status)
             
             //finds the index representing the correct contact method and event type
-            newEvent.contactMethod = Int16(self.contactOptions.firstIndex(of: contactMethod) ?? 0)
+            newEvent.contactMethod = Int16(N40Event.contactOptions.firstIndex(of: contactMethod) ?? 0)
             newEvent.eventType = Int16(self.eventTypeOptions.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
     
             
             newEvent.color = selectedColor.toHex() ?? "#FF7051"
+            
+            if editEvent != nil {
+                //We need to remove all the people and goals before we reattach any.
+                let alreadyAttachedPeople = editEvent?.getAttachedPeople ?? []
+                let alreadyAttachedGoals = editEvent?.getAttachedGoals ?? []
+                
+                alreadyAttachedPeople.forEach {person in
+                    newEvent.removeFromAttachedPeople(person)
+                }
+                alreadyAttachedGoals.forEach {goal in
+                    newEvent.removeFromAttachedGoals(goal)
+                }
+                
+            }
+            //Now add back only the ones that are selected.
+            attachedPeople.forEach {person in
+                newEvent.addToAttachedPeople(person)
+            }
+            attachedGoals.forEach {goal in
+                newEvent.addToAttachedGoals(goal)
+            }
+            
+            
+            
             
             //Making recurring events
             if repeatOptionSelected != repeatOptions[0] {
@@ -420,28 +508,24 @@ struct EditEventView: View {
                 if repeatOptionSelected == repeatOptions[1] {
                     //Repeat Daily
                     for i in 1...30*numberOfRepeats {
-                        duplicateEvent(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate)!)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate)!)
                     }
                     
                 } else if repeatOptionSelected == repeatOptions[2] {
                     //Repeat Weekly
                     for i in 1...Int(Double(numberOfRepeats)/12.0*52.0) {
-                        duplicateEvent(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
                     }
                     
                 } else if repeatOptionSelected == repeatOptions[3] {
                     //Repeat Monthly
                     for i in 1...numberOfRepeats {
-                        duplicateEvent(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate)!)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate)!)
                     }
                 }
                 
             }
             
-            
-            attachedPeople.forEach {person in
-                newEvent.addToAttachedPeople(person)
-            }
                         
             // To save the new entity to the persistent store, call
             // save on the context
@@ -553,15 +637,31 @@ struct EditEventView: View {
                         //wont save status
                         
                         //finds the index representing the correct contact method and event type
-                        recurringEvent.contactMethod = Int16(self.contactOptions.firstIndex(of: contactMethod) ?? 0)
+                        recurringEvent.contactMethod = Int16(N40Event.contactOptions.firstIndex(of: contactMethod) ?? 0)
                         recurringEvent.eventType = Int16(self.eventTypeOptions.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
                         
                         
                         recurringEvent.color = selectedColor.toHex() ?? "#FF7051"
                         
                         
+                        //We need to remove all the people and goals before we reattach any.
+                        let alreadyAttachedPeople = editEvent?.getAttachedPeople ?? []
+                        let alreadyAttachedGoals = editEvent?.getAttachedGoals ?? []
+                        
+                        alreadyAttachedPeople.forEach {person in
+                            recurringEvent.removeFromAttachedPeople(person)
+                        }
+                        alreadyAttachedGoals.forEach {goal in
+                            recurringEvent.removeFromAttachedGoals(goal)
+                        }
+                        
+                        
+                        //Now add back only the ones that are selected.
                         attachedPeople.forEach {person in
                             recurringEvent.addToAttachedPeople(person)
+                        }
+                        attachedGoals.forEach {goal in
+                            recurringEvent.addToAttachedGoals(goal)
                         }
                     }
                 }
@@ -586,7 +686,7 @@ struct EditEventView: View {
         }
     }
     
-    private func duplicateEvent(originalEvent: N40Event, newStartDate: Date) {
+    private func duplicateN40Event(originalEvent: N40Event, newStartDate: Date) {
         
         let newEvent = N40Event(context: viewContext)
         newEvent.name = originalEvent.name
@@ -626,7 +726,7 @@ struct EditEventView: View {
 
 struct EditEvent_Previews: PreviewProvider {
     static var previews: some View {
-        EditEventView(editEvent: nil).environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        EditEventView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
 
@@ -668,11 +768,35 @@ struct SelectPeopleView: View {
             
         }
     }
+}
+
+// ********************** SELECT GOAL VIEW ***************************
+// A sheet that pops up where you can select people to be attached.
+
+struct SelectGoalView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
     
     
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.deadline, ascending: true)], animation: .default)
+    private var fetchedGoals: FetchedResults<N40Goal>
     
+    var editEventView: EditEventView
     
-    
+    var body: some View {
+        List(fetchedGoals) {goal in
+            HStack {
+                Text(goal.name)
+                Spacer()
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                editEventView.attachGoal(addGoal: goal)
+                dismiss()
+            }
+            
+        }
+    }
 }
 
 

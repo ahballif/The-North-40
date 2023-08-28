@@ -29,6 +29,12 @@
         <relationship name="goals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="groups" inverseEntity="N40Goal"/>
         <relationship name="people" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="groups" inverseEntity="N40Person"/>
     </entity>
+    <entity name="N40Note" representedClassName="N40Note" syncable="YES" codeGenerationType="class">
+        <attribute name="date_created" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="date_modified" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="information" attributeType="String" defaultValueString=""/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+    </entity>
     <entity name="N40Person" representedClassName=".N40Person" syncable="YES">
         <attribute name="address" attributeType="String" defaultValueString=""/>
         <attribute name="email1" attributeType="String" defaultValueString=""/>

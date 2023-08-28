@@ -28,6 +28,7 @@ extension N40Event {
     @NSManaged public var isScheduled: Bool
     @NSManaged public var color: String
     @NSManaged public var recurringTag: String
+    
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?
     
@@ -36,6 +37,8 @@ extension N40Event {
     public static let NON_REPORTABLE_TYPE = 1
     public static let INFORMATION_TYPE = 2
     public static let TODO_TYPE = 3
+    
+    public static let contactOptions = [["In Person", "person.2.fill"],["Phone Call","phone.fill"],["Text Message","message"],["Social Media", "ellipsis.bubble"],["Video Call", "video"],["Email", "envelope"],["Computer", "desktopcomputer"],["TV", "tv"],["Other", "bubble.middle.top"]]
     
     
     public var getAttachedPeople: [N40Person] {

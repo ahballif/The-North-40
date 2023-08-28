@@ -75,50 +75,92 @@ struct ToDoView_Previews: PreviewProvider {
 struct SortedToDoList: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    @FetchRequest var fetchedToDos: FetchedResults<N40Event>
-    
+    @FetchRequest var scheduledToDos: FetchedResults<N40Event>
+    @FetchRequest var unScheduledToDos: FetchedResults<N40Event>
     
     var body: some View {
         List {
-            ForEach(fetchedToDos) { todo in
-                
-                HStack {
+            
+            Section(header: Text("Unscheduled To-Do Items")) {
+                ForEach(unScheduledToDos) { todo in
                     
-                    //Button to check off the to-do
-                    Button(action: { completeToDoEvent(toDo: todo) }) {
-                        Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
-                            .disabled((todo.status != 0))
-                    }.buttonStyle(PlainButtonStyle())
-                    
-                    NavigationLink(destination: EditEventView(editEvent: todo), label: {
-                        HStack {
-                            Text(todo.name)
-                            
-                            Spacer()
-                            if (todo.isScheduled) {
-                                if (todo.startDate < Date()) {
-                                    Text(todo.startDate, formatter: itemFormatter)
-                                        .foregroundColor(.red)
-                                } else {
-                                    Text(todo.startDate, formatter: itemFormatter)
-                                    //Don't change color if it's not overdue
+                    HStack {
+                        
+                        //Button to check off the to-do
+                        Button(action: { completeToDoEvent(toDo: todo) }) {
+                            Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
+                                .disabled((todo.status != 0))
+                        }.buttonStyle(PlainButtonStyle())
+                        
+                        NavigationLink(destination: EditEventView(editEvent: todo), label: {
+                            HStack {
+                                Text(todo.name)
+                                
+                                Spacer()
+                                if (todo.isScheduled) {
+                                    if (todo.startDate < Date()) {
+                                        Text(todo.startDate, formatter: itemFormatter)
+                                            .foregroundColor(.red)
+                                    } else {
+                                        Text(todo.startDate, formatter: itemFormatter)
+                                        //Don't change color if it's not overdue
+                                    }
                                 }
                             }
-                        }
-                    })
-                }
-            }.onDelete(perform: self.deleteToDoEvent)
+                        })
+                    }
+                }.onDelete(perform: self.deleteUnscheduledToDoEvent)
+                
+            }
+            Section(header: Text("Scheduled To-Do Items")) {
+                ForEach(scheduledToDos) { todo in
+                    
+                    HStack {
+                        
+                        //Button to check off the to-do
+                        Button(action: { completeToDoEvent(toDo: todo) }) {
+                            Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
+                                .disabled((todo.status != 0))
+                        }.buttonStyle(PlainButtonStyle())
+                        
+                        NavigationLink(destination: EditEventView(editEvent: todo), label: {
+                            HStack {
+                                Text(todo.name)
+                                
+                                Spacer()
+                                if (todo.isScheduled) {
+                                    if (todo.startDate < Date()) {
+                                        Text(todo.startDate, formatter: itemFormatter)
+                                            .foregroundColor(.red)
+                                    } else {
+                                        Text(todo.startDate, formatter: itemFormatter)
+                                        //Don't change color if it's not overdue
+                                    }
+                                }
+                            }
+                        })
+                    }
+                }.onDelete(perform: self.deleteScheduledToDoEvent)
+                
+            }
+            
+            
         }.scrollContentBackground(.hidden)
+            .listStyle(.grouped)
+        
     }
     
     init (showingAll: Bool) {
-        var predicates: [NSPredicate] = []
-        predicates.append(NSPredicate(format: "eventType == %i", 3))
+        var unscheduledPredicates: [NSPredicate] = [NSPredicate(format: "eventType == %i", 3), NSPredicate(format: "isScheduled == NO")]
+        var scheduledPredicates: [NSPredicate] = [NSPredicate(format: "eventType == %i", 3), NSPredicate(format: "isScheduled == YES")]
+        
         if (!showingAll) {
-            predicates.append(NSPredicate(format: "status != %i", 3))
+            unscheduledPredicates.append(NSPredicate(format: "status != %i", 3))
+            scheduledPredicates.append(NSPredicate(format: "status != %i", 3))
         }
         
-        _fetchedToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)],predicate: NSCompoundPredicate(type: .and, subpredicates: predicates), animation: .default)
+        _scheduledToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)],predicate: NSCompoundPredicate(type: .and, subpredicates: scheduledPredicates), animation: .default)
+        _unScheduledToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)],predicate: NSCompoundPredicate(type: .and, subpredicates: unscheduledPredicates), animation: .default)
     }
     
     private func completeToDoEvent (toDo: N40Event) {
@@ -132,7 +174,7 @@ struct SortedToDoList: View {
                 if (toDo.status == 2) {
                     //This means it was checked off but hasn't been finally hidden
                     toDo.status = 3
-                    toDo.startDate = Date() //Set it as completed now. 
+                    //toDo.startDate = Date() //Set it as completed now. 
                     do {
                         try viewContext.save()
                     } catch {
@@ -151,11 +193,25 @@ struct SortedToDoList: View {
         }
     }
     
-    private func deleteToDoEvent(offsets: IndexSet) {
+    
+    private func deleteUnscheduledToDoEvent(offsets: IndexSet) {
         // deletes list items
         
         withAnimation {
-            offsets.map { fetchedToDos[$0] }.forEach(viewContext.delete)
+            offsets.map { unScheduledToDos[$0] }.forEach(viewContext.delete)
+            
+            do {
+                try viewContext.save()
+            } catch {
+                // handle error
+            }
+        }
+    }
+    private func deleteScheduledToDoEvent(offsets: IndexSet) {
+        // deletes list items
+        
+        withAnimation {
+            offsets.map { scheduledToDos[$0] }.forEach(viewContext.delete)
             
             do {
                 try viewContext.save()

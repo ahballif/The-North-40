@@ -22,8 +22,10 @@ extension N40Goal {
     @NSManaged public var information: String
     @NSManaged public var address: String
     @NSManaged public var hasDeadline: Bool
+    
     @NSManaged public var groups: NSSet?
     @NSManaged public var timelineEvents: NSSet?
+    @NSManaged public var attachedNotes: NSSet?
     
     
     public var getGroups: [N40Group] {

@@ -12,4 +12,7 @@ import CoreData
 
 public class N40Event: NSManagedObject {
 
+    public var renderIdx: Int? //For showing on the calendar. It will be stored here to allow other events to look at each other.
+    
+    
 }

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0711DEDA2A9A3E8A006C0005 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DED92A9A3E8A006C0005 /* TimelineView.swift */; };
+		0711DEDC2A9A434B006C0005 /* GoalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEDB2A9A434B006C0005 /* GoalDetailView.swift */; };
+		0711DEE32A9D371C006C0005 /* N40Note+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEE12A9D371C006C0005 /* N40Note+CoreDataClass.swift */; };
+		0711DEE42A9D371C006C0005 /* N40Note+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEE22A9D371C006C0005 /* N40Note+CoreDataProperties.swift */; };
 		07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D262A9596B2009DE0E0 /* PersonDetailView.swift */; };
 		07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D292A98E983009DE0E0 /* OfficeView.swift */; };
 		075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */; };
@@ -54,6 +58,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0711DED92A9A3E8A006C0005 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		0711DEDB2A9A434B006C0005 /* GoalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailView.swift; sourceTree = "<group>"; };
+		0711DEE12A9D371C006C0005 /* N40Note+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Note+CoreDataClass.swift"; sourceTree = "<group>"; };
+		0711DEE22A9D371C006C0005 /* N40Note+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Note+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		07241D262A9596B2009DE0E0 /* PersonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetailView.swift; sourceTree = "<group>"; };
 		07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_8-23-23.xcdatamodel"; sourceTree = "<group>"; };
 		07241D292A98E983009DE0E0 /* OfficeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeView.swift; sourceTree = "<group>"; };
@@ -185,6 +193,8 @@
 				0768C76B2A87188C00E29EBD /* N40Event+CoreDataProperties.swift */,
 				0768C76C2A87188C00E29EBD /* N40Group+CoreDataClass.swift */,
 				0768C76D2A87188C00E29EBD /* N40Group+CoreDataProperties.swift */,
+				0711DEE12A9D371C006C0005 /* N40Note+CoreDataClass.swift */,
+				0711DEE22A9D371C006C0005 /* N40Note+CoreDataProperties.swift */,
 			);
 			path = DataModel;
 			sourceTree = "<group>";
@@ -193,15 +203,17 @@
 			isa = PBXGroup;
 			children = (
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
-				079F068D2A8ED14A009A01F5 /* ToDoView.swift */,
 				079F06CC2A8F19B2009A01F5 /* EditEventView.swift */,
-				07241D292A98E983009DE0E0 /* OfficeView.swift */,
-				07241D262A9596B2009DE0E0 /* PersonDetailView.swift */,
 				075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */,
 				0768C7832A89B63500E29EBD /* EditPersonView.swift */,
+				079F068D2A8ED14A009A01F5 /* ToDoView.swift */,
 				0768C7812A89B4E900E29EBD /* CalendarView.swift */,
-				0768C77F2A89B2F400E29EBD /* GoalListView.swift */,
+				0711DED92A9A3E8A006C0005 /* TimelineView.swift */,
 				0768C77D2A89B2DE00E29EBD /* PersonListView.swift */,
+				07241D262A9596B2009DE0E0 /* PersonDetailView.swift */,
+				0768C77F2A89B2F400E29EBD /* GoalListView.swift */,
+				0711DEDB2A9A434B006C0005 /* GoalDetailView.swift */,
+				07241D292A98E983009DE0E0 /* OfficeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -336,23 +348,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0711DEDC2A9A434B006C0005 /* GoalDetailView.swift in Sources */,
 				07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */,
 				0768C7022A81E15600E29EBD /* Persistence.swift in Sources */,
 				0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */,
 				0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */,
 				0768C7722A87188C00E29EBD /* N40Event+CoreDataClass.swift in Sources */,
+				0711DEE42A9D371C006C0005 /* N40Note+CoreDataProperties.swift in Sources */,
 				0768C7772A87188C00E29EBD /* N40Goal+CoreDataProperties.swift in Sources */,
 				075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */,
 				07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */,
 				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
 				0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */,
 				0768C7712A87188C00E29EBD /* N40Person+CoreDataProperties.swift in Sources */,
+				0711DEE32A9D371C006C0005 /* N40Note+CoreDataClass.swift in Sources */,
 				0768C7752A87188C00E29EBD /* N40Group+CoreDataProperties.swift in Sources */,
 				079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */,
 				0768C7702A87188C00E29EBD /* N40Person+CoreDataClass.swift in Sources */,
 				0768C7842A89B63500E29EBD /* EditPersonView.swift in Sources */,
 				0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */,
 				0768C7762A87188C00E29EBD /* N40Goal+CoreDataClass.swift in Sources */,
+				0711DEDA2A9A3E8A006C0005 /* TimelineView.swift in Sources */,
 				0768C77E2A89B2DE00E29EBD /* PersonListView.swift in Sources */,
 				0768C7732A87188C00E29EBD /* N40Event+CoreDataProperties.swift in Sources */,
 				0768C7052A81E15600E29EBD /* The_North_40.xcdatamodeld in Sources */,

@@ -26,11 +26,13 @@ struct EditPersonView: View {
     @State private var socialMedia1: String = ""
     @State private var socialMedia2: String = ""
     
+    @State private var isPresentingDeleteConfirm = false
+    
     
     var body: some View {
         VStack {
             
-            Button("Load from Contacts", action: loadFromContacts)
+            
             
             if (editPerson == nil) {
                 HStack{
@@ -45,41 +47,68 @@ struct EditPersonView: View {
                 }
             }
             
-            //photo line
-            HStack {
-                
-                
-                
-                
-                Spacer()
-                Text("(Picture of someone)")
-            }.padding()
             
-            // Information Lines
-            VStack {
-                TextField("First Name", text: $firstName)
-                TextField("Last Name", text: $lastName)
+            ScrollView {
+                //photo line
+                HStack {
+                    
+                    
+                    
+                    
+                    Spacer()
+                    Text("(Picture of someone)")
+                }.padding()
                 
-                TextField("Title", text: $title)
-            }.padding()
-            
-            TextField("Address", text: $address).padding()
-            
-            VStack {
+                // Information Lines
+                VStack {
+                    TextField("First Name", text: $firstName)
+                    TextField("Last Name", text: $lastName)
+                    
+                    TextField("Title", text: $title)
+                }.padding()
                 
-                TextField("Phone Number 1", text: $phoneNumber1)
-                TextField("Phone Number 2", text: $phoneNumber2)
-                TextField("Email 1", text: $email1)
-                TextField("Email 2", text: $email2)
-                TextField("Social Media 1", text: $socialMedia1)
-                TextField("Social Media 2", text: $socialMedia2)
-            
+                TextField("Address", text: $address).padding()
+                
+                VStack {
+                    
+                    TextField("Phone Number 1", text: $phoneNumber1)
+                    TextField("Phone Number 2", text: $phoneNumber2)
+                    TextField("Email 1", text: $email1)
+                    TextField("Email 2", text: $email2)
+                    TextField("Social Media 1", text: $socialMedia1)
+                    TextField("Social Media 2", text: $socialMedia2)
+                    
+                    
+                    
+                }.padding()
                 
                 
-            }.padding()
+                if (editPerson != nil) {
+                    Button(role: .destructive, action: {
+                        isPresentingDeleteConfirm = true
+                    }, label: {
+                        Text("Delete Person")
+                    }).confirmationDialog("Are you sure you want to delete this person?",
+                                          isPresented: $isPresentingDeleteConfirm) {
+                         Button("Delete Person", role: .destructive) {
+                             viewContext.delete(editPerson!)
+                             do {
+                                 try viewContext.save()
+                             }
+                             catch {
+                                 // Handle Error
+                                 print("Error info: \(error)")
+                             }
+                             
+                             dismiss()
+                         }
+                     } message: {
+                         Text("Are you sure you want to delete this person?")
+                     }
+                }
+                
+            }
             
-            
-            Spacer()
             
             
         }.padding()
@@ -98,10 +127,6 @@ struct EditPersonView: View {
                     
                 }
             }
-    }
-    
-    private func loadFromContacts () {
-        
     }
     
     
@@ -154,8 +179,6 @@ struct EditPersonView: View {
         
         
     }
-    
-    
 }
 
 struct AddPersonView_Previews: PreviewProvider {
@@ -163,6 +186,3 @@ struct AddPersonView_Previews: PreviewProvider {
         EditPersonView()
     }
 }
-
-
-

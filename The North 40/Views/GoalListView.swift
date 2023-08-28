@@ -24,7 +24,7 @@ struct GoalListView: View {
                     
                     
                     List(fetchedGoals) {goal in
-                        NavigationLink(destination: EditGoalView(editGoal: goal)) {
+                        NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
                             HStack {
                                 Text(goal.name)
                                 if (goal.hasDeadline) {

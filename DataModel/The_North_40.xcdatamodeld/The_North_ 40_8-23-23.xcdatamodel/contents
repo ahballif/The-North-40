@@ -22,6 +22,7 @@
         <attribute name="hasDeadline" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="information" attributeType="String" defaultValueString=""/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
+        <relationship name="attachedNotes" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40Note" inverseName="attachedGoals" inverseEntity="N40Note"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Group" inverseName="goals" inverseEntity="N40Group"/>
         <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedGoals" inverseEntity="N40Event"/>
     </entity>
@@ -31,6 +32,13 @@
         <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="goals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="groups" inverseEntity="N40Goal"/>
         <relationship name="people" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="groups" inverseEntity="N40Person"/>
+    </entity>
+    <entity name="N40Note" representedClassName="N40Note" syncable="YES">
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="-31597200" usesScalarValueType="NO"/>
+        <attribute name="information" attributeType="String" defaultValueString=""/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+        <relationship name="attachedGoals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="attachedNotes" inverseEntity="N40Goal"/>
+        <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="attachedNotes" inverseEntity="N40Person"/>
     </entity>
     <entity name="N40Person" representedClassName=".N40Person" syncable="YES">
         <attribute name="address" attributeType="String" defaultValueString=""/>
@@ -43,6 +51,7 @@
         <attribute name="socialMedia1" attributeType="String" defaultValueString=""/>
         <attribute name="socialMedia2" attributeType="String" defaultValueString=""/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
+        <relationship name="attachedNotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Note" inverseName="attachedPeople" inverseEntity="N40Note"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Group" inverseName="people" inverseEntity="N40Group"/>
         <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedPeople" inverseEntity="N40Event"/>
     </entity>

@@ -11,7 +11,9 @@ struct PersonDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @State var selectedPerson: N40Person
-    @State var selectedView = 0 //for diy tab view
+    @State private var selectedView = 0 //for diy tab view
+    
+    @State private var showingEditEventSheet = false
     
     var body: some View {
         
@@ -83,7 +85,30 @@ struct PersonDetailView: View {
                 if (selectedView==0) {
                     PersonInfoView(selectedPerson: selectedPerson)
                 } else if (selectedView==1) {
-                    PersonTimelineView(selectedPerson: selectedPerson)
+                    ZStack {
+                        TimelineView(events: selectedPerson.getTimelineEvents)
+                        
+                        
+                        //The Add Button
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                
+                                Button(action: {showingEditEventSheet.toggle()}) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .clipShape(Circle())
+                                        .frame(minWidth: 50, maxWidth: 50)
+                                        .padding(30)
+                                }
+                                .sheet(isPresented: $showingEditEventSheet) {
+                                    EditEventView(attachingPerson: selectedPerson)
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 
@@ -132,88 +157,6 @@ struct PersonInfoView: View {
     }
     
 }
-
-struct PersonTimelineView: View {
-    
-    var selectedPerson: N40Person
-    
-    var body: some View {
-        ScrollView {
-            VStack {
-                ForEach(selectedPerson.getTimelineEvents) { eachEvent in
-                    eventDisplayBoxView(myEvent: eachEvent)
-                }
-            }
-        }
-    }
-}
-
-private struct eventDisplayBoxView: View {
-    
-    @State var myEvent: N40Event
-    
-    var body: some View {
-        NavigationLink(destination: EditEventView(editEvent: myEvent)) {
-            ZStack {
-                
-                VStack {
-                    HStack {
-                        Text(formatDateToString(date: myEvent.startDate))
-                        Spacer()
-                    }
-                    HStack {
-                        Text(myEvent.name)
-                        Spacer()
-                    }
-                }
-                
-            }.font(.caption)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(4)
-                .frame(alignment: .top)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(hex: myEvent.color) ?? DEFAULT_EVENT_COLOR).opacity(0.5)
-                )
-                .padding(.trailing, 30)
-            //.offset(x: 30, y: offset + hourHeight/2)
-        }
-    }
-    
-    
-    private func formatDateToString(date: Date) -> String {
-        // Create Date Formatter
-        let dateFormatter = DateFormatter()
-
-        // Set Date/Time Style
-        dateFormatter.dateStyle = .long
-        dateFormatter.timeStyle = .short
-
-        // Convert Date to String
-        return dateFormatter.string(from: date) // April 19, 2023 at 4:42 PM
-    }
-}
-
-
-struct PersonView_Previews: PreviewProvider {
-    static var previews: some View {
-        
-        let viewContext = PersistenceController.shared.container.viewContext
-        
-        let mikey = N40Person(entity: N40Person.entity(), insertInto: viewContext)
-        
-        mikey.firstName = "Mikey"
-        mikey.lastName = "Saunders"
-        
-        mikey.phoneNumber1 = "(208) 294-2002"
-        mikey.email1 = "mikey@hmail.com"
-        
-        
-        
-        return PersonDetailView(selectedPerson: mikey).environment(\.managedObjectContext, viewContext)
-    }
-}
-
 
 // *************** CONTACT BARS *******************
 // For displaying and opening contact information.
