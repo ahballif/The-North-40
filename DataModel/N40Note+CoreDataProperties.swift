@@ -23,6 +23,23 @@ extension N40Note {
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?
 
+    public var getAttachedPeople: [N40Person] {
+        //returns an array of the people attached
+        let set = attachedPeople as? Set<N40Person> ?? []
+        return set.sorted {
+            $0.lastName < $1.lastName //sorts alphabetically by last name
+        }
+    }
+    
+    public var getAttachedGoals: [N40Goal] {
+        //returns an array of the goals attached
+        let set = attachedGoals as? Set<N40Goal> ?? []
+        return set.sorted {
+            $0.name < $1.name //sorts alphabetically by name
+        }
+     }
+    
+    
 }
 
 // MARK: Generated accessors for attachedPeople

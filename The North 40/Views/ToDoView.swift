@@ -17,12 +17,9 @@ struct ToDoView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                VStack {
-                    Toggle("Included Completed To-Do's", isOn: $includeCompletedToDos).padding(.horizontal)
-                    
-                    SortedToDoList(showingAll: includeCompletedToDos)
-                    
-                }
+                
+                SortedToDoList(showingAll: includeCompletedToDos)
+                
                 
                 VStack {
                     Spacer()

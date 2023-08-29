@@ -29,6 +29,8 @@ struct EditEventView: View {
     @State public var chosenStartDate: Date = Date()
     @State private var chosenEndDate = Date()
     @State private var duration = 0
+    @State private var allDay: Bool = false
+    
     @State private var contactMethod = ["In Person", "person.2.fill"]
     @State public var eventType: [String] = ["Non-Reportable","calendar.day.timeline.leading"]
     
@@ -110,10 +112,18 @@ struct EditEventView: View {
                             duration = getMinutesDifferenceFromTwoDates(start: chosenStartDate, end: chosenEndDate)
                         })
 
-
-                    Button("Set to Now") {
-                        chosenStartDate = Date()
-                        chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                    HStack {
+                        Text("All Day: ")
+                        Toggle("All Day: ", isOn: $allDay)
+                            .labelsHidden()
+                            .disabled(!isScheduled)
+                        Spacer()
+                        
+                        Button("Set to Now") {
+                            chosenStartDate = Date()
+                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                        }.disabled(!isScheduled)
+                        
                     }
                     
                     HStack {
@@ -173,7 +183,7 @@ struct EditEventView: View {
                                         ForEach(repeatOptions, id: \.self) { option in
                                             Text(option)
                                         }
-                                    }
+                                    }.disabled(!isScheduled)
                                     
                                     Spacer()
                                     
@@ -188,6 +198,7 @@ struct EditEventView: View {
                                 HStack {
                                     Text("For \(numberOfRepeats) Months")
                                     Stepper("", value: $numberOfRepeats, in: 1...12)
+                                        .disabled(!isScheduled)
                                     
                                 }
                             }
@@ -406,6 +417,7 @@ struct EditEventView: View {
             information = editEvent?.information ?? ""
             
             isScheduled = editEvent?.isScheduled ?? true
+            allDay = editEvent?.allDay ?? false
             
             chosenStartDate = editEvent!.startDate
             
@@ -428,7 +440,7 @@ struct EditEventView: View {
                 isAlreadyRepeating = true
             }
         } else {
-            
+            //This is for if you create an event from a timeline view.
             if attachingGoal != nil {
                 attachedGoals.append(attachingGoal!)
             }
@@ -464,6 +476,7 @@ struct EditEventView: View {
             newEvent.startDate = self.chosenStartDate
             newEvent.isScheduled = self.isScheduled
             newEvent.duration = Int16(self.duration)
+            newEvent.allDay = self.allDay
             
             newEvent.location = self.location
             newEvent.information = self.information
@@ -631,6 +644,8 @@ struct EditEventView: View {
                         let minute = Calendar.current.component(.minute, from: chosenStartDate)
                         recurringEvent.startDate = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: recurringEvent.startDate) ?? recurringEvent.startDate
                         
+                        recurringEvent.allDay = self.allDay
+                        
                         recurringEvent.location = self.location
                         recurringEvent.information = self.information
                         
@@ -697,6 +712,7 @@ struct EditEventView: View {
         newEvent.information = originalEvent.information
         newEvent.status = 0 // This one is different
         newEvent.contactMethod = originalEvent.contactMethod
+        newEvent.allDay = originalEvent.allDay
         newEvent.eventType = originalEvent.eventType
         newEvent.color = originalEvent.color
         newEvent.recurringTag = originalEvent.recurringTag
@@ -744,7 +760,7 @@ func getMinutesDifferenceFromTwoDates(start: Date, end: Date) -> Int
 // ********************** SELECT PEOPLE VIEW ***************************
 // A sheet that pops up where you can select people to be attached.
 
-struct SelectPeopleView: View {
+fileprivate struct SelectPeopleView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
@@ -773,7 +789,7 @@ struct SelectPeopleView: View {
 // ********************** SELECT GOAL VIEW ***************************
 // A sheet that pops up where you can select people to be attached.
 
-struct SelectGoalView: View {
+fileprivate struct SelectGoalView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     

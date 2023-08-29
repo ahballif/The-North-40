@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct OfficeView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -16,7 +20,9 @@ struct OfficeView: View {
                     .padding()
                 
                 List {
-                    
+                    NavigationLink(destination: NotesView()) {
+                        Label("Notes", systemImage: "note.text")
+                    }
                     NavigationLink(destination: FinanceView()) {
                         Label("Budget and Finances", systemImage: "creditcard.and.123")
                     }
@@ -26,8 +32,8 @@ struct OfficeView: View {
                     NavigationLink(destination: StatsView()) {
                         Label("My Stats", systemImage: "chart.bar")
                     }
-                    NavigationLink(destination: NotesView()) {
-                        Label("Notes", systemImage: "note.text")
+                    NavigationLink(destination: MapView()) {
+                        Label("Map", systemImage: "map")
                     }
                     NavigationLink(destination: SettingsView()) {
                         Label("Settings", systemImage: "gearshape.2")
@@ -45,7 +51,11 @@ struct OfficeView_Previews: PreviewProvider {
     }
 }
 
-
+struct MapView: View {
+    var body: some View {
+        Text("This is the map view")
+    }
+}
 
 struct FinanceView: View {
     var body: some View {
@@ -63,20 +73,6 @@ struct GroupsView: View {
 struct StatsView: View {
     var body: some View {
         Text("This is the stats page. ")
-    }
-}
-
-
-struct NotesView: View {
-    var body: some View {
-        Text("This is the notes page. ")
-    }
-}
-
-
-struct SettingsView: View {
-    var body: some View {
-        Text("This is the Settings Page")
     }
 }
 

@@ -11,6 +11,12 @@ import SwiftUI
 struct The_North_40App: App {
     let persistenceController = PersistenceController.shared
 
+    init() {
+        UserDefaults.standard.register(defaults: [
+            "hourHeight": 100.0
+        ])
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

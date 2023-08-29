@@ -21,7 +21,7 @@ struct CalendarView: View {
                 
                 VStack {
                     Text("Daily Planner")
-                        .font(.title)
+                        .font(.title2)
                     HStack {
                         Text(selectedDay.dayOfWeek())
                         
@@ -36,9 +36,11 @@ struct CalendarView: View {
                             
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
                     
-                    Spacer()
+                    AllDayList(filter: selectedDay)
+                        .environment(\.managedObjectContext, viewContext)
+                    
                     
                     DailyPlanner(filter: selectedDay)
                         .environment(\.managedObjectContext, viewContext)
@@ -75,7 +77,180 @@ struct CalendarView_Previews: PreviewProvider {
     }
 }
 
+struct AllDayList: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.colorScheme) var colorScheme
+    
+    
+    @FetchRequest var fetchedAllDays: FetchedResults<N40Event>
+    @FetchRequest var fetchedGoalsDueToday: FetchedResults<N40Goal>
+    
+    @State private var showingEditEventSheet = false
+    
+    private var filteredDay: Date
+    
+    private let allEventHeight = 25.0
+    
+    
+    var body: some View {
+        if (fetchedAllDays.count + fetchedGoalsDueToday.count) > 3 {
+            ScrollView {
+                ForEach(fetchedAllDays) { eachEvent in
+                    allDayEvent(eachEvent)
+                }
+                ForEach(fetchedGoalsDueToday) { eachGoal in
+                    dueGoal(eachGoal)
+                }
+            }.frame(height: 3*allEventHeight)
+        } else {
+            VStack {
+                ForEach(fetchedAllDays) { eachEvent in
+                    allDayEvent(eachEvent)
+                }
+                ForEach(fetchedGoalsDueToday) { eachGoal in
+                    dueGoal(eachGoal)
+                }
+            }
+        }
+        
+    }
+    
+    init (filter: Date) {
+        let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
+        let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
+        let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
+        
+        let allDayPredicate = NSPredicate(format: "allDay == YES")
+        
+        
+        _fetchedAllDays = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, allDayPredicate]))
+        
+        let dueDatePredicateA = NSPredicate(format: "deadline >= %@", filter.startOfDay as NSDate)
+        let dueDatePredicateB = NSPredicate(format: "deadline <= %@", filter.endOfDay as NSDate)
+        let hasDeadlinePredicate = NSPredicate(format: "hasDeadline == YES")
+        
+        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate]))
+        
+        
+        self.filteredDay = filter
+    }
+    
+    func allDayEvent(_ event: N40Event) -> some View {
+        //all events is used for wrapping around other events.
+        
 
+        return NavigationLink(destination: EditEventView(editEvent: event), label: {
+                
+                ZStack {
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                        .opacity(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    
+                    HStack {
+                        if (event.eventType == N40Event.TODO_TYPE) {
+                            //Button to check off the to-do
+                            Button(action: { completeToDoEvent(toDo: event) }) {
+                                Image(systemName: (event.status == 0) ? "square" : "checkmark.square")
+                                    .disabled((event.status != 0))
+                            }.buttonStyle(PlainButtonStyle())
+                            
+                        }
+                        
+                        Text(event.name).bold()
+                        Spacer()
+                    }
+                    .padding(.horizontal, 8)
+                        
+                
+                    
+                    
+                    
+                    if (event.recurringTag != "") {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "repeat")
+                                
+                        }.padding(.horizontal, 8)
+                    }
+                }
+                
+            })
+            .buttonStyle(.plain)
+            .font(.caption)
+            .frame(height: allEventHeight)
+            
+            
+        
+    }
+    
+    func dueGoal(_ goal: N40Goal) -> some View {
+        //all events is used for wrapping around other events.
+        
+
+        return NavigationLink(destination: GoalDetailView(selectedGoal: goal), label: {
+                
+                ZStack {
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray)
+                        .opacity(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .foregroundColor(((colorScheme == .dark) ? .white : .black))
+                    
+                    HStack {
+        
+
+                        Text("Goal: \(goal.name) - \(goal.deadline.formatted(.dateTime))").bold()
+                        Spacer()
+                    }
+                    .padding(.horizontal, 8)
+                        
+                }
+                
+            })
+            .buttonStyle(.plain)
+            .font(.caption)
+            .frame(height: allEventHeight)
+            
+            
+        
+    }
+    
+    private func completeToDoEvent (toDo: N40Event) {
+        //checks off to do items or unchecks them
+        
+        if (toDo.status == 0) {
+            toDo.status = 2
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                //Wait 2 seconds to change from attempted to completed so it doesn't disappear too quickly
+                if (toDo.status == 2) {
+                    //This means it was checked off but hasn't been finally hidden
+                    toDo.status = 3
+                    //toDo.startDate = Date() //Set it as completed now.
+                    do {
+                        try viewContext.save()
+                    } catch {
+                        // handle error
+                    }
+                }
+            }
+        } else {
+            toDo.status = 0
+            
+            do {
+                try viewContext.save()
+            } catch {
+                // handle error
+            }
+        }
+    }
+    
+    
+}
 
 struct DailyPlanner: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -85,8 +260,8 @@ struct DailyPlanner: View {
     @State private var showingEditEventSheet = false
     @State private var clickedOnTime = Date()
     
-    private let hourHeight = 100.0
-    private let minimumEventHeight = 25.0
+    @State private var hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
+    public static let minimumEventHeight = 25.0
     
     private var filteredDay: Date
         
@@ -118,7 +293,7 @@ struct DailyPlanner: View {
                         .frame(height: hourHeight/2) //offset the buttons by 2 slots
                     
                     
-                    ForEach(0..<(24*Int(hourHeight/minimumEventHeight))) {idx in
+                    ForEach(0..<(24*Int(hourHeight/DailyPlanner.minimumEventHeight))) {idx in
                         Rectangle()
                             .fill(Color.black.opacity(0.0001))
                             .onTapGesture {
@@ -128,7 +303,7 @@ struct DailyPlanner: View {
                                 clickedOnTime = getSelectedTime(idx: idx)
                                 showingEditEventSheet.toggle()
                             }
-                            .frame(height: minimumEventHeight)
+                            .frame(height: DailyPlanner.minimumEventHeight)
                     }
                     
                 }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
@@ -151,14 +326,58 @@ struct DailyPlanner: View {
                 
                 
             }
+            //.gesture(magnification)
             
-            
+        }
+        //.scrollPosition(initialAnchor: .center) // Doesn't work yet with current version of swift.
+        .onAppear {
+            hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
         }
         
     }
     
+    @GestureState private var zoomFactor: CGFloat = 1.0
+    @State var oldZoomValue = 1.0
+    var magnification: some Gesture {
+        return MagnificationGesture()
+            .updating($zoomFactor) { value, scale, transaction in
+                // updating scale with returned value from magnification gesture
+                withAnimation {
+                    scale = value
+                }
+            }
+            .onChanged { value in
+
+                withAnimation {
+                    
+                    let newModifier = (value-oldZoomValue) * 100.0
+                    
+                    hourHeight += newModifier
+                    
+                    if hourHeight > (DailyPlanner.minimumEventHeight*12) {
+                        hourHeight = (DailyPlanner.minimumEventHeight*12) //No smaller than every 5 minute zoom.
+                    }
+                    if hourHeight < (DailyPlanner.minimumEventHeight*2) {
+                        hourHeight = (DailyPlanner.minimumEventHeight*2) // no bigger than every 30 minute zoom.
+                    }
+                    
+                    oldZoomValue = value
+                }
+            }
+            .onEnded { value in
+                // do nothing
+                
+            }
+    }
+    
     init (filter: Date) {
-        _fetchedEvents = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate), NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate), NSPredicate(format: "isScheduled == YES")]))
+        let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
+        let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
+        let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
+        
+        let notAllDayPredicate = NSPredicate(format: "allDay == NO")
+        
+        _fetchedEvents = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, notAllDayPredicate]))
         
         self.filteredDay = filter
     }
@@ -169,8 +388,8 @@ struct DailyPlanner: View {
         dateComponents.year = Calendar.current.component(.year, from: filteredDay)
         dateComponents.month = Calendar.current.component(.month, from: filteredDay)
         dateComponents.day = Calendar.current.component(.day, from: filteredDay)
-        dateComponents.hour = Int(Double(idx)*minimumEventHeight/hourHeight)
-        dateComponents.minute = (idx % Int(hourHeight/minimumEventHeight))*Int(60*minimumEventHeight/hourHeight)
+        dateComponents.hour = Int(Double(idx)*DailyPlanner.minimumEventHeight/hourHeight)
+        dateComponents.minute = (idx % Int(hourHeight/DailyPlanner.minimumEventHeight))*Int(60*DailyPlanner.minimumEventHeight/hourHeight)
 
         // Create date from components
         let userCalendar = Calendar(identifier: .gregorian) // since the components above (like year 1980) are for Gregorian
@@ -183,7 +402,7 @@ struct DailyPlanner: View {
         //returns an int of how many events are in that location
         var eventsAtTime: [N40Event] = []
         
-        let minDuration = (minimumEventHeight/hourHeight*60.0)
+        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
         let testDuration = Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
         
         
@@ -249,8 +468,8 @@ struct DailyPlanner: View {
         //all events is used for wrapping around other events.
         
         var height = Double(event.duration) / 60 * hourHeight
-        if (height < minimumEventHeight) {
-            height = minimumEventHeight
+        if (height < DailyPlanner.minimumEventHeight) {
+            height = DailyPlanner.minimumEventHeight
         }
         
         let calendar = Calendar.current
@@ -288,9 +507,10 @@ struct DailyPlanner: View {
                         
                         Text(event.startDate.formatted(.dateTime.hour().minute()))
                         Text(event.name).bold()
+                            .lineLimit(0)
                         Spacer()
                     }
-                    .offset(y: (minimumEventHeight-height)/2)
+                    .offset(y: (DailyPlanner.minimumEventHeight-height)/2)
                     .padding(.horizontal, 8)
                         
                 
