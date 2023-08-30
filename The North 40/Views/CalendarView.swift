@@ -151,7 +151,7 @@ struct AllDayList: View {
         //all events is used for wrapping around other events.
         
 
-        return NavigationLink(destination: EditEventView(editEvent: event, isSheet: false), label: {
+        return NavigationLink(destination: EditEventView(), label: {
                 
                 ZStack {
                     
@@ -350,7 +350,7 @@ struct DailyPlanner: View {
                     }
                     
                 }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
-                    EditEventView(editEvent: nil, isSheet: true, chosenStartDate: clickedOnTime)
+                    EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
                 }
                 
                 
@@ -526,7 +526,7 @@ struct DailyPlanner: View {
         event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
         
         return GeometryReader {geometry in
-            NavigationLink(destination: EditEventView(editEvent: event, isSheet: false), label: {
+            NavigationLink(destination: EditEventView(editEvent: event), label: {
                 
                 ZStack {
                     

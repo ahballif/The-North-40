@@ -39,6 +39,8 @@ extension N40Event {
     public static let INFORMATION_TYPE = 2
     public static let TODO_TYPE = 3
     
+    public static let EVENT_TYPE_OPTIONS = [["Reportable", "rectangle.and.pencil.and.ellipsis"], ["Non-Reportable","calendar.day.timeline.leading"], ["Radar Event", "dot.radiowaves.left.and.right"], ["To-Do", "checklist"]]
+    
     public static let contactOptions = [["In Person", "person.2.fill"],["Phone Call","phone.fill"],["Text Message","message"],["Social Media", "ellipsis.bubble"],["Video Call", "video"],["Email", "envelope"],["Computer", "desktopcomputer"],["TV", "tv"],["Other", "bubble.middle.top"]]
     
     //events status options

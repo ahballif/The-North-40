@@ -11,13 +11,10 @@ import CoreData
 struct EditEventView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var updater: RefreshView
     
     
     @State public var editEvent: N40Event?
-    public var isSheet = true
     
-    private let eventTypeOptions = [["Reportable", "rectangle.and.pencil.and.ellipsis"], ["Non-Reportable","calendar.day.timeline.leading"], ["Radar Event", "dot.radiowaves.left.and.right"], ["To-Do", "checklist"]]
     
     private let repeatOptions = ["No Repeat", "Every Day", "Every Week", "Every Month"]
     
@@ -67,111 +64,25 @@ struct EditEventView: View {
     var body: some View {
         VStack {
             
-            if (isSheet) {
-                if (editEvent == nil) {
-                    HStack{
-                        Button("Cancel") {dismiss()}
-                        Spacer()
-                        Text(("Create New " + (eventType != ["To-Do", "checklist"] ? "Event" : "To-Do")))
-                        Spacer()
-                        Button("Done") {
-                            saveEvent()
-                            dismiss()
-                        }
-                    }
-                } else {
-                    
-                    HStack {
-                        Button("Cancel") {dismiss()}
-                        Spacer()
-                        
-                        
-                        Button {
-                            isShowingSaveAsCopyConfirm = true
-                        } label: {
-                            Image(systemName: "doc.on.doc")
-                        }.confirmationDialog("Save Changes As New Copy?", isPresented: $isShowingSaveAsCopyConfirm) {
-                            Button("Save Changes As New Copy") {
-                                saveEvent(saveAsCopy: true)
-                                dismiss()
-                            }
-                        }
-                        
-                        if (editEvent!.recurringTag != "") {
-                            
-                            Button {
-                                isPresentingRecurringDeleteConfirm = true
-                            } label: {
-                                Image(systemName: "trash")
-                            }.confirmationDialog("Delete this event?",
-                                                 isPresented: $isPresentingRecurringDeleteConfirm) {
-                                Button("Just this event", role: .destructive) {
-                                    
-                                    deleteEvent()
-                                    dismiss()
-                                    
-                                }
-                                Button("Delete all upcoming events", role: .destructive) {
-                                    
-                                    deleteAllRecurringEvents()
-                                    dismiss()
-                                }
-                            } message: {
-                                Text("Delete this event and all following?")
-                            }
-                            
-                            Button("Update") {
-                                isShowingEditAllConfirm = true
-                            }.confirmationDialog("Save To All Occurances?", isPresented: $isShowingEditAllConfirm) {
-                                Button("Just this one") {
-                                    saveEvent()
-                                    dismiss()
-                                }
-                                Button("Change all upcoming") {
-                                    saveAllRecurringEvents()
-                                    dismiss()
-                                }
-                            } message: {
-                                Text("Affect all upcoming occurances?")
-                            }
-                            
-                            
-                        } else {
-                            Button {
-                                isPresentingConfirm = true
-                            } label: {
-                                Image(systemName: "trash")
-                            }.confirmationDialog("Delete this event?",
-                                                 isPresented: $isPresentingConfirm) {
-                                Button("Delete", role: .destructive) {
-                                    deleteEvent()
-                                    dismiss()
-                                    
-                                }
-                            } message: {
-                                Text("Delete This Event?")
-                            }
-                            
-                            Button("Update") {
-                                saveEvent()
-                                
-                                dismiss()
-                                updater.updater.toggle()
-                                
-                                
-                            }
-                            
-                            
-                        }
-                        
+            if (editEvent == nil) {
+                
+                HStack{
+                    Button("Cancel") {dismiss()}
+                    Spacer()
+                    Text(("Create New " + (eventType != ["To-Do", "checklist"] ? "Event" : "To-Do")))
+                    Spacer()
+                    Button("Done") {
+                        saveEvent()
+                        dismiss()
                     }
                 }
+            
             }
             
             ScrollView {
                 
                 HStack {
-                    if (eventType == eventTypeOptions[3]) {
+                    if (eventType == N40Event.EVENT_TYPE_OPTIONS[3]) {
                         //Button to check off the to-do
                         Button(action: {
                             if status == 0 {
@@ -188,7 +99,7 @@ struct EditEventView: View {
                     
                 }
                 
-                if (eventType == eventTypeOptions[0]) && chosenStartDate < Date() {
+                if (eventType == N40Event.EVENT_TYPE_OPTIONS[0]) && chosenStartDate < Date() {
                     //If it's a reportable event and it's in the past:
                     
                     VStack {
@@ -344,7 +255,7 @@ struct EditEventView: View {
                     
                     HStack {
                         Picker("Event Type: ", selection: $eventType) {
-                            ForEach(eventTypeOptions, id: \.self) {
+                            ForEach(N40Event.EVENT_TYPE_OPTIONS, id: \.self) {
                                 Label($0[0], systemImage: $0[1])
                             }
                         }
@@ -471,7 +382,7 @@ struct EditEventView: View {
                 populateFields()
             }
             .toolbar {
-                if (!isSheet) {
+                if (editEvent != nil) {
                     
                     ToolbarItemGroup {
                         
@@ -483,6 +394,7 @@ struct EditEventView: View {
                         }.confirmationDialog("Save Changes As New Copy?", isPresented: $isShowingSaveAsCopyConfirm) {
                             Button("Save Changes As New Copy") {
                                 saveEvent(saveAsCopy: true)
+                                
                                 dismiss()
                             }
                         }
@@ -498,12 +410,14 @@ struct EditEventView: View {
                                 Button("Just this event", role: .destructive) {
                                     
                                     deleteEvent()
+                                    
                                     dismiss()
                                     
                                 }
                                 Button("Delete all upcoming events", role: .destructive) {
                                     
                                     deleteAllRecurringEvents()
+                                    
                                     dismiss()
                                 }
                             } message: {
@@ -515,10 +429,12 @@ struct EditEventView: View {
                             }.confirmationDialog("Save To All Occurances?", isPresented: $isShowingEditAllConfirm) {
                                 Button("Just this one") {
                                     saveEvent()
+                                    
                                     dismiss()
                                 }
                                 Button("Change all upcoming") {
                                     saveAllRecurringEvents()
+                                    
                                     dismiss()
                                 }
                             } message: {
@@ -535,6 +451,7 @@ struct EditEventView: View {
                                                  isPresented: $isPresentingConfirm) {
                                 Button("Delete", role: .destructive) {
                                     deleteEvent()
+                                    
                                     dismiss()
                                     
                                 }
@@ -604,7 +521,7 @@ struct EditEventView: View {
             
             duration = Int(editEvent?.duration ?? 0)
             contactMethod = N40Event.contactOptions[Int(editEvent?.contactMethod ?? 0)]
-            eventType = eventTypeOptions[Int(editEvent?.eventType ?? 1)]
+            eventType = N40Event.EVENT_TYPE_OPTIONS[Int(editEvent?.eventType ?? 1)]
             
             status = Int(editEvent?.status ?? 0)
             summary = editEvent?.summary ?? ""
@@ -668,7 +585,7 @@ struct EditEventView: View {
             
             //finds the index representing the correct contact method and event type
             newEvent.contactMethod = Int16(N40Event.contactOptions.firstIndex(of: contactMethod) ?? 0)
-            newEvent.eventType = Int16(self.eventTypeOptions.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
+            newEvent.eventType = Int16(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
     
             
             newEvent.color = selectedColor.toHex() ?? "#FF7051"
@@ -837,7 +754,7 @@ struct EditEventView: View {
                         
                         //finds the index representing the correct contact method and event type
                         recurringEvent.contactMethod = Int16(N40Event.contactOptions.firstIndex(of: contactMethod) ?? 0)
-                        recurringEvent.eventType = Int16(self.eventTypeOptions.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
+                        recurringEvent.eventType = Int16(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
                         
                         
                         recurringEvent.color = selectedColor.toHex() ?? "#FF7051"

@@ -24,6 +24,9 @@ extension N40Goal {
     @NSManaged public var hasDeadline: Bool
     @NSManaged public var isCompleted: Bool
     
+    @NSManaged public var subGoals: NSSet?
+    @NSManaged public var endGoal: N40Goal?
+    
     @NSManaged public var groups: NSSet?
     @NSManaged public var timelineEvents: NSSet?
     @NSManaged public var attachedNotes: NSSet?

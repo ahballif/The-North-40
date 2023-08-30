@@ -86,7 +86,7 @@ struct PersonDetailView: View {
                     PersonInfoView(selectedPerson: selectedPerson)
                 } else if (selectedView==1) {
                     ZStack {
-                        TimelineView(events: selectedPerson.getTimelineEvents)
+                        TimelineView(person: selectedPerson)
                         
                         
                         //The Add Button
@@ -104,7 +104,7 @@ struct PersonDetailView: View {
                                         .padding(30)
                                 }
                                 .sheet(isPresented: $showingEditEventSheet) {
-                                    EditEventView(isSheet: true, attachingPerson: selectedPerson)
+                                    EditEventView( attachingPerson: selectedPerson)
                                 }
                             }
                         }

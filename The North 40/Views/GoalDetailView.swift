@@ -9,10 +9,17 @@ import SwiftUI
 
 struct GoalDetailView: View {
     
+    public var updater = RefreshView()
+    
     @State var selectedGoal: N40Goal
     @State private var selectedView = 0 // for diy tab view
     
+    @State private var showingWhatToCreateConfirm = false
+    @State private var showingEditGoalSheet = false
+    
     @State private var showingEditEventSheet = false
+    @State private var editEventEventType = N40Event.NON_REPORTABLE_TYPE
+    
     
     var body: some View {
         NavigationView {
@@ -84,7 +91,7 @@ struct GoalDetailView: View {
                     GoalInfoView(selectedGoal: selectedGoal)
                 } else if (selectedView==1) {
                     ZStack {
-                        TimelineView(events: selectedGoal.getTimelineEvents)
+                        TimelineView(goal: selectedGoal).environmentObject(updater)
                         
                         //The Add Button
                         VStack {
@@ -92,17 +99,54 @@ struct GoalDetailView: View {
                             HStack {
                                 Spacer()
                                 
-                                Button(action: {showingEditEventSheet.toggle()}) {
+                                Button(action: {showingWhatToCreateConfirm.toggle()}) {
                                     Image(systemName: "plus.circle.fill")
                                         .resizable()
                                         .scaledToFit()
                                         .clipShape(Circle())
                                         .frame(minWidth: 50, maxWidth: 50)
                                         .padding(30)
+                                }.confirmationDialog("chooseWhatToCreate", isPresented: $showingWhatToCreateConfirm) {
+                                    Button {
+                                        //New TODO Item
+                                        editEventEventType = N40Event.TODO_TYPE
+                                        showingEditEventSheet.toggle()
+                                    } label: {
+                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE]
+                                        Label(type[0], systemImage: type[1])
+                                    }
+                                    Button {
+                                        //("New Reportable Event")
+                                        editEventEventType = N40Event.REPORTABLE_TYPE
+                                        showingEditEventSheet.toggle()
+                                    } label: {
+                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]
+                                        Label(type[0], systemImage: type[1])
+                                    }
+                                    Button {
+                                        //("New Unreportable Event")
+                                        editEventEventType = N40Event.NON_REPORTABLE_TYPE
+                                        showingEditEventSheet.toggle()
+                                    } label: {
+                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.NON_REPORTABLE_TYPE]
+                                        Label(type[0], systemImage: type[1])
+                                    }
+                                    Button {
+                                        //("New Sub Goal")
+                                        
+                                    } label: {
+                                        Label("New Sub-Goal", systemImage: "flag.checkered.2.crossed")
+                                    }
+                                } message: {
+                                    Text("What would you like to add?")
                                 }
-                                .sheet(isPresented: $showingEditEventSheet) {
-                                    EditEventView(isSheet: true, attachingGoal: selectedGoal)
+                                .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
+                                    EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingGoal: selectedGoal)
                                 }
+                                .sheet(isPresented: $showingEditGoalSheet, onDismiss: {updater.updater.toggle()}) {
+                                    EditGoalView(editGoal: nil)
+                                }
+                                
                             }
                         }
                     }
@@ -174,6 +218,8 @@ struct GoalInfoView: View {
                     }.buttonStyle(.plain)
                 }
             }.scrollContentBackground(.hidden)
+        }.onAppear {
+            isCompleted = selectedGoal.isCompleted
         }
     }
     

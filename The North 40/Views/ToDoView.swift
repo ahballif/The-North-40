@@ -38,7 +38,7 @@ struct ToDoView: View {
                                 .padding(30)
                         }
                         .sheet(isPresented: $showingEditEventSheet) {
-                            EditEventView(isSheet: true, isScheduled: false, eventType: ["To-Do", "checklist"])
+                            EditEventView(isScheduled: false, eventType: ["To-Do", "checklist"])
                             //Here I passed in some default values that I know you would want probably want when making a to-do item
                             
                         }
@@ -109,7 +109,7 @@ struct SortedToDoList: View {
                                                 .disabled((todo.status != 0))
                                         }.buttonStyle(PlainButtonStyle())
                                         
-                                        NavigationLink(destination: EditEventView(editEvent: todo, isSheet: false), label: {
+                                        NavigationLink(destination: EditEventView(editEvent: todo), label: {
                                             HStack {
                                                 Text(todo.name)
                                                 
@@ -140,7 +140,7 @@ struct SortedToDoList: View {
                                                 .disabled((todo.status != 0))
                                         }.buttonStyle(PlainButtonStyle())
                                         
-                                        NavigationLink(destination: EditEventView(editEvent: todo, isSheet: false), label: {
+                                        NavigationLink(destination: EditEventView(editEvent: todo), label: {
                                             HStack {
                                                 Text(todo.name)
                                                 
@@ -176,7 +176,7 @@ struct SortedToDoList: View {
                                         .disabled((todo.status != 0))
                                 }.buttonStyle(PlainButtonStyle())
                                 
-                                NavigationLink(destination: EditEventView(editEvent: todo, isSheet: false), label: {
+                                NavigationLink(destination: EditEventView(editEvent: todo), label: {
                                     HStack {
                                         Text(todo.name)
                                         
@@ -207,7 +207,7 @@ struct SortedToDoList: View {
                                         .disabled((todo.status != 0))
                                 }.buttonStyle(PlainButtonStyle())
                                 
-                                NavigationLink(destination: EditEventView(editEvent: todo, isSheet: false), label: {
+                                NavigationLink(destination: EditEventView(editEvent: todo), label: {
                                     HStack {
                                         Text(todo.name)
                                         
@@ -238,7 +238,7 @@ struct SortedToDoList: View {
                                         .disabled((todo.status != 0))
                                 }.buttonStyle(PlainButtonStyle())
                                 
-                                NavigationLink(destination: EditEventView(editEvent: todo, isSheet: false), label: {
+                                NavigationLink(destination: EditEventView(editEvent: todo), label: {
                                     HStack {
                                         Text(todo.name)
                                         

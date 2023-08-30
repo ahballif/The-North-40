@@ -8,14 +8,17 @@
 import SwiftUI
 
 struct TimelineView: View {
+    @EnvironmentObject var updater: RefreshView
     
-    var updater = RefreshView()
-    
-    @State private var events: [N40Event]
+    @FetchRequest var events: FetchedResults<N40Event>
     
     
-    init (events: [N40Event]) {
-        self.events = events
+    init (goal: N40Goal) {
+        _events = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: false)], predicate: NSPredicate(format: "(ANY attachedGoals == %@)", goal), animation: .default)
+    }
+    
+    init (person: N40Person) {
+        _events = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: false)], predicate: NSPredicate(format: "(ANY attachedPeople == %@)", person), animation: .default)
     }
     
     var body: some View {
@@ -40,56 +43,9 @@ struct TimelineView: View {
             }
         }.onReceive(self.updater.objectWillChange, perform: { _ in
             withAnimation {
-                events.reverse()
-                events.reverse()
+                print("timeline needs to update")
             }
         })
-    }
-}
-
-struct GoalTimelineView: View {
-    
-    
-    @FetchRequest var events: FetchedResults<N40Event>
-    
-    
-    init (goal: N40Goal) {
-        
-        _events = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSPredicate(format: ("ANY attachedGoals == %@"), goal), animation: .default)
-
-    }
-    
-    init (person: N40Person) {
-        
-        _events = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSPredicate(format: ("ANY attachedPeople == %@"), person), animation: .default)
-
-    }
-    
-    var body: some View {
-        ScrollView {
-            VStack {
-                
-                ForEach(events.filter { ($0.startDate > Date() && $0.isScheduled) || (!$0.isScheduled && $0.status == N40Event.UNREPORTED) }) { eachEvent in
-                    eventDisplayBoxView(myEvent: eachEvent)
-                }
-                
-                VStack {
-                    Rectangle()
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 5)
-                    
-                }
-                
-                ForEach(events.filter { ($0.startDate < Date() && $0.isScheduled) || (!$0.isScheduled && $0.status != N40Event.UNREPORTED) }) { eachEvent in
-                    eventDisplayBoxView(myEvent: eachEvent)
-                }
-            }
-        }.onReceive(events.publisher) { _ in
-            print("did change")
-            
-            
-        }
     }
 }
 
@@ -106,9 +62,7 @@ private struct eventDisplayBoxView: View {
     @State private var showingEditViewSheet = false
     
     var body: some View {
-        Button {
-            showingEditViewSheet.toggle()
-        } label: {
+        NavigationLink (destination: EditEventView(editEvent: myEvent).onDisappear(perform: {updater.updater.toggle()} )){
             ZStack {
                 HStack {
                     
@@ -191,7 +145,7 @@ private struct eventDisplayBoxView: View {
         .padding(.horizontal)
         .padding(.vertical, 1)
         .sheet(isPresented: $showingEditViewSheet) {
-            EditEventView(editEvent: myEvent, isSheet: true).environmentObject(updater)
+            EditEventView(editEvent: myEvent).environmentObject(updater)
         }
     //.offset(x: 30, y: offset + hourHeight/2)
         
@@ -232,7 +186,7 @@ private struct eventDisplayBoxView: View {
             }
         } else {
             toDo.status = 0
-            
+            updater.updater.toggle()
             do {
                 try viewContext.save()
             } catch {
