@@ -104,7 +104,7 @@ struct PersonDetailView: View {
                                         .padding(30)
                                 }
                                 .sheet(isPresented: $showingEditEventSheet) {
-                                    EditEventView(attachingPerson: selectedPerson)
+                                    EditEventView(isSheet: true, attachingPerson: selectedPerson)
                                 }
                             }
                         }
@@ -148,6 +148,13 @@ struct PersonInfoView: View {
                 }
                 if (selectedPerson.socialMedia2 != "") {
                     socialMediaBar(contactInfoValue: selectedPerson.socialMedia2)
+                }
+                
+                if (selectedPerson.hasBirthday) {
+                    HStack {
+                        Text("\(selectedPerson.firstName)'s Birthday is \(selectedPerson.birthday.getMonthAndDayString())")
+                        Spacer()
+                    }.padding()
                 }
             }
             
@@ -242,3 +249,17 @@ private struct addressBar: View {
 
 
 
+fileprivate extension Date {
+    func getMonthAndDayString () -> String {
+        
+        // Create Date Formatter
+        let dateFormatter = DateFormatter()
+
+        // Set Date Format
+        dateFormatter.dateFormat = "MMM d"
+
+        // Convert Date to String
+        return dateFormatter.string(from: self)
+
+    }
+}

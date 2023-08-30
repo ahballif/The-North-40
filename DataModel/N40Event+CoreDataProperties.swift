@@ -41,6 +41,13 @@ extension N40Event {
     
     public static let contactOptions = [["In Person", "person.2.fill"],["Phone Call","phone.fill"],["Text Message","message"],["Social Media", "ellipsis.bubble"],["Video Call", "video"],["Email", "envelope"],["Computer", "desktopcomputer"],["TV", "tv"],["Other", "bubble.middle.top"]]
     
+    //events status options
+    public static let UNREPORTED = 0
+    public static let SKIPPED = 1
+    public static let ATTEMPTED = 2
+    public static let HAPPENED = 3
+    
+    
     
     public var getAttachedPeople: [N40Person] {
         //returns an array of the people attached
@@ -57,6 +64,19 @@ extension N40Event {
             $0.name < $1.name //sorts alphabetically by name
         }
      }
+    
+    public func isAttachedToGoal (goal: N40Goal) -> Bool {
+        var answer = false
+        
+        if self.getAttachedGoals.count > 0 {
+            for eachGoal in self.getAttachedGoals {
+                if eachGoal == goal {
+                    answer = true
+                }
+            }
+        }
+        return answer
+    }
 
 }
 

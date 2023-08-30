@@ -22,10 +22,12 @@ extension N40Goal {
     @NSManaged public var information: String
     @NSManaged public var address: String
     @NSManaged public var hasDeadline: Bool
+    @NSManaged public var isCompleted: Bool
     
     @NSManaged public var groups: NSSet?
     @NSManaged public var timelineEvents: NSSet?
     @NSManaged public var attachedNotes: NSSet?
+    @NSManaged public var attachedPeople: NSSet?
     
     
     public var getGroups: [N40Group] {
@@ -39,6 +41,27 @@ extension N40Goal {
         let set = timelineEvents as? Set<N40Event> ?? []
         return set.sorted {
             $0.startDate > $1.startDate //returns oldest last
+        }
+    }
+    
+    public var getAttachedPeople: [N40Person] {
+        //returns an array of the people attached
+        let set = attachedPeople as? Set<N40Person> ?? []
+        return set.sorted {
+            $0.lastName < $1.lastName //sorts alphabetically by last name
+        }
+    }
+    
+    public var getUnfinishedTodos: [N40Event] {
+        var unfinishedTodos: [N40Event] = []
+        
+        for event in self.getTimelineEvents {
+            if event.eventType == N40Event.TODO_TYPE && event.status != N40Event.HAPPENED {
+                unfinishedTodos.append(event)
+            }
+        }
+        return unfinishedTodos.sorted {
+            $0.startDate < $1.startDate
         }
     }
 
@@ -75,6 +98,22 @@ extension N40Goal {
 
     @objc(removeTimelineEvents:)
     @NSManaged public func removeFromTimelineEvents(_ values: NSSet)
+
+}
+
+extension N40Goal {
+
+    @objc(addAttachedPeopleObject:)
+    @NSManaged public func addToAttachedPeople(_ value: N40Person)
+
+    @objc(removeAttachedPeopleObject:)
+    @NSManaged public func removeFromAttachedPeople(_ value: N40Person)
+
+    @objc(addAttachedPeople:)
+    @NSManaged public func addToAttachedPeople(_ values: NSSet)
+
+    @objc(removeAttachedPeople:)
+    @NSManaged public func removeFromAttachedPeople(_ values: NSSet)
 
 }
 

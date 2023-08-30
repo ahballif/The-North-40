@@ -101,7 +101,7 @@ struct GoalDetailView: View {
                                         .padding(30)
                                 }
                                 .sheet(isPresented: $showingEditEventSheet) {
-                                    EditEventView(attachingGoal: selectedGoal)
+                                    EditEventView(isSheet: true, attachingGoal: selectedGoal)
                                 }
                             }
                         }
@@ -114,21 +114,66 @@ struct GoalDetailView: View {
             
         }
     }
+    
+    
+    
+    
 }
 
 
 struct GoalInfoView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     
     @ObservedObject var selectedGoal: N40Goal
     
+    @State private var isCompleted: Bool = false
+    
     
     var body: some View {
-        ScrollView {
-            Text("Description")
-            Text(selectedGoal.information)
+        VStack {
+            VStack {
+                HStack {
+                    Text("Description")
+                        .bold()
+                    Spacer()
+                }
+                HStack {
+                    Text(selectedGoal.information)
+                    Spacer()
+                }
+            }.padding()
+            
             if (selectedGoal.hasDeadline) {
-                Text("Deadline: \(dateToString(input: selectedGoal.deadline))")
+                Text("Deadline: \(selectedGoal.deadline.dateOnlyToString())")
             }
+            
+            Button {
+                completeGoal()
+            } label: {
+                VStack {
+                    if !isCompleted {
+                        Image(systemName: "hand.wave")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            
+                        Text("(High Five to Complete)")
+                    } else {
+                        Image(systemName: "hands.sparkles")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            
+                        Text("Completed! on \(selectedGoal.dateCompleted.dateOnlyToString())")
+                    }
+                }
+            }
+            
+            List {
+                ForEach(selectedGoal.getAttachedPeople) {person in
+                    NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                        Text("\(person.firstName) \(person.lastName)")
+                    }.buttonStyle(.plain)
+                }
+            }.scrollContentBackground(.hidden)
         }
     }
     
@@ -141,6 +186,25 @@ struct GoalInfoView: View {
         dateFormatter.timeStyle = .short
 
         return dateFormatter.string(from: input)
+    }
+    
+    private func completeGoal () {
+        
+        isCompleted.toggle()
+        
+        selectedGoal.isCompleted = isCompleted
+        if isCompleted {
+            selectedGoal.dateCompleted = Date()
+        }
+        
+        do {
+            try viewContext.save()
+        }
+        catch {
+            // Handle Error
+            print("Error info: \(error)")
+        }
+        
     }
     
     

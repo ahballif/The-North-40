@@ -76,3 +76,9 @@ struct ContentView_Previews: PreviewProvider {
         return ContentView().environment(\.managedObjectContext, viewContext)
     }
 }
+
+
+
+class RefreshView: ObservableObject {
+    @Published var updater: Bool = false
+}

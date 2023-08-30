@@ -27,9 +27,15 @@ extension N40Person {
     @NSManaged public var socialMedia1: String
     @NSManaged public var socialMedia2: String
     
+    @NSManaged public var hasBirthday: Bool
+    @NSManaged public var birthday: Date
+    @NSManaged public var birthdayMonth: Int16
+    @NSManaged public var birthdayDay: Int16
+    
     @NSManaged public var groups: NSSet?
     @NSManaged public var timelineEvents: NSSet?
     @NSManaged public var attachedNotes: NSSet?
+    @NSManaged public var attachedGoals: NSSet?
 
     
     public var getGroups: [N40Group] {

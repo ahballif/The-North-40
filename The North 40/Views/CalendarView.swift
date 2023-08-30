@@ -55,6 +55,7 @@ struct CalendarView: View {
         }
         .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
                     .onEnded { value in
+                        
                         let horizontalAmount = value.translation.width
                         let verticalAmount = value.translation.height
                         
@@ -66,7 +67,8 @@ struct CalendarView: View {
                                 //right swipe
                                 selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
                             }
-                         }
+                        }
+                        
                     })
     }
 }
@@ -84,6 +86,7 @@ struct AllDayList: View {
     
     @FetchRequest var fetchedAllDays: FetchedResults<N40Event>
     @FetchRequest var fetchedGoalsDueToday: FetchedResults<N40Goal>
+    @FetchRequest var fetchedBirthdayBoys: FetchedResults<N40Person>
     
     @State private var showingEditEventSheet = false
     
@@ -110,6 +113,9 @@ struct AllDayList: View {
                 ForEach(fetchedGoalsDueToday) { eachGoal in
                     dueGoal(eachGoal)
                 }
+                ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
+                    birthdayBoyCell(eachBirthdayBoy)
+                }
             }
         }
         
@@ -131,6 +137,12 @@ struct AllDayList: View {
         
         _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate]))
         
+        let birthdayMonthPredicate = NSPredicate(format: "birthdayMonth == %i", Int16(filter.get(.month)))
+        let birthdayDayPredicate = NSPredicate(format: "birthdayDay == %i", Int16(filter.get(.day)))
+        let hasBirthdayPredicate = NSPredicate(format: "hasBirthday == YES")
+        
+        _fetchedBirthdayBoys = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [birthdayDayPredicate, birthdayMonthPredicate, hasBirthdayPredicate]))
+        
         
         self.filteredDay = filter
     }
@@ -139,7 +151,7 @@ struct AllDayList: View {
         //all events is used for wrapping around other events.
         
 
-        return NavigationLink(destination: EditEventView(editEvent: event), label: {
+        return NavigationLink(destination: EditEventView(editEvent: event, isSheet: false), label: {
                 
                 ZStack {
                     
@@ -203,7 +215,7 @@ struct AllDayList: View {
                     HStack {
         
 
-                        Text("Goal: \(goal.name) - \(goal.deadline.formatted(.dateTime))").bold()
+                        Text("Goal: \(goal.name) - \(goal.deadline.dateOnlyToString())").bold()
                         Spacer()
                     }
                     .padding(.horizontal, 8)
@@ -217,6 +229,37 @@ struct AllDayList: View {
             
             
         
+    }
+    
+    func birthdayBoyCell(_ person: N40Person) -> some View {
+        
+
+        return NavigationLink(destination: PersonDetailView(selectedPerson: person), label: {
+                
+                ZStack {
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray)
+                        .opacity(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .foregroundColor(((colorScheme == .dark) ? .white : .black))
+                    
+                    HStack {
+        
+
+                        Text("\(person.firstName)'s Birthday! 🎉").bold()
+                        Spacer()
+                    }
+                    .padding(.horizontal, 8)
+                        
+                }
+                
+            })
+            .buttonStyle(.plain)
+            .font(.caption)
+            .frame(height: allEventHeight)
+            
+            
     }
     
     private func completeToDoEvent (toDo: N40Event) {
@@ -307,7 +350,7 @@ struct DailyPlanner: View {
                     }
                     
                 }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
-                    EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                    EditEventView(editEvent: nil, isSheet: true, chosenStartDate: clickedOnTime)
                 }
                 
                 
@@ -483,7 +526,7 @@ struct DailyPlanner: View {
         event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
         
         return GeometryReader {geometry in
-            NavigationLink(destination: EditEventView(editEvent: event), label: {
+            NavigationLink(destination: EditEventView(editEvent: event, isSheet: false), label: {
                 
                 ZStack {
                     
@@ -514,16 +557,38 @@ struct DailyPlanner: View {
                     .padding(.horizontal, 8)
                         
                 
-                    
-                    
-                    
-                    if (event.recurringTag != "") {
-                        HStack {
-                            Spacer()
+                    HStack {
+                        Spacer()
+                        if (event.eventType == N40Event.REPORTABLE_TYPE && event.startDate < Date()) {
+                            if event.status == N40Event.UNREPORTED {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.orange)
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.SKIPPED {
+                                Image(systemName: "slash.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.red)
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.ATTEMPTED {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.red)
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.HAPPENED {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.green)
+                                    .frame(width: 20, height:20)
+                            }
+                        }
+                        if (event.recurringTag != "") {
                             Image(systemName: "repeat")
-                                
-                        }.padding(.horizontal, 8)
-                    }
+                        }
+                            
+                    }.padding(.horizontal, 8)
+                    
+                    
                 }
                 
             })
@@ -634,6 +699,24 @@ extension Date {
         // or use capitalized(with: locale) if you want
     }
     
+    func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
+        return calendar.dateComponents(Set(components), from: self)
+    }
+
+    func get(_ component: Calendar.Component, calendar: Calendar = Calendar.current) -> Int {
+        return calendar.component(component, from: self)
+    }
+    
+    func dateOnlyToString () -> String {
+        // Create Date Formatter
+        let dateFormatter = DateFormatter()
+
+        // Set Date Format
+        dateFormatter.dateFormat = "MMM d, y"
+
+        // Convert Date to String
+        return dateFormatter.string(from: self)
+    }
     
     // End of day = Start of tomorrow minus 1 second
     // End of week = Start of next week minus 1 second

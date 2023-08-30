@@ -26,6 +26,9 @@ struct EditPersonView: View {
     @State private var socialMedia1: String = ""
     @State private var socialMedia2: String = ""
     
+    @State private var birthday: Date = Date()
+    @State private var hasBirthday: Bool = false
+    
     @State private var isPresentingDeleteConfirm = false
     
     
@@ -81,6 +84,26 @@ struct EditPersonView: View {
                     
                     
                 }.padding()
+                
+                HStack {
+                    Text("Birthday: ")
+                    Spacer()
+                    if (!hasBirthday) {
+                        Button {
+                            hasBirthday = true
+                        } label: {
+                            Label("Add Birthday", systemImage: "plus")
+                        }
+                    } else {
+                        DatePicker("", selection: $birthday, displayedComponents: .date)
+                        Button(role: .destructive){
+                            hasBirthday = false
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                }.padding()
+                
                 
                 
                 if (editPerson != nil) {
@@ -141,6 +164,11 @@ struct EditPersonView: View {
             
             newPerson.address = address
             
+            newPerson.hasBirthday = hasBirthday
+            newPerson.birthday = birthday
+            newPerson.birthdayDay = Int16(birthday.get(.day))
+            newPerson.birthdayMonth = Int16(birthday.get(.month))
+            
             newPerson.phoneNumber1 = phoneNumber1
             newPerson.phoneNumber2 = phoneNumber2
             newPerson.email1 = email1
@@ -169,6 +197,9 @@ struct EditPersonView: View {
         title = editPerson?.title ?? ""
         
         address = editPerson?.address ?? ""
+        
+        hasBirthday = editPerson?.hasBirthday ?? false
+        birthday = editPerson?.birthday ?? Date()
         
         phoneNumber1 = editPerson?.phoneNumber1 ?? ""
         phoneNumber2 = editPerson?.phoneNumber2 ?? ""
