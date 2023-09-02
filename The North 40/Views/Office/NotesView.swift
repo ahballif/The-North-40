@@ -15,7 +15,9 @@ struct NotesView: View {
     private var fetchedNotes: FetchedResults<N40Note>
     
     @State private var showingCreateSheet = false
-    @State private var showingEditSheet = false
+    
+    @State private var editNoteItem: N40Note? = nil
+    
     
     var body: some View {
         VStack {
@@ -25,11 +27,11 @@ struct NotesView: View {
             List {
                 ForEach(fetchedNotes) {note in
                     Button(note.title) {
-                        showingEditSheet.toggle()
+                        editNoteItem = note
                     }.foregroundColor(((colorScheme == .dark) ? .white : .black))
-                        .sheet(isPresented: $showingEditSheet) {
-                        EditNoteView(editNote: note)
-                    }
+                        
+                }.sheet(item: $editNoteItem) {item in
+                    EditNoteView(editNote: item)
                 }
                 
                 Button {

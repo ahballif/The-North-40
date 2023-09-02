@@ -23,6 +23,7 @@ extension N40Goal {
     @NSManaged public var address: String
     @NSManaged public var hasDeadline: Bool
     @NSManaged public var isCompleted: Bool
+    @NSManaged public var color: String
     
     @NSManaged public var subGoals: NSSet?
     @NSManaged public var endGoal: N40Goal?
@@ -52,6 +53,14 @@ extension N40Goal {
         let set = attachedPeople as? Set<N40Person> ?? []
         return set.sorted {
             $0.lastName < $1.lastName //sorts alphabetically by last name
+        }
+    }
+    
+    public var getSubGoals: [N40Goal] {
+        //returns an array of the goals attached as children
+        let set = subGoals as? Set<N40Goal> ?? []
+        return set.sorted {
+            $0.deadline < $1.deadline
         }
     }
     

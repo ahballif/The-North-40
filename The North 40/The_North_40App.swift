@@ -13,7 +13,8 @@ struct The_North_40App: App {
 
     init() {
         UserDefaults.standard.register(defaults: [
-            "hourHeight": 100.0
+            "hourHeight": 100.0,
+            "randomEventColor": true
         ])
     }
     

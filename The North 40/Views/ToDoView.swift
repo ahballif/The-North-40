@@ -94,9 +94,40 @@ struct SortedToDoList: View {
             
             List {
                 if (sortByGoals) {
+                    //First the ones that aren't attached to goals
+                    Section(header: Text("Unassigned To-Do Items")) {
+                        ForEach(unassignedToDos) { todo in
+                            HStack {
+                                
+                                //Button to check off the to-do
+                                Button(action: { completeToDoEvent(toDo: todo) }) {
+                                    Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
+                                        .disabled((todo.status != 0))
+                                }.buttonStyle(PlainButtonStyle())
+                                
+                                NavigationLink(destination: EditEventView(editEvent: todo), label: {
+                                    HStack {
+                                        Text(todo.name)
+                                        
+                                        Spacer()
+                                        if (todo.isScheduled) {
+                                            if (todo.startDate < Date()) {
+                                                Text(todo.startDate, formatter: itemFormatter)
+                                                    .foregroundColor(.red)
+                                            } else {
+                                                Text(todo.startDate, formatter: itemFormatter)
+                                                //Don't change color if it's not overdue
+                                            }
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    }
+                    // Now a section for each goal that has events. 
                     ForEach(allGoals) { goal in
                         
-                        if goal.getTimelineEvents.count > 0 {
+                        if goal.getTimelineEvents.filter({ $0.eventType == N40Event.TODO_TYPE}).count > 0 {
                             Section(header: Text("Goal: \(goal.name)")) {
                                 
                                 ForEach(unScheduledToDos.filter { $0.isAttachedToGoal(goal: goal) }, id: \.self) { todo in
@@ -165,36 +196,7 @@ struct SortedToDoList: View {
                         }
                     }
                     
-                    //Now the ones that aren't attached to goals
-                    Section(header: Text("Unassigned To-Do Items")) {
-                        ForEach(unassignedToDos) { todo in
-                            HStack {
-                                
-                                //Button to check off the to-do
-                                Button(action: { completeToDoEvent(toDo: todo) }) {
-                                    Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
-                                        .disabled((todo.status != 0))
-                                }.buttonStyle(PlainButtonStyle())
-                                
-                                NavigationLink(destination: EditEventView(editEvent: todo), label: {
-                                    HStack {
-                                        Text(todo.name)
-                                        
-                                        Spacer()
-                                        if (todo.isScheduled) {
-                                            if (todo.startDate < Date()) {
-                                                Text(todo.startDate, formatter: itemFormatter)
-                                                    .foregroundColor(.red)
-                                            } else {
-                                                Text(todo.startDate, formatter: itemFormatter)
-                                                //Don't change color if it's not overdue
-                                            }
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    }
+                    
                 } else {
                     Section(header: Text("Unscheduled To-Do Items")) {
                         ForEach(unScheduledToDos) { todo in

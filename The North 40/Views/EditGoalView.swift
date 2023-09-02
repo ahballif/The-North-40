@@ -26,6 +26,11 @@ struct EditGoalView: View {
     
     @State private var isPresentingDeleteConfirm = false
     
+    @State public var parentGoal: N40Goal? = nil
+    @State private var showingChooseParentGoalSheet = false
+    
+    @State private var selectedColor: Color = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5) //start with a random color.
+    
     @State var editGoal: N40Goal?
     
     var body: some View {
@@ -61,6 +66,23 @@ struct EditGoalView: View {
             Toggle("Set Deadline", isOn: $hasDeadline)
             
             DatePicker("Deadline: ", selection: $deadline, displayedComponents: [.date])
+            
+            HStack {
+                Spacer()
+                Text("Color: ")
+                ColorPicker("", selection: $selectedColor, supportsOpacity: false)
+                    .labelsHidden()
+            }
+            
+            
+            //Choosing Parent Goal
+            HStack {
+                Button("End Goal: \(parentGoal != nil ? parentGoal!.name : "No Parent Goal Selected")") {
+                    showingChooseParentGoalSheet.toggle()
+                }.sheet(isPresented: $showingChooseParentGoalSheet) {
+                    SelectGoalView(editGoalView: self)
+                }
+            }
             
             //Attaching people
             VStack {
@@ -169,6 +191,9 @@ struct EditGoalView: View {
                 newGoal.addToAttachedPeople(person)
             }
             
+            newGoal.color = selectedColor.toHex() ?? "#40BF50"
+            
+            newGoal.endGoal = parentGoal
             
             // To save the new entity to the persistent store, call
             // save on the context
@@ -192,7 +217,15 @@ struct EditGoalView: View {
         information = editGoal?.information ?? placeholderString
         hasDeadline = editGoal?.hasDeadline ?? false
         deadline = editGoal?.deadline ?? (Calendar.current.date(byAdding: .weekOfYear, value: 2, to: Date()) ?? Date())
-        
+       
+        if editGoal != nil {
+            selectedColor = Color(hex: editGoal?.color ?? "#40BF50") ?? Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5)
+        } else {
+            selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
+        }
+        if parentGoal == nil {
+            parentGoal = editGoal?.endGoal
+        }
         editGoal?.attachedPeople?.forEach {person in
             attachedPeople.append(person as! N40Person)
         }
@@ -215,6 +248,20 @@ struct EditGoalView: View {
             
         }
     }
+    
+    public func setParent(newParent: N40Goal?) {
+        if newParent != nil {
+            //Set the new parent
+            parentGoal = newParent
+        } else {
+            //Remove the parent
+            parentGoal = nil
+        }
+    }
+    public func removeParent() {
+        self.setParent(newParent: nil)
+    }
+    
 }
 
 // ********************** SELECT PEOPLE VIEW ***************************
@@ -251,3 +298,43 @@ struct EditGoalView_Previews: PreviewProvider {
         EditGoalView(editGoal: nil)
     }
 }
+
+// ********************** SELECT GOAL VIEW ***************************
+// (This version is meant for pulling up from the parent Goal's perspective.
+
+// A sheet that pops up where you can select people to be attached.
+
+fileprivate struct SelectGoalView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.deadline, ascending: true)], animation: .default)
+    private var fetchedGoals: FetchedResults<N40Goal>
+    
+    var editGoalView: EditGoalView
+    
+    var body: some View {
+        List {
+            Button("No Parent") {
+                editGoalView.removeParent()
+                dismiss()
+            }
+            ForEach(fetchedGoals) {goal in
+                if (goal != editGoalView.editGoal) {
+                    HStack {
+                        Text(goal.name)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        editGoalView.setParent(newParent: goal)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+

@@ -22,7 +22,6 @@ struct GoalDetailView: View {
     
     
     var body: some View {
-        NavigationView {
             VStack {
                 
                 ZStack {
@@ -133,7 +132,7 @@ struct GoalDetailView: View {
                                     }
                                     Button {
                                         //("New Sub Goal")
-                                        
+                                        showingEditGoalSheet.toggle()
                                     } label: {
                                         Label("New Sub-Goal", systemImage: "flag.checkered.2.crossed")
                                     }
@@ -144,7 +143,7 @@ struct GoalDetailView: View {
                                     EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingGoal: selectedGoal)
                                 }
                                 .sheet(isPresented: $showingEditGoalSheet, onDismiss: {updater.updater.toggle()}) {
-                                    EditGoalView(editGoal: nil)
+                                    EditGoalView(parentGoal: selectedGoal, editGoal: nil)
                                 }
                                 
                             }
@@ -156,7 +155,7 @@ struct GoalDetailView: View {
                 Spacer()
             }
             
-        }
+        
     }
     
     
@@ -174,7 +173,7 @@ struct GoalInfoView: View {
     
     
     var body: some View {
-        VStack {
+        ScrollView {
             VStack {
                 HStack {
                     Text("Description")
@@ -191,6 +190,60 @@ struct GoalInfoView: View {
                 Text("Deadline: \(selectedGoal.deadline.dateOnlyToString())")
             }
             
+            List {
+                ForEach(selectedGoal.getAttachedPeople) {person in
+                    NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                        Text("\(person.firstName) \(person.lastName)")
+                    }.buttonStyle(.plain)
+                }
+            }.scrollContentBackground(.hidden)
+            
+            //Show Parent Goal
+            if (selectedGoal.endGoal != nil) {
+                VStack {
+                    HStack {
+                        Text("End Goal: ").bold()
+                        Spacer()
+                    }.padding(.horizontal)
+                    NavigationLink(destination: GoalDetailView(selectedGoal: selectedGoal.endGoal!)) {
+                        HStack {
+                            Text(selectedGoal.endGoal!.name)
+                            Spacer()
+                            if (selectedGoal.endGoal!.hasDeadline) {
+                                Text((selectedGoal.endGoal?.deadline.dateOnlyToString())!)
+                            }
+                        }
+                    }.buttonStyle(.plain)
+                        .padding(.horizontal)
+                }
+            }
+            
+            
+            //Show child goals
+            if ((selectedGoal.subGoals ?? ([] as NSSet)).count > 0) {
+                VStack {
+                    HStack {
+                        Text("Intermediate Landmark Goals: ").bold()
+                        Spacer()
+                    }.padding(.horizontal)
+                    VStack {
+                        ForEach(selectedGoal.getSubGoals) {goal in
+                            NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
+                                HStack {
+                                    Text(goal.name).lineLimit(0)
+                                    Spacer()
+                                    if (goal.hasDeadline) {
+                                        Text(goal.deadline.dateOnlyToString())
+                                    }
+                                }
+                            }.buttonStyle(.plain)
+                                .padding(.horizontal)
+                        }
+                    }
+                }
+            }
+            
+            //Complete Goal HIGH FIVE
             Button {
                 completeGoal()
             } label: {
@@ -199,25 +252,22 @@ struct GoalInfoView: View {
                         Image(systemName: "hand.wave")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 200.0)
                             
                         Text("(High Five to Complete)")
                     } else {
                         Image(systemName: "hands.sparkles")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 200.0)
                             
                         Text("Completed! on \(selectedGoal.dateCompleted.dateOnlyToString())")
                     }
                 }
-            }
+            }.padding()
             
-            List {
-                ForEach(selectedGoal.getAttachedPeople) {person in
-                    NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                        Text("\(person.firstName) \(person.lastName)")
-                    }.buttonStyle(.plain)
-                }
-            }.scrollContentBackground(.hidden)
+            
+            
         }.onAppear {
             isCompleted = selectedGoal.isCompleted
         }

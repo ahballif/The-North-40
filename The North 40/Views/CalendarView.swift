@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 public let DEFAULT_EVENT_COLOR = Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
 
@@ -151,7 +152,7 @@ struct AllDayList: View {
         //all events is used for wrapping around other events.
         
 
-        return NavigationLink(destination: EditEventView(), label: {
+        return NavigationLink(destination: EditEventView(editEvent: event), label: {
                 
                 ZStack {
                     
@@ -183,7 +184,13 @@ struct AllDayList: View {
                     if (event.recurringTag != "") {
                         HStack {
                             Spacer()
-                            Image(systemName: "repeat")
+                            ZStack {
+                                Image(systemName: "repeat")
+                                if (isRecurringEventLast(event: event)) {
+                                    Image(systemName: "line.diagonal")
+                                        .scaleEffect(x: -1.2, y: 1.2)
+                                }
+                            }
                                 
                         }.padding(.horizontal, 8)
                     }
@@ -290,6 +297,34 @@ struct AllDayList: View {
                 // handle error
             }
         }
+    }
+    
+    func isRecurringEventLast (event: N40Event) -> Bool {
+        var isLast = false
+        
+        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+        
+        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (event.startDate as CVarArg)) //will include this event
+        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (event.recurringTag))
+        
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+        fetchRequest.predicate = compoundPredicate
+        
+        do {
+            // Peform Fetch Request
+            let fetchedEvents = try viewContext.fetch(fetchRequest)
+            
+            if fetchedEvents.count == 1 {
+                isLast = true
+            }
+            
+        } catch {
+            print("couldn't fetch recurring events")
+        }
+        
+        return isLast
+        
     }
     
     
@@ -583,7 +618,13 @@ struct DailyPlanner: View {
                             }
                         }
                         if (event.recurringTag != "") {
-                            Image(systemName: "repeat")
+                            ZStack {
+                                Image(systemName: "repeat")
+                                if (isRecurringEventLast(event: event)) {
+                                    Image(systemName: "line.diagonal")
+                                        .scaleEffect(x: -1.2, y: 1.2)
+                                }
+                            }
                         }
                             
                     }.padding(.horizontal, 8)
@@ -645,10 +686,38 @@ struct DailyPlanner: View {
         }
     }
     
-    
+    func isRecurringEventLast (event: N40Event) -> Bool {
+        var isLast = false
+        
+        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+        
+        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (event.startDate as CVarArg)) //will include this event
+        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (event.recurringTag))
+        
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+        fetchRequest.predicate = compoundPredicate
+        
+        do {
+            // Peform Fetch Request
+            let fetchedEvents = try viewContext.fetch(fetchRequest)
+            
+            if fetchedEvents.count == 1 {
+                isLast = true
+            }
+            
+        } catch {
+            print("couldn't fetch recurring events")
+        }
+        
+        return isLast
+        
+    }
     
     
 }
+
+
 
 extension Date {
     var startOfDay: Date {

@@ -41,11 +41,7 @@ struct TimelineView: View {
                     eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
                 }
             }
-        }.onReceive(self.updater.objectWillChange, perform: { _ in
-            withAnimation {
-                print("timeline needs to update")
-            }
-        })
+        }
     }
 }
 

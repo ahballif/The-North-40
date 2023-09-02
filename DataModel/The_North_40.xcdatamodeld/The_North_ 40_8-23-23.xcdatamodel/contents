@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22F66" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="N40Envelope" representedClassName="N40Envelope" syncable="YES">
+        <attribute name="currentBalance" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="lastCalculation" attributeType="Date" defaultDateTimeInterval="-31597200" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="N40Transaction" inverseName="envelope" inverseEntity="N40Transaction"/>
+    </entity>
     <entity name="N40Event" representedClassName=".N40Event" syncable="YES">
         <attribute name="allDay" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="color" attributeType="String" defaultValueString="#FF7051"/>
@@ -16,8 +22,10 @@
         <attribute name="summary" attributeType="String" defaultValueString=""/>
         <relationship name="attachedGoals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="timelineEvents" inverseEntity="N40Goal"/>
         <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="timelineEvents" inverseEntity="N40Person"/>
+        <relationship name="attachedTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Transaction" inverseName="event" inverseEntity="N40Transaction"/>
     </entity>
     <entity name="N40Goal" representedClassName=".N40Goal" syncable="YES">
+        <attribute name="color" attributeType="String" defaultValueString="#40BF50"/>
         <attribute name="dateCompleted" attributeType="Date" defaultDateTimeInterval="-31554000" usesScalarValueType="NO"/>
         <attribute name="deadline" attributeType="Date" defaultDateTimeInterval="315537915600" usesScalarValueType="NO"/>
         <attribute name="hasDeadline" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -64,5 +72,14 @@
         <relationship name="attachedNotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Note" inverseName="attachedPeople" inverseEntity="N40Note"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Group" inverseName="people" inverseEntity="N40Group"/>
         <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedPeople" inverseEntity="N40Event"/>
+    </entity>
+    <entity name="N40Transaction" representedClassName="N40Transaction" syncable="YES">
+        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="-31597200" usesScalarValueType="NO"/>
+        <attribute name="isIncome" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
+        <relationship name="envelope" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40Envelope" inverseName="transactions" inverseEntity="N40Envelope"/>
+        <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedTransactions" inverseEntity="N40Event"/>
     </entity>
 </model>

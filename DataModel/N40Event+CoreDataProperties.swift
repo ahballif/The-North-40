@@ -32,6 +32,7 @@ extension N40Event {
     
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?
+    @NSManaged public var attachedTransactions: NSSet?
     
     //event types
     public static let REPORTABLE_TYPE = 0

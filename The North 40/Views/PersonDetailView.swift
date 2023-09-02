@@ -10,9 +10,13 @@ import SwiftUI
 struct PersonDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
+    public var updater = RefreshView()
+    
     @State var selectedPerson: N40Person
     @State private var selectedView = 0 //for diy tab view
     
+    @State private var showingWhatToCreateConfirm = false
+    @State private var editEventEventType = N40Event.NON_REPORTABLE_TYPE
     @State private var showingEditEventSheet = false
     
     var body: some View {
@@ -86,7 +90,7 @@ struct PersonDetailView: View {
                     PersonInfoView(selectedPerson: selectedPerson)
                 } else if (selectedView==1) {
                     ZStack {
-                        TimelineView(person: selectedPerson)
+                        TimelineView(person: selectedPerson).environmentObject(updater)
                         
                         
                         //The Add Button
@@ -95,17 +99,46 @@ struct PersonDetailView: View {
                             HStack {
                                 Spacer()
                                 
-                                Button(action: {showingEditEventSheet.toggle()}) {
+                                Button(action: {showingWhatToCreateConfirm.toggle()}) {
                                     Image(systemName: "plus.circle.fill")
                                         .resizable()
                                         .scaledToFit()
                                         .clipShape(Circle())
                                         .frame(minWidth: 50, maxWidth: 50)
                                         .padding(30)
+                                }.confirmationDialog("chooseWhatToCreate", isPresented: $showingWhatToCreateConfirm) {
+                                    Button {
+                                        //New TODO Item
+                                        editEventEventType = N40Event.TODO_TYPE
+                                        showingEditEventSheet.toggle()
+                                    } label: {
+                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE]
+                                        Label(type[0], systemImage: type[1])
+                                    }
+                                    Button {
+                                        //("New Reportable Event")
+                                        editEventEventType = N40Event.REPORTABLE_TYPE
+                                        showingEditEventSheet.toggle()
+                                    } label: {
+                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]
+                                        Label(type[0], systemImage: type[1])
+                                    }
+                                    Button {
+                                        //("New Unreportable Event")
+                                        editEventEventType = N40Event.NON_REPORTABLE_TYPE
+                                        showingEditEventSheet.toggle()
+                                    } label: {
+                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.NON_REPORTABLE_TYPE]
+                                        Label(type[0], systemImage: type[1])
+                                    }
+                                    
+                                } message: {
+                                    Text("What would you like to add?")
                                 }
-                                .sheet(isPresented: $showingEditEventSheet) {
-                                    EditEventView( attachingPerson: selectedPerson)
+                                .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
+                                    EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingPerson: selectedPerson)
                                 }
+                                
                             }
                         }
                     }

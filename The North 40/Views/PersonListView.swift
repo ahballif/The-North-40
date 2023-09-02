@@ -11,6 +11,9 @@ struct PersonListView: View {
     
     @Environment(\.managedObjectContext) private var viewContext
     
+    let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
+        
+    
     @State private var showingEditPersonSheet = false
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
@@ -20,18 +23,48 @@ struct PersonListView: View {
         
         NavigationView {
             ZStack {
-                VStack {
-                    
-                    
-                    List(fetchedPeople) {person in
-                        NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                            Text("\(person.title) \(person.firstName) \(person.lastName)")
+                
+                
+                
+                ScrollView {
+                    ScrollViewReader { value in
+                        ZStack{
+                            List{
+                                ForEach(alphabet, id: \.self) { letter in
+                                    let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                                    if (letterSet.count > 0) {
+                                        Section(header: Text(letter)) {
+                                            ForEach(letterSet, id: \.self) { person in
+                                                NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                                                    Text("\(person.title) \(person.firstName) \(person.lastName)")
+                                                        .id("\(person.title) \(person.firstName) \(person.lastName)")
+                                                }
+                                            }
+                                        }.id(letter)
+                                    }
+                                }
+                            }
+                            
+                            //scroll to letter.
+                            HStack{
+                                Spacer()
+                                VStack {
+                                    ForEach(0..<alphabet.count, id: \.self) { idx in
+                                        Button(action: {
+                                            withAnimation {
+                                                value.scrollTo(alphabet[idx])
+                                            }
+                                        }, label: {
+                                            Text(idx % 2 == 0 ? alphabet[idx] : "\u{2022}")
+                                        })
+                                    }
+                                }
+                            }
                         }
-                        
-                        
                     }
-                    
                 }
+                
+                
                 
                 VStack {
                     Spacer()

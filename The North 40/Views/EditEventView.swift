@@ -16,7 +16,7 @@ struct EditEventView: View {
     @State public var editEvent: N40Event?
     
     
-    private let repeatOptions = ["No Repeat", "Every Day", "Every Week", "Every Month"]
+    private let repeatOptions = ["No Repeat", "Every Day", "Every Week", "Every Two Weeks", "Monthly (Day of Month)", "Monthly (Week of Month)"]
     
     
     @State private var eventTitle = ""
@@ -548,8 +548,16 @@ struct EditEventView: View {
             }
             
         }
+        if UserDefaults.standard.bool(forKey: "randomEventColor") {
+            if editEvent != nil {
+                selectedColor = Color(hex: editEvent?.color ?? "#FF7051") ?? Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5)
+            } else {
+                selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
+            }
+        } else {
+            selectedColor = Color(hex: editEvent?.color ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+        }
         
-        selectedColor = Color(hex: editEvent?.color ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
         
         chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
         
@@ -565,11 +573,30 @@ struct EditEventView: View {
             }
             
             newEvent.name = self.eventTitle
+            
             if (self.eventTitle == "") {
-                //This is where we would add up the attached people to figure out an event title name.
+    
+                var defaultName = "Do Something"
                 
-                //placeholder:
-                newEvent.name = "Do Something"
+                if editEvent == nil {
+                    if attachedPeople.count > 0 {
+                        defaultName = attachedPeople[0].firstName + " " + attachedPeople[0].lastName
+                        for eachPerson in attachedPeople {
+                            if eachPerson != attachedPeople[0] {
+                                defaultName += ", " + eachPerson.firstName + " " + eachPerson.lastName
+                            }
+                        }
+                    } else if attachedGoals.count > 0 {
+                        defaultName = attachedGoals[0].name
+                        for eachGoal in attachedGoals {
+                            if eachGoal != attachedGoals[0] {
+                                defaultName += ", " + eachGoal.name
+                            }
+                        }
+                    }
+                }
+                
+                newEvent.name = defaultName
             }
             
             newEvent.startDate = self.chosenStartDate
@@ -618,23 +645,50 @@ struct EditEventView: View {
             if repeatOptionSelected != repeatOptions[0] {
                 let recurringTag = UUID().uuidString
                 newEvent.recurringTag = recurringTag
-                if repeatOptionSelected == repeatOptions[1] {
+                if repeatOptionSelected == "Every Day" {
                     //Repeat Daily
                     for i in 1...30*numberOfRepeats {
                         duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate)!)
                     }
                     
-                } else if repeatOptionSelected == repeatOptions[2] {
+                } else if repeatOptionSelected == "Every Week" {
                     //Repeat Weekly
                     for i in 1...Int(Double(numberOfRepeats)/12.0*52.0) {
                         duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
                     }
                     
-                } else if repeatOptionSelected == repeatOptions[3] {
+                } else if repeatOptionSelected == "Every Two Weeks" {
+                    for i in 1...Int(Double(numberOfRepeats)/12.0*52.0/2.0) {
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate)!)
+                    }
+                } else if repeatOptionSelected == "Monthly (Day of Month)" {
                     //Repeat Monthly
                     for i in 1...numberOfRepeats {
                         duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate)!)
                     }
+                } else if repeatOptionSelected == "Monthly (Week of Month)" {
+                    // Repeat monthly keeping the day of week
+                    var repeatsMade = 1 // the first is the original event.
+                    
+                    var repeatDate = newEvent.startDate
+                    var lastCreatedDate = newEvent.startDate
+                    
+                    while repeatsMade < numberOfRepeats {
+                        
+                        
+                        //While the next date is in the same month as the last created date
+                        while Calendar.current.component(.month, from: lastCreatedDate) == Calendar.current.component(.month, from: repeatDate) {
+                            //add a week to the next date until it crosses over to the next month
+                            repeatDate = Calendar.current.date(byAdding: .day, value: 7, to: repeatDate) ?? repeatDate
+                        }
+                        //Now the repeat date should be in the next month,
+                        // ex. if doing first sunday of the month, it should be the next first sunday
+                        
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate)
+                        lastCreatedDate = repeatDate
+                        repeatsMade += 1
+                    }
+                    
                 }
                 
             }
