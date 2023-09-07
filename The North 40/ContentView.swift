@@ -12,6 +12,10 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
 
+    //To show the unreported icon
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "status == %i", N40Event.UNREPORTED), NSPredicate(format: "eventType == %i", N40Event.REPORTABLE_TYPE), NSPredicate(format: "startDate < %@", Date() as NSDate)]))
+    private var fetchedUnreporteds: FetchedResults<N40Event>
+    
 
     var body: some View {
         
@@ -42,6 +46,7 @@ struct ContentView: View {
                 .tabItem{
                     Label("Office", systemImage: "books.vertical")
                 }
+                .badge(fetchedUnreporteds.count)
         }
     }
 }

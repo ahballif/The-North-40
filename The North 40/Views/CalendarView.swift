@@ -13,46 +13,51 @@ public let DEFAULT_EVENT_COLOR = Color(.sRGB, red: 1, green: (112.0/255.0), blue
 
 struct CalendarView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.colorScheme) var colorScheme
+    
     
     @State private var selectedDay = Date()
     
     var body: some View {
         NavigationView {
-            ZStack {
-                
-                VStack {
-                    Text("Daily Planner")
-                        .font(.title2)
-                    HStack {
-                        Text(selectedDay.dayOfWeek())
+            
+            
+            VStack {
+                Text("Daily Planner")
+                    .font(.title2)
+                HStack {
+                    Text(selectedDay.dayOfWeek())
+                    
+                    DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
+                        .labelsHidden()
+                    
+                    
+                    Spacer()
+                    
+                    Button("Today") {
+                        selectedDay = Date()
                         
-                        DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
-                            .labelsHidden()
-                        
-                        
-                        Spacer()
-                        
-                        Button("Today") {
-                            selectedDay = Date()
-                            
-                        }
                     }
-                    .padding(.horizontal)
-                    
-                    AllDayList(filter: selectedDay)
-                        .environment(\.managedObjectContext, viewContext)
-                    
-                    
+                }
+                .padding(.horizontal)
+                
+                ZStack {
                     DailyPlanner(filter: selectedDay)
                         .environment(\.managedObjectContext, viewContext)
                     
                     
                     
+                    VStack {
+                        AllDayList(filter: selectedDay)
+                            .environment(\.managedObjectContext, viewContext)
+                            .background(((colorScheme == .dark) ? .black : .white))
+                        Spacer()
+                    }
                     
                 }
                 
-                
             }
+            
         }
         .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
                     .onEnded { value in
@@ -97,13 +102,16 @@ struct AllDayList: View {
     
     
     var body: some View {
-        if (fetchedAllDays.count + fetchedGoalsDueToday.count) > 3 {
+        if (fetchedAllDays.count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
             ScrollView {
                 ForEach(fetchedAllDays) { eachEvent in
                     allDayEvent(eachEvent)
                 }
                 ForEach(fetchedGoalsDueToday) { eachGoal in
                     dueGoal(eachGoal)
+                }
+                ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
+                    birthdayBoyCell(eachBirthdayBoy)
                 }
             }.frame(height: 3*allEventHeight)
         } else {
@@ -564,12 +572,33 @@ struct DailyPlanner: View {
             NavigationLink(destination: EditEventView(editEvent: event), label: {
                 
                 ZStack {
+                    if event.eventType == N40Event.INFORMATION_TYPE {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.gray)
+                            .opacity(0.0001)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                    .opacity(0.5)
+                            )
+                    } else if event.eventType == N40Event.BACKUP_TYPE {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.gray)
+                            .opacity(0.25)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                    .opacity(0.5)
+                            )
+                    } else {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                            .opacity(0.5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                     
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
-                        .opacity(0.5)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-
                     
                     HStack {
                         if (event.eventType == N40Event.TODO_TYPE) {
@@ -581,7 +610,7 @@ struct DailyPlanner: View {
                             
                         }
                         
-                        Image(systemName: N40Event.contactOptions[Int(event.contactMethod)][1])
+                        Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
                         
                         Text(event.startDate.formatted(.dateTime.hour().minute()))
                         Text(event.name).bold()
@@ -594,8 +623,12 @@ struct DailyPlanner: View {
                 
                     HStack {
                         Spacer()
-                        if (event.eventType == N40Event.REPORTABLE_TYPE && event.startDate < Date()) {
-                            if event.status == N40Event.UNREPORTED {
+                        if (event.eventType == N40Event.REPORTABLE_TYPE) {
+                            if event.startDate > Date() {
+                                Image(systemName: "circle.dotted")
+                                    .resizable()
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.UNREPORTED {
                                 Image(systemName: "questionmark.circle.fill")
                                     .resizable()
                                     .foregroundColor(Color.orange)
@@ -616,7 +649,12 @@ struct DailyPlanner: View {
                                     .foregroundColor(Color.green)
                                     .frame(width: 20, height:20)
                             }
+                        } else if (event.eventType == N40Event.INFORMATION_TYPE) {
+                            Image(systemName: "dot.radiowaves.left.and.right")
+                                .resizable()
+                                .frame(width: 20, height:20)
                         }
+                        
                         if (event.recurringTag != "") {
                             ZStack {
                                 Image(systemName: "repeat")
@@ -626,6 +664,7 @@ struct DailyPlanner: View {
                                 }
                             }
                         }
+                        
                             
                     }.padding(.horizontal, 8)
                     
@@ -795,4 +834,45 @@ extension Date {
 
 
 
+//Thanks to Cenk Bilgen and flyer2001
+// https://stackoverflow.com/questions/63130755/custom-cross-hatched-background-shape-or-view-in-swiftui
 
+import CoreImage.CIFilterBuiltins
+
+extension CGImage {
+
+    static func generateStripePattern(
+        colors: (UIColor, UIColor) = (.clear, .black),
+        width: CGFloat = 6,
+        ratio: CGFloat = 1) -> CGImage? {
+
+    let context = CIContext()
+    let stripes = CIFilter.stripesGenerator()
+    stripes.color0 = CIColor(color: colors.0)
+    stripes.color1 = CIColor(color: colors.1)
+    stripes.width = Float(width)
+    stripes.center = CGPoint(x: 1-width*ratio, y: 0)
+    let size = CGSize(width: width, height: 1)
+
+    guard
+        let stripesImage = stripes.outputImage,
+        let image = context.createCGImage(stripesImage, from: CGRect(origin: .zero, size: size))
+    else { return nil }
+    return image
+  }
+}
+
+extension Shape {
+
+    func stripes(angle: Double = 45) -> AnyView {
+        guard
+            let stripePattern = CGImage.generateStripePattern()
+        else { return AnyView(self)}
+
+        return AnyView(Rectangle().fill(ImagePaint(
+            image: Image(decorative: stripePattern, scale: 1.0)))
+        .scaleEffect(2)
+        .rotationEffect(.degrees(angle))
+        .clipShape(self))
+    }
+}

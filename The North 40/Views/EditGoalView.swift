@@ -34,7 +34,7 @@ struct EditGoalView: View {
     @State var editGoal: N40Goal?
     
     var body: some View {
-        VStack {
+        ScrollView {
             
             if (editGoal == nil) {
                 HStack{
@@ -94,7 +94,9 @@ struct EditGoalView: View {
                 
                 ForEach(attachedPeople) { person in
                     HStack {
-                        Text("\(person.firstName) \(person.lastName)")
+                        NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                            Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
+                        }.buttonStyle(.plain)
                         Spacer()
                         Button {
                             removePerson(removedPerson: person)
@@ -144,8 +146,6 @@ struct EditGoalView: View {
             
             
             
-            
-            Spacer()
             
             
         }.padding()

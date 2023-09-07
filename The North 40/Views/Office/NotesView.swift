@@ -68,6 +68,7 @@ struct EditNoteView: View {
     @State private var showingAttachPeopleSheet = false
     @State private var showingAttachGoalSheet = false
     
+    @State private var showingOptionsSheet = false
     
     var body: some View {
         VStack {
@@ -78,98 +79,35 @@ struct EditNoteView: View {
                 Spacer()
                 Text(editNote != nil ? "Edit Note" : "Create New Note")
                 Spacer()
+                Button {
+                    showingOptionsSheet.toggle()
+                } label: {
+                    Image(systemName: "paperclip")
+                }.sheet(isPresented: $showingOptionsSheet) {
+                    attachPeopleSheetView()
+                }
                 Button("Done") {
                     saveNote()
                     dismiss()
                 }
             }
             
-            ScrollView {
-                
-                //title
-                HStack {
-                    TextField("Note Title", text: $title).font(.title2)
-                    Spacer()
-                }
-                HStack {
-                    
-                    DatePicker(selection: $date) {
-                        Text("Date: ")
-                    }
-                    Spacer()
-                }
-                
-                
-                TextEditor(text: $information)
-                    .padding(.horizontal)
-                    .shadow(color: .gray, radius: 5)
-                    .frame(minHeight: 200)
-                
-                
-                VStack {
-                    HStack{
-                        Text("Attached People:")
-                            .font(.title3)
-                        Spacer()
-                    }
-                    
-                    ForEach(attachedPeople) { person in
-                        HStack {
-                            Text("\(person.firstName) \(person.lastName)")
-                            Spacer()
-                            Button {
-                                removePerson(removedPerson: person)
-                            } label: {
-                                Image(systemName: "multiply")
-                            }
-                        }.padding()
-                    }
-                    
-                    Button(action: {
-                        showingAttachPeopleSheet.toggle()
-                    }) {
-                        Label("Attach Person", systemImage: "plus").padding()
-                    }.sheet(isPresented: $showingAttachPeopleSheet) {
-                        SelectPeopleView(editNoteView: self)
-                    }
-                    
-                        
-                    
-                }
-                
-                VStack {
-                    HStack{
-                        Text("Attached Goals:")
-                            .font(.title3)
-                        Spacer()
-                    }
-                    
-                    ForEach(attachedGoals) { goal in
-                        HStack {
-                            Text(goal.name)
-                            Spacer()
-                            Button {
-                                removeGoal(removedGoal: goal)
-                            } label: {
-                                Image(systemName: "multiply")
-                            }
-                        }.padding()
-                    }
-                    
-                    Button(action: {
-                        showingAttachGoalSheet.toggle()
-                    }) {
-                        Label("Attach Goal", systemImage: "plus").padding()
-                    }.sheet(isPresented: $showingAttachGoalSheet) {
-                        SelectGoalView(editNoteView: self)
-                    }
-                    
-                        
-                    
-                }
-                
-                
+            
+            //title
+            HStack {
+                TextField("Note Title", text: $title).font(.title2)
+                Spacer()
             }
+            HStack {
+                
+                DatePicker(selection: $date) {
+                    Text("Date: ")
+                }
+                Spacer()
+            }
+            
+            TextEditor(text: $information)
+                .shadow(color: .gray, radius: 5)
             
             
             
@@ -219,7 +157,6 @@ struct EditNoteView: View {
             catch {
                 // Handle Error
                 print("Error info: \(error)")
-                
             }
             
         }
@@ -285,7 +222,81 @@ struct EditNoteView: View {
         }
     }
     
+    private func attachPeopleSheetView () -> some View {
+        return VStack {
+            VStack {
+                HStack{
+                    Text("Attached People:")
+                        .font(.title3)
+                    Spacer()
+                }
+                
+                ForEach(attachedPeople) { person in
+                    HStack {
+                        NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                            Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
+                        }.buttonStyle(.plain)
+                        Spacer()
+                        Button {
+                            removePerson(removedPerson: person)
+                        } label: {
+                            Image(systemName: "multiply")
+                        }
+                    }.padding()
+                }
+                
+                Button(action: {
+                    showingAttachPeopleSheet.toggle()
+                }) {
+                    Label("Attach Person", systemImage: "plus").padding()
+                }.sheet(isPresented: $showingAttachPeopleSheet) {
+                    SelectPeopleView(editNoteView: self)
+                }
+                
+                
+                
+            }
+            
+            VStack {
+                HStack{
+                    Text("Attached Goals:")
+                        .font(.title3)
+                    Spacer()
+                }
+                
+                ForEach(attachedGoals) { goal in
+                    HStack {
+                        NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
+                            Text(goal.name)
+                        }.buttonStyle(.plain)
+                        Spacer()
+                        Button {
+                            removeGoal(removedGoal: goal)
+                        } label: {
+                            Image(systemName: "multiply")
+                        }
+                    }.padding()
+                }
+                
+                Button(action: {
+                    showingAttachGoalSheet.toggle()
+                }) {
+                    Label("Attach Goal", systemImage: "plus").padding()
+                }.sheet(isPresented: $showingAttachGoalSheet) {
+                    SelectGoalView(editNoteView: self)
+                }
+                
+                
+                
+            }
+            Spacer()
+        }
+    }
+    
 }
+
+
+
 
 
 // ********************** SELECT PEOPLE VIEW ***************************

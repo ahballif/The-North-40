@@ -32,6 +32,26 @@ extension N40Envelope {
     }
     
     
+    public func calculateBalance (onDate: Date = Date()) {
+        var sum = 0.0
+        
+        for transaction in getTransactions {
+            if transaction.date < onDate {
+                if transaction.isIncome {
+                    sum += transaction.amount
+                } else {
+                    sum -= transaction.amount
+                }
+            }
+        }
+        
+        
+        currentBalance = sum
+        lastCalculation = Date()
+        // will have to save after running this function
+    }
+    
+    
 }
 
 // MARK: Generated accessors for transactions

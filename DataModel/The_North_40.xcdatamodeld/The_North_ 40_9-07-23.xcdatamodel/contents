@@ -6,15 +6,6 @@
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="N40Transaction" inverseName="envelope" inverseEntity="N40Transaction"/>
     </entity>
-    <entity name="N40EnvelopeTransfer" representedClassName="N40EnvelopeTransfer" syncable="YES">
-        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="date" attributeType="Date" defaultDateTimeInterval="-31597200" usesScalarValueType="NO"/>
-        <attribute name="name" attributeType="String" defaultValueString=""/>
-        <attribute name="notes" attributeType="String" defaultValueString=""/>
-        <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
-        <relationship name="from" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40Transaction" inverseName="toEnvelopeTransfer" inverseEntity="N40Transaction"/>
-        <relationship name="to" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40Transaction" inverseName="fromEnvelopeTransfer" inverseEntity="N40Transaction"/>
-    </entity>
     <entity name="N40Event" representedClassName=".N40Event" syncable="YES">
         <attribute name="allDay" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="color" attributeType="String" defaultValueString="#FF7051"/>
@@ -72,7 +63,6 @@
         <attribute name="firstName" attributeType="String" defaultValueString=""/>
         <attribute name="hasBirthday" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="lastName" attributeType="String" defaultValueString=""/>
-        <attribute name="notes" attributeType="String" defaultValueString=""/>
         <attribute name="phoneNumber1" attributeType="String" defaultValueString=""/>
         <attribute name="phoneNumber2" attributeType="String" defaultValueString=""/>
         <attribute name="socialMedia1" attributeType="String" defaultValueString=""/>
@@ -92,7 +82,5 @@
         <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
         <relationship name="envelope" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Envelope" inverseName="transactions" inverseEntity="N40Envelope"/>
         <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedTransactions" inverseEntity="N40Event"/>
-        <relationship name="fromEnvelopeTransfer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40EnvelopeTransfer" inverseName="to" inverseEntity="N40EnvelopeTransfer"/>
-        <relationship name="toEnvelopeTransfer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="N40EnvelopeTransfer" inverseName="from" inverseEntity="N40EnvelopeTransfer"/>
     </entity>
 </model>

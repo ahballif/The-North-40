@@ -25,7 +25,12 @@ struct TimelineView: View {
         ScrollView {
             VStack {
                 
-                ForEach(events.filter { ($0.startDate > Date() && $0.isScheduled) || (!$0.isScheduled && $0.status == N40Event.UNREPORTED) }) { eachEvent in
+                //unschedule first
+                ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
+                    eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                }
+                //scheduled next
+                ForEach(events.filter { ($0.startDate > Date() && $0.isScheduled) && $0.eventType != N40Event.BACKUP_TYPE }) { eachEvent in
                     eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
                 }
                 
@@ -37,7 +42,7 @@ struct TimelineView: View {
                     
                 }
                 
-                ForEach(events.filter { ($0.startDate < Date() && $0.isScheduled) || (!$0.isScheduled && $0.status != N40Event.UNREPORTED) }) { eachEvent in
+                ForEach(events.filter { ($0.startDate < Date() && $0.isScheduled) && $0.eventType != N40Event.BACKUP_TYPE }) { eachEvent in
                     eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
                 }
             }
@@ -53,13 +58,21 @@ private struct eventDisplayBoxView: View {
     
     @State var myEvent: N40Event
     
-    
+    private let cellHeight = 50.0
     
     @State private var showingEditViewSheet = false
     
     var body: some View {
         NavigationLink (destination: EditEventView(editEvent: myEvent).onDisappear(perform: {updater.updater.toggle()} )){
             ZStack {
+                
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(hex: myEvent.color) ?? DEFAULT_EVENT_COLOR)
+                    .opacity(0.5)
+                    .frame(height: cellHeight)
+                    .frame(maxWidth: .infinity)
+                
+                
                 HStack {
                     
                     if (myEvent.eventType == N40Event.TODO_TYPE) {
@@ -71,7 +84,7 @@ private struct eventDisplayBoxView: View {
                         
                     }
                     
-                    Image(systemName: N40Event.contactOptions[Int(myEvent.contactMethod)][1])
+                    Image(systemName: N40Event.CONTACT_OPTIONS[Int(myEvent.contactMethod)][1])
                     
                     VStack {
                         if (myEvent.isScheduled) {
@@ -98,7 +111,7 @@ private struct eventDisplayBoxView: View {
                         }
                     }
                     
-                }
+                }.padding()
                 HStack {
                     Spacer()
                     if (myEvent.eventType == N40Event.REPORTABLE_TYPE && myEvent.startDate < Date()) {
@@ -129,17 +142,16 @@ private struct eventDisplayBoxView: View {
                     }
                         
                 }.padding(.horizontal, 8)
-            }.padding()
+                
+                
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: cellHeight)
+            .padding(.horizontal)
+            .padding(.vertical, 2)
         }
         .buttonStyle(.plain)
         .font(.caption)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(hex: myEvent.color) ?? DEFAULT_EVENT_COLOR).opacity(0.5)
-        )
-        .padding(.horizontal)
-        .padding(.vertical, 1)
         .sheet(isPresented: $showingEditViewSheet) {
             EditEventView(editEvent: myEvent).environmentObject(updater)
         }

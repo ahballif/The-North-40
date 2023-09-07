@@ -26,6 +26,8 @@ struct EditPersonView: View {
     @State private var socialMedia1: String = ""
     @State private var socialMedia2: String = ""
     
+    @State private var notes: String = ""
+    
     @State private var birthday: Date = Date()
     @State private var hasBirthday: Bool = false
     
@@ -104,6 +106,19 @@ struct EditPersonView: View {
                     }
                 }.padding()
                 
+                VStack {
+                    HStack {
+                        Text("Event Description: ")
+                        Spacer()
+                    }
+                    TextEditor(text: $notes)
+                        .padding(.horizontal)
+                        .shadow(color: .gray, radius: 5)
+                        .frame(minHeight: 100)
+                    
+                    
+                }
+                
                 
                 
                 if (editPerson != nil) {
@@ -169,6 +184,8 @@ struct EditPersonView: View {
             newPerson.birthdayDay = Int16(birthday.get(.day))
             newPerson.birthdayMonth = Int16(birthday.get(.month))
             
+            newPerson.notes = notes
+            
             newPerson.phoneNumber1 = phoneNumber1
             newPerson.phoneNumber2 = phoneNumber2
             newPerson.email1 = email1
@@ -200,6 +217,8 @@ struct EditPersonView: View {
         
         hasBirthday = editPerson?.hasBirthday ?? false
         birthday = editPerson?.birthday ?? Date()
+        
+        notes = editPerson?.notes ?? ""
         
         phoneNumber1 = editPerson?.phoneNumber1 ?? ""
         phoneNumber2 = editPerson?.phoneNumber2 ?? ""

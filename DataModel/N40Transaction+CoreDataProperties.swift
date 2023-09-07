@@ -21,9 +21,39 @@ extension N40Transaction {
     @NSManaged public var date: Date
     @NSManaged public var isIncome: Bool
     @NSManaged public var recurringTag: String
+    @NSManaged public var notes: String
     
-    @NSManaged public var envelope: N40Envelope?
+    @NSManaged public var envelope: NSSet?
     @NSManaged public var event: N40Event?
+    
+    @NSManaged public var fromEnvelopeTransfer: N40EnvelopeTransfer?
+    @NSManaged public var toEnvelopeTransfer: N40EnvelopeTransfer?
+
+    
+    public func getEnvelope() -> N40Envelope? {
+        let set = envelope as? Set<N40Envelope> ?? []
+        return set.first //assuming only one
+    }
+
+    
+    
+}
+
+
+// MARK: Generated accessors for envelope
+extension N40Transaction {
+
+    @objc(addEnvelopeObject:)
+    @NSManaged public func addToEnvelope(_ value: N40Envelope)
+
+    @objc(removeEnvelopeObject:)
+    @NSManaged public func removeFromEnvelope(_ value: N40Envelope)
+
+    @objc(addEnvelope:)
+    @NSManaged public func addToEnvelope(_ values: NSSet)
+
+    @objc(removeEnvelope:)
+    @NSManaged public func removeFromEnvelope(_ values: NSSet)
 
 }
 

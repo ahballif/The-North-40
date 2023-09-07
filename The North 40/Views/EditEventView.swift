@@ -30,8 +30,8 @@ struct EditEventView: View {
     @State private var duration = 0
     @State private var allDay: Bool = false
     
-    @State private var contactMethod = ["In Person", "person.2.fill"]
-    @State public var eventType: [String] = ["Non-Reportable","calendar.day.timeline.leading"]
+    @State private var contactMethod = N40Event.CONTACT_OPTIONS[UserDefaults.standard.integer(forKey: "defaultContactMethod")]
+    @State public var eventType: [String] = N40Event.EVENT_TYPE_OPTIONS[UserDefaults.standard.integer(forKey: "defaultCalendarEventType")]
     
     @State private var status = 0
     @State private var summary = ""
@@ -95,7 +95,9 @@ struct EditEventView: View {
                         }.buttonStyle(PlainButtonStyle())
                     }
                     //Title of the event
-                    TextField("Event Title", text: $eventTitle).font(.title2)
+                    TextField("Event Title", text: $eventTitle)
+                        .font(.title2)
+                        .padding(.vertical,  5)
                     
                 }
                 
@@ -195,14 +197,19 @@ struct EditEventView: View {
                         Text("From: ")
                     }.disabled(!isScheduled)
                         .onChange(of: chosenStartDate, perform: { (value) in
-                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate                                        })
+                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                            allConfirmsFalse()
+                        })
+                        
 
                     DatePicker(selection: $chosenEndDate) {
                         Text("To: ")
                     }.disabled(!isScheduled)
                         .onChange(of: chosenEndDate, perform: { _ in
                             duration = getMinutesDifferenceFromTwoDates(start: chosenStartDate, end: chosenEndDate)
+                            allConfirmsFalse()
                         })
+                    
 
                     HStack {
                         Text("All Day: ")
@@ -232,7 +239,7 @@ struct EditEventView: View {
                 VStack {
                     HStack {
                         Picker("Contact Method: ", selection: $contactMethod) {
-                            ForEach(N40Event.contactOptions, id: \.self) {
+                            ForEach(N40Event.CONTACT_OPTIONS, id: \.self) {
                                 Label($0[0], systemImage: $0[1])
                             }
                         }
@@ -320,8 +327,11 @@ struct EditEventView: View {
                     }
                     
                     ForEach(attachedPeople) { person in
+                        
                         HStack {
-                            Text("\(person.firstName) \(person.lastName)")
+                            NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                                Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
+                            }.buttonStyle(.plain)
                             Spacer()
                             Button {
                                 removePerson(removedPerson: person)
@@ -352,7 +362,10 @@ struct EditEventView: View {
                     
                     ForEach(attachedGoals) { goal in
                         HStack {
-                            Text(goal.name)
+                            NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
+                                Text(goal.name)
+                                
+                            }.buttonStyle(.plain)
                             Spacer()
                             Button {
                                 removeGoal(removedGoal: goal)
@@ -388,7 +401,7 @@ struct EditEventView: View {
                         
                         
                         Button {
-                            isShowingSaveAsCopyConfirm = true
+                            isShowingSaveAsCopyConfirm.toggle()
                         } label: {
                             Image(systemName: "doc.on.doc")
                         }.confirmationDialog("Save Changes As New Copy?", isPresented: $isShowingSaveAsCopyConfirm) {
@@ -402,7 +415,7 @@ struct EditEventView: View {
                         if (editEvent!.recurringTag != "") {
                             
                             Button {
-                                isPresentingRecurringDeleteConfirm = true
+                                isPresentingRecurringDeleteConfirm.toggle()
                             } label: {
                                 Image(systemName: "trash")
                             }.confirmationDialog("Delete this event?",
@@ -425,7 +438,7 @@ struct EditEventView: View {
                             }
                             
                             Button("Update") {
-                                isShowingEditAllConfirm = true
+                                isShowingEditAllConfirm.toggle()
                             }.confirmationDialog("Save To All Occurances?", isPresented: $isShowingEditAllConfirm) {
                                 Button("Just this one") {
                                     saveEvent()
@@ -444,7 +457,7 @@ struct EditEventView: View {
                             
                         } else {
                             Button {
-                                isPresentingConfirm = true
+                                isPresentingConfirm.toggle()
                             } label: {
                                 Image(systemName: "trash")
                             }.confirmationDialog("Delete this event?",
@@ -520,12 +533,15 @@ struct EditEventView: View {
             chosenStartDate = editEvent!.startDate
             
             duration = Int(editEvent?.duration ?? 0)
-            contactMethod = N40Event.contactOptions[Int(editEvent?.contactMethod ?? 0)]
-            eventType = N40Event.EVENT_TYPE_OPTIONS[Int(editEvent?.eventType ?? 1)]
+            contactMethod = N40Event.CONTACT_OPTIONS[Int(editEvent?.contactMethod ?? Int16(UserDefaults.standard.integer(forKey: "defaultContactMethod"))) ]
+            eventType = N40Event.EVENT_TYPE_OPTIONS[Int(editEvent?.eventType  ?? Int16(UserDefaults.standard.integer(forKey: "defaultCalendarEventType")))]
             
             status = Int(editEvent?.status ?? 0)
             summary = editEvent?.summary ?? ""
             
+            
+            attachedPeople = []
+            attachedGoals = []
             
             editEvent?.attachedPeople?.forEach {person in
                 attachedPeople.append(person as! N40Person)
@@ -547,6 +563,9 @@ struct EditEventView: View {
                 attachedPeople.append(attachingPerson!)
             }
             
+            
+            
+            
         }
         if UserDefaults.standard.bool(forKey: "randomEventColor") {
             if editEvent != nil {
@@ -561,6 +580,13 @@ struct EditEventView: View {
         
         chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
         
+    }
+    
+    private func allConfirmsFalse() {
+        isShowingEditAllConfirm = false
+        isShowingSaveAsCopyConfirm = false
+        isPresentingConfirm = false
+        isPresentingRecurringDeleteConfirm = false
     }
     
     private func saveEvent (saveAsCopy: Bool = false) {
@@ -611,7 +637,7 @@ struct EditEventView: View {
             newEvent.summary = self.summary
             
             //finds the index representing the correct contact method and event type
-            newEvent.contactMethod = Int16(N40Event.contactOptions.firstIndex(of: contactMethod) ?? 0)
+            newEvent.contactMethod = Int16(N40Event.CONTACT_OPTIONS.firstIndex(of: contactMethod) ?? 0)
             newEvent.eventType = Int16(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
     
             
@@ -673,6 +699,20 @@ struct EditEventView: View {
                     var repeatDate = newEvent.startDate
                     var lastCreatedDate = newEvent.startDate
                     
+                    //determine the week of month
+                    var weekOfMonth = 1
+                    var indexWeek = Calendar.current.date(byAdding: .day, value: -7, to: newEvent.startDate)!
+                    
+                    while Calendar.current.component(.month, from: newEvent.startDate) == Calendar.current.component(.month, from: indexWeek) {
+                        
+                        weekOfMonth += 1
+                        indexWeek = Calendar.current.date(byAdding: .day, value: -7, to: indexWeek)!
+                        //subtract a week and see if it's still in the month
+                    }
+                    //now we know what week of the month the event is in.
+                    
+                    
+                    
                     while repeatsMade < numberOfRepeats {
                         
                         
@@ -683,6 +723,11 @@ struct EditEventView: View {
                         }
                         //Now the repeat date should be in the next month,
                         // ex. if doing first sunday of the month, it should be the next first sunday
+                        
+                        //now make it the right week of the month
+                        repeatDate = Calendar.current.date(byAdding: .day, value: (weekOfMonth-1)*7, to: repeatDate) ?? repeatDate
+                        
+                        
                         
                         duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate)
                         lastCreatedDate = repeatDate
@@ -807,7 +852,7 @@ struct EditEventView: View {
                         //or summary
                         
                         //finds the index representing the correct contact method and event type
-                        recurringEvent.contactMethod = Int16(N40Event.contactOptions.firstIndex(of: contactMethod) ?? 0)
+                        recurringEvent.contactMethod = Int16(N40Event.CONTACT_OPTIONS.firstIndex(of: contactMethod) ?? 0)
                         recurringEvent.eventType = Int16(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
                         
                         
@@ -929,7 +974,7 @@ fileprivate struct SelectPeopleView: View {
     var body: some View {
         List(fetchedPeople) {person in
             HStack {
-                Text("\(person.firstName) \(person.lastName)")
+                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
                 Spacer()
             }
             .contentShape(Rectangle())

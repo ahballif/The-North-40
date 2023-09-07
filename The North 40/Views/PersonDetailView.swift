@@ -21,134 +21,133 @@ struct PersonDetailView: View {
     
     var body: some View {
         
-        NavigationView {
-            VStack {
-                
-                ZStack {
-                    Text(("\(selectedPerson.title) " + "\(selectedPerson.firstName) \(selectedPerson.lastName)"))
-                        .font(.title)
-                    HStack {
-                        Spacer()
-                        NavigationLink(destination: EditPersonView(editPerson: selectedPerson)) {
-                            Label("", systemImage: "pencil")
-                        }
-                    }.padding()
-                }
-                
+        VStack {
+            
+            ZStack {
+                Text(("\(selectedPerson.title) " + "\(selectedPerson.firstName) \(selectedPerson.lastName)"))
+                    .font(.title)
                 HStack {
-                    
-                    if (selectedView == 0) {
-                        Button {
-                            selectedView = 0
-                        } label: {
-                            Text("Info")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .font(.title2)
-                        .buttonStyle(.borderedProminent)
-                        
-                    } else {
-                        Button {
-                            selectedView = 0
-                        } label: {
-                            Text("Info")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .font(.title2)
-                        .buttonStyle(.bordered)
+                    Spacer()
+                    NavigationLink(destination: EditPersonView(editPerson: selectedPerson)) {
+                        Label("", systemImage: "pencil")
                     }
-                    
-                    
-                    if (selectedView == 1) {
-                        Button {
-                            selectedView = 1
-                        } label: {
-                            Text("Timeline")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .font(.title2)
-                        .buttonStyle(.borderedProminent)
-                    } else {
-                        Button {
-                            selectedView = 1
-                        } label: {
-                            Text("Timeline")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .font(.title2)
-                        .buttonStyle(.bordered)
-                    }
-                    
-                    
-                    
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                
-                
-                if (selectedView==0) {
-                    PersonInfoView(selectedPerson: selectedPerson)
-                } else if (selectedView==1) {
-                    ZStack {
-                        TimelineView(person: selectedPerson).environmentObject(updater)
-                        
-                        
-                        //The Add Button
-                        VStack {
-                            Spacer()
-                            HStack {
-                                Spacer()
-                                
-                                Button(action: {showingWhatToCreateConfirm.toggle()}) {
-                                    Image(systemName: "plus.circle.fill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .clipShape(Circle())
-                                        .frame(minWidth: 50, maxWidth: 50)
-                                        .padding(30)
-                                }.confirmationDialog("chooseWhatToCreate", isPresented: $showingWhatToCreateConfirm) {
-                                    Button {
-                                        //New TODO Item
-                                        editEventEventType = N40Event.TODO_TYPE
-                                        showingEditEventSheet.toggle()
-                                    } label: {
-                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE]
-                                        Label(type[0], systemImage: type[1])
-                                    }
-                                    Button {
-                                        //("New Reportable Event")
-                                        editEventEventType = N40Event.REPORTABLE_TYPE
-                                        showingEditEventSheet.toggle()
-                                    } label: {
-                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]
-                                        Label(type[0], systemImage: type[1])
-                                    }
-                                    Button {
-                                        //("New Unreportable Event")
-                                        editEventEventType = N40Event.NON_REPORTABLE_TYPE
-                                        showingEditEventSheet.toggle()
-                                    } label: {
-                                        let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.NON_REPORTABLE_TYPE]
-                                        Label(type[0], systemImage: type[1])
-                                    }
-                                    
-                                } message: {
-                                    Text("What would you like to add?")
-                                }
-                                .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
-                                    EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingPerson: selectedPerson)
-                                }
-                                
-                            }
-                        }
-                    }
-                }
-                
-                
-                Spacer()
+                }.padding()
             }
             
+            HStack {
+                
+                if (selectedView == 0) {
+                    Button {
+                        selectedView = 0
+                    } label: {
+                        Text("Info")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .font(.title2)
+                    .buttonStyle(.borderedProminent)
+                    
+                } else {
+                    Button {
+                        selectedView = 0
+                    } label: {
+                        Text("Info")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .font(.title2)
+                    .buttonStyle(.bordered)
+                }
+                
+                
+                if (selectedView == 1) {
+                    Button {
+                        selectedView = 1
+                    } label: {
+                        Text("Timeline")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .font(.title2)
+                    .buttonStyle(.borderedProminent)
+                } else {
+                    Button {
+                        selectedView = 1
+                    } label: {
+                        Text("Timeline")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .font(.title2)
+                    .buttonStyle(.bordered)
+                }
+                
+                
+                
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            
+            
+            if (selectedView==0) {
+                PersonInfoView(selectedPerson: selectedPerson)
+            } else if (selectedView==1) {
+                ZStack {
+                    TimelineView(person: selectedPerson).environmentObject(updater)
+                    
+                    
+                    //The Add Button
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            
+                            Button(action: {showingWhatToCreateConfirm.toggle()}) {
+                                Image(systemName: "plus.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .clipShape(Circle())
+                                    .frame(minWidth: 50, maxWidth: 50)
+                                    .padding(30)
+                            }.confirmationDialog("chooseWhatToCreate", isPresented: $showingWhatToCreateConfirm) {
+                                Button {
+                                    //New TODO Item
+                                    editEventEventType = N40Event.TODO_TYPE
+                                    showingEditEventSheet.toggle()
+                                } label: {
+                                    let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE]
+                                    Label(type[0], systemImage: type[1])
+                                }
+                                Button {
+                                    //("New Reportable Event")
+                                    editEventEventType = N40Event.REPORTABLE_TYPE
+                                    showingEditEventSheet.toggle()
+                                } label: {
+                                    let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]
+                                    Label(type[0], systemImage: type[1])
+                                }
+                                Button {
+                                    //("New Unreportable Event")
+                                    editEventEventType = N40Event.NON_REPORTABLE_TYPE
+                                    showingEditEventSheet.toggle()
+                                } label: {
+                                    let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.NON_REPORTABLE_TYPE]
+                                    Label(type[0], systemImage: type[1])
+                                }
+                                
+                            } message: {
+                                Text("What would you like to add?")
+                            }
+                            .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
+                                EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingPerson: selectedPerson)
+                            }
+                            
+                        }
+                    }
+                }
+            }
+            
+            
+            Spacer()
         }
+        
+        
     }
 }
 
@@ -189,6 +188,14 @@ struct PersonInfoView: View {
                         Spacer()
                     }.padding()
                 }
+                
+                if (selectedPerson.notes != "") {
+                    HStack {
+                        Text(selectedPerson.notes)
+                        Spacer()
+                    }.padding()
+                }
+                
             }
             
         }
@@ -287,12 +294,12 @@ fileprivate extension Date {
         
         // Create Date Formatter
         let dateFormatter = DateFormatter()
-
+        
         // Set Date Format
         dateFormatter.dateFormat = "MMM d"
-
+        
         // Convert Date to String
         return dateFormatter.string(from: self)
-
+        
     }
 }

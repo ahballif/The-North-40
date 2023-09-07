@@ -27,6 +27,8 @@ extension N40Person {
     @NSManaged public var socialMedia1: String
     @NSManaged public var socialMedia2: String
     
+    @NSManaged public var notes: String
+    
     @NSManaged public var hasBirthday: Bool
     @NSManaged public var birthday: Date
     @NSManaged public var birthdayMonth: Int16
