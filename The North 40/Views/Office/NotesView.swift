@@ -11,13 +11,17 @@ struct NotesView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.colorScheme) var colorScheme
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Note.date, ascending: true)])
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Note.date, ascending: true)], predicate: NSPredicate(format: "archived == NO"))
     private var fetchedNotes: FetchedResults<N40Note>
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Note.date, ascending: true)], predicate: NSPredicate(format: "archived == YES"))
+    private var fetchedArchivedNotes: FetchedResults<N40Note>
     
     @State private var showingCreateSheet = false
     
     @State private var editNoteItem: N40Note? = nil
     
+    @State private var showingArchivedNotesSheet = false
     
     var body: some View {
         VStack {
@@ -29,7 +33,21 @@ struct NotesView: View {
                     Button(note.title) {
                         editNoteItem = note
                     }.foregroundColor(((colorScheme == .dark) ? .white : .black))
-                        
+                        .swipeActions {
+                            Button {
+                                note.archived = true
+                                
+                                do {
+                                    try viewContext.save()
+                                }
+                                catch {
+                                    // Handle Error
+                                    print("Error info: \(error)")
+                                }
+                            } label: {
+                                Label("Archive", systemImage: "Archive Box")
+                            }.tint(.purple)
+                        }
                 }.sheet(item: $editNoteItem) {item in
                     EditNoteView(editNote: item)
                 }
@@ -43,12 +61,37 @@ struct NotesView: View {
                 }
             }
             
-            
+        
+            .toolbar {
+                Button {
+                    showingArchivedNotesSheet.toggle()
+                } label: {
+                    Label("Archived", systemImage: "archivebox")
+                }.sheet(isPresented: $showingArchivedNotesSheet) {
+                    VStack {
+                        HStack {
+                            Text("Archived Notes").font(.title2)
+                            Spacer()
+                        }.padding()
+                        List {
+                            ForEach(fetchedArchivedNotes) {archiveNote in
+                                Text(archiveNote.title)
+                                    .swipeActions {
+                                        Button {
+                                            archiveNote.archived = false
+                                        } label: {
+                                            Label("Unarchive", systemImage: "arrowshape.left.fill")
+                                        }.tint(.green)
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
             
         }
     }
 }
-
 
 
 struct EditNoteView: View {
@@ -70,6 +113,8 @@ struct EditNoteView: View {
     
     @State private var showingOptionsSheet = false
     
+    @State private var showingConfirmDelete = false
+    
     var body: some View {
         VStack {
             
@@ -79,6 +124,19 @@ struct EditNoteView: View {
                 Spacer()
                 Text(editNote != nil ? "Edit Note" : "Create New Note")
                 Spacer()
+                Button() {
+                    showingConfirmDelete.toggle()
+                } label: {
+                    Image(systemName: "trash")
+                }.confirmationDialog("Delete Note?", isPresented: $showingConfirmDelete) {
+                    Button("Delete Note", role: .destructive) {
+                        deleteNote()
+                        
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this note?")
+                }
+                
                 Button {
                     showingOptionsSheet.toggle()
                 } label: {
@@ -306,6 +364,9 @@ fileprivate struct SelectPeopleView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
+    let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
+    let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
     private var fetchedPeople: FetchedResults<N40Person>
@@ -313,18 +374,44 @@ fileprivate struct SelectPeopleView: View {
     var editNoteView: EditNoteView
     
     var body: some View {
-        List(fetchedPeople) {person in
-            HStack {
-                Text("\(person.firstName) \(person.lastName)")
-                Spacer()
+        
+        
+        List{
+            let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
+            if noLetterLastNames.count > 0 {
+                Section(header: Text("*")) {
+                    ForEach(noLetterLastNames, id: \.self) { person in
+                        HStack {
+                            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editNoteView.attachPerson(addPerson: person)
+                            dismiss()
+                        }
+                    }
+                }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                editNoteView.attachPerson(addPerson: person)
-                dismiss()
+            ForEach(alphabet, id: \.self) { letter in
+                let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                if (letterSet.count > 0) {
+                    Section(header: Text(letter)) {
+                        ForEach(letterSet, id: \.self) { person in
+                            HStack {
+                                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                editNoteView.attachPerson(addPerson: person)
+                                dismiss()
+                            }
+                        }
+                    }
+                }
             }
-            
-        }
+        }.padding(.horizontal, 3)
     }
 }
 
@@ -336,23 +423,44 @@ fileprivate struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.deadline, ascending: true)], animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
     
     var editNoteView: EditNoteView
     
     var body: some View {
         List(fetchedGoals) {goal in
-            HStack {
-                Text(goal.name)
-                Spacer()
-            }
-            .contentShape(Rectangle())
+            goalBox(goal)
             .onTapGesture {
                 editNoteView.attachGoal(addGoal: goal)
                 dismiss()
             }
             
         }
+    }
+    
+    private func goalBox (_ goal: N40Goal) -> some View {
+        return VStack {
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .foregroundColor(Color(hex: goal.color))
+                    .opacity(1.0)
+                    .frame(height: 50.0)
+                HStack {
+                    Text(goal.name)
+                    Spacer()
+                }.padding()
+            }
+            if goal.hasDeadline {
+                HStack {
+                    Text("Deadline: \(goal.deadline.dateOnlyToString())")
+                    Spacer()
+                }.padding()
+            }
+        }.background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(hex: goal.color)!)
+                .opacity(0.5)
+        )
     }
 }

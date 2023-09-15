@@ -38,6 +38,8 @@ struct EditTransactionView: View {
     @State private var isPresentingConfirm: Bool = false
     @State private var isPresentingRecurringDeleteConfirm: Bool = false
     
+    @State private var isShowingAlertForTransactionAffiliation = false
+    @State private var warned = false
     
     var body: some View {
         ScrollView {
@@ -140,6 +142,10 @@ struct EditTransactionView: View {
             
         }.onAppear {
             populateFields()
+            if (editTransaction?.isPartOfEnvelopeTransfer ?? false && !warned) {
+                isShowingAlertForTransactionAffiliation.toggle()
+                warned = true
+            }
         }
         .toolbar {
             ToolbarItemGroup {
@@ -222,6 +228,10 @@ struct EditTransactionView: View {
                 
             }
         }
+        .alert("This transaction was part of an envelope transfer. Deleting or changing this transaction will not change the corresponding transactions in the other envelopes. Make sure to change the others as well to prevent an imbalance.",
+                isPresented: $isShowingAlertForTransactionAffiliation) {
+              }
+
         
     }
     

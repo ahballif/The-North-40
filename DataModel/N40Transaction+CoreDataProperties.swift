@@ -23,11 +23,11 @@ extension N40Transaction {
     @NSManaged public var recurringTag: String
     @NSManaged public var notes: String
     
+    @NSManaged public var isPartOfEnvelopeTransfer: Bool
+    
     @NSManaged public var envelope: NSSet?
     @NSManaged public var event: N40Event?
     
-    @NSManaged public var fromEnvelopeTransfer: N40EnvelopeTransfer?
-    @NSManaged public var toEnvelopeTransfer: N40EnvelopeTransfer?
 
     
     public func getEnvelope() -> N40Envelope? {

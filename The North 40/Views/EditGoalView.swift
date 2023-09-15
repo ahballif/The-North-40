@@ -26,12 +26,13 @@ struct EditGoalView: View {
     
     @State private var isPresentingDeleteConfirm = false
     
-    @State public var parentGoal: N40Goal? = nil
+    @State public var endGoals: [N40Goal] = []
     @State private var showingChooseParentGoalSheet = false
     
     @State private var selectedColor: Color = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5) //start with a random color.
     
     @State var editGoal: N40Goal?
+    @State public var parentGoal: N40Goal?
     
     var body: some View {
         ScrollView {
@@ -60,7 +61,7 @@ struct EditGoalView: View {
                     }
                 }
                 .padding(.horizontal)
-                .frame(maxHeight: 150)
+                .frame(minHeight: 150)
             
             //Choosing date and time
             Toggle("Set Deadline", isOn: $hasDeadline)
@@ -75,14 +76,37 @@ struct EditGoalView: View {
             }
             
             
-            //Choosing Parent Goal
-            HStack {
-                Button("End Goal: \(parentGoal != nil ? parentGoal!.name : "No Parent Goal Selected")") {
+            VStack {
+                HStack{
+                    Text("End Goals:")
+                        .font(.title3)
+                    Spacer()
+                }
+                
+                ForEach(endGoals) { eachEndGoal in
+                    HStack {
+                        NavigationLink(destination: GoalDetailView(selectedGoal: eachEndGoal)) {
+                            Text("\(eachEndGoal.name)")
+                        }.buttonStyle(.plain)
+                        Spacer()
+                        Button {
+                            removeParent(endGoal: eachEndGoal)
+                        } label: {
+                            Image(systemName: "multiply")
+                        }
+                    }.padding()
+                }
+                
+                Button(action: {
                     showingChooseParentGoalSheet.toggle()
+                }) {
+                    Label("Add End Goal", systemImage: "plus").padding()
                 }.sheet(isPresented: $showingChooseParentGoalSheet) {
                     SelectGoalView(editGoalView: self)
                 }
-            }
+                    
+                
+            }.padding(.vertical)
             
             //Attaching people
             VStack {
@@ -185,6 +209,9 @@ struct EditGoalView: View {
                 alreadyAttachedPeople.forEach {person in
                     newGoal.removeFromAttachedPeople(person)
                 }
+                
+                
+                
             }
             //Now add back only the ones that are selected.
             attachedPeople.forEach {person in
@@ -193,7 +220,15 @@ struct EditGoalView: View {
             
             newGoal.color = selectedColor.toHex() ?? "#40BF50"
             
-            newGoal.endGoal = parentGoal
+            for goal in newGoal.getEndGoals {
+                newGoal.removeFromEndGoals(goal)
+            }
+            for goal in endGoals {
+                newGoal.addToEndGoals(goal)
+            }
+            
+            
+            
             
             // To save the new entity to the persistent store, call
             // save on the context
@@ -223,9 +258,15 @@ struct EditGoalView: View {
         } else {
             selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
         }
-        if parentGoal == nil {
-            parentGoal = editGoal?.endGoal
+        
+        endGoals = []
+        for endGoal in editGoal?.getEndGoals ?? [] {
+            endGoals.append(endGoal)
         }
+        if parentGoal != nil {
+            endGoals.append(parentGoal!)
+        }
+        
         editGoal?.attachedPeople?.forEach {person in
             attachedPeople.append(person as! N40Person)
         }
@@ -243,23 +284,17 @@ struct EditGoalView: View {
         let idx = attachedPeople.firstIndex(of: removedPerson) ?? -1
         if idx != -1 {
             attachedPeople.remove(at: idx)
-            
-            editGoal?.removeFromAttachedPeople(removedPerson)
-            
         }
     }
     
-    public func setParent(newParent: N40Goal?) {
-        if newParent != nil {
-            //Set the new parent
-            parentGoal = newParent
-        } else {
-            //Remove the parent
-            parentGoal = nil
-        }
+    public func addEndGoal(newEndGoal: N40Goal) {
+        endGoals.append(newEndGoal)
     }
-    public func removeParent() {
-        self.setParent(newParent: nil)
+    public func removeParent(endGoal: N40Goal) {
+        let idx = endGoals.firstIndex(of: endGoal) ?? -1
+        if idx != -1 {
+            endGoals.remove(at: idx)
+        }
     }
     
 }
@@ -271,6 +306,10 @@ fileprivate struct SelectPeopleView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
+    let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
+    let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    
+    
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
     private var fetchedPeople: FetchedResults<N40Person>
@@ -278,18 +317,44 @@ fileprivate struct SelectPeopleView: View {
     var editGoalView: EditGoalView
     
     var body: some View {
-        List(fetchedPeople) {person in
-            HStack {
-                Text("\(person.firstName) \(person.lastName)")
-                Spacer()
+        
+        List {
+            let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
+            if noLetterLastNames.count > 0 {
+                Section(header: Text("*")) {
+                    ForEach(noLetterLastNames, id: \.self) { person in
+                        HStack {
+                            Text("\(person.firstName) \(person.lastName)")
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editGoalView.attachPerson(addPerson: person)
+                            dismiss()
+                        }
+                    }
+                }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                editGoalView.attachPerson(addPerson: person)
-                dismiss()
+            ForEach(alphabet, id: \.self) { letter in
+                let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                if (letterSet.count > 0) {
+                    Section(header: Text(letter)) {
+                        ForEach(letterSet, id: \.self) { person in
+                            HStack {
+                                Text("\(person.firstName) \(person.lastName)")
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                editGoalView.attachPerson(addPerson: person)
+                                dismiss()
+                            }
+                        }
+                    }
+                }
             }
-            
-        }
+        }.padding(.horizontal, 3)
+
     }
 }
 
@@ -309,31 +374,48 @@ fileprivate struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.deadline, ascending: true)], animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
     
     var editGoalView: EditGoalView
     
     var body: some View {
         List {
-            Button("No Parent") {
-                editGoalView.removeParent()
-                dismiss()
-            }
             ForEach(fetchedGoals) {goal in
                 if (goal != editGoalView.editGoal) {
-                    HStack {
-                        Text(goal.name)
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
+                    goalBox(goal)
                     .onTapGesture {
-                        editGoalView.setParent(newParent: goal)
+                        editGoalView.addEndGoal(newEndGoal: goal)
                         dismiss()
                     }
                 }
             }
         }
+    }
+    
+    private func goalBox (_ goal: N40Goal) -> some View {
+        return VStack {
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .foregroundColor(Color(hex: goal.color))
+                    .opacity(1.0)
+                    .frame(height: 50.0)
+                HStack {
+                    Text(goal.name)
+                    Spacer()
+                }.padding()
+            }
+            if goal.hasDeadline {
+                HStack {
+                    Text("Deadline: \(goal.deadline.dateOnlyToString())")
+                    Spacer()
+                }.padding()
+            }
+        }.background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(hex: goal.color)!)
+                .opacity(0.5)
+        )
     }
 }
 

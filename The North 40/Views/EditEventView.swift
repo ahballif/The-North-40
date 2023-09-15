@@ -61,6 +61,8 @@ struct EditEventView: View {
     public var attachingGoal: N40Goal? = nil
     public var attachingPerson: N40Person? = nil
     
+    @State private var showingSelectOnCalendarSheet = false
+    
     var body: some View {
         VStack {
             
@@ -87,9 +89,17 @@ struct EditEventView: View {
                         Button(action: {
                             if status == 0 {
                                 status = 3
+                                
+                                if !isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView") {
+                                    chosenStartDate = Date()
+                                    isScheduled = true
+                                }
+                                
                             } else {
                                 status = 0
                             }
+                            
+                            
                         }) {
                             Image(systemName: (status == 0) ? "square" : "checkmark.square")
                         }.buttonStyle(PlainButtonStyle())
@@ -98,6 +108,28 @@ struct EditEventView: View {
                     TextField("Event Title", text: $eventTitle)
                         .font(.title2)
                         .padding(.vertical,  5)
+                        .onSubmit {
+                            
+                            let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+                            fetchRequest.predicate = NSPredicate(format: "name == %@", eventTitle)
+                            
+                            do {
+                                // Peform Fetch Request
+                                let fetchedSimilarEvents = try viewContext.fetch(fetchRequest)
+                                
+                                if fetchedSimilarEvents.count > 0 {
+                                    selectedColor = Color(hex: fetchedSimilarEvents[0].color) ?? selectedColor
+                                }
+                                
+                                
+                            } catch let error as NSError {
+                                print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+                            }
+                            
+                            
+                        }
+                    
+                    
                     
                 }
                 
@@ -187,137 +219,30 @@ struct EditEventView: View {
                     
                 }
                 
+                if information == "" {
+                    //If the description is empty put the controls at the top
+                    eventDetailControls()
+                }
                 
-                VStack {
                     
-                    //Choosing date and time
-                    Toggle("Schedule Event", isOn: $isScheduled)
-                    
-                    DatePicker(selection: $chosenStartDate) {
-                        Text("From: ")
-                    }.disabled(!isScheduled)
-                        .onChange(of: chosenStartDate, perform: { (value) in
-                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
-                            allConfirmsFalse()
-                        })
-                        
-
-                    DatePicker(selection: $chosenEndDate) {
-                        Text("To: ")
-                    }.disabled(!isScheduled)
-                        .onChange(of: chosenEndDate, perform: { _ in
-                            duration = getMinutesDifferenceFromTwoDates(start: chosenStartDate, end: chosenEndDate)
-                            allConfirmsFalse()
-                        })
-                    
-
-                    HStack {
-                        Text("All Day: ")
-                        Toggle("All Day: ", isOn: $allDay)
-                            .labelsHidden()
-                            .disabled(!isScheduled)
-                        Spacer()
-                        
-                        Button("Set to Now") {
-                            chosenStartDate = Date()
-                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
-                        }.disabled(!isScheduled)
-                        
-                    }
-                    
-                    HStack {
-                        
-                        Text("Duration: \(duration) min")
-                        Spacer()
-                        Stepper("", value: $duration, in: 0...1440, step: 5, onEditingChanged: {_ in
-                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
-                        })
-                            
-                    }
-                    
-                }
                 VStack {
                     HStack {
-                        Picker("Contact Method: ", selection: $contactMethod) {
-                            ForEach(N40Event.CONTACT_OPTIONS, id: \.self) {
-                                Label($0[0], systemImage: $0[1])
-                            }
-                        }
+                        Text("Event Description: ")
                         Spacer()
                     }
-                    
-                    HStack {
-                        TextField("Location:", text: $location)
-                        Spacer()
-                        if (location != "") {
-                            Button(action: {
-                                guard let address = URL(string: "https://www.google.com/maps/place/\(location.replacingOccurrences(of: " ", with: "+"))") else { return }
-                                UIApplication.shared.open(address)
-                            }) {
-                                Label("", systemImage: "map.fill")
-                            }
-                        }
-                    }
+                    TextEditor(text: $information)
+                        .padding(.horizontal)
+                        .shadow(color: .gray, radius: 5)
+                        .frame(minHeight: 100)
                     
                     
-                    HStack {
-                        Picker("Event Type: ", selection: $eventType) {
-                            ForEach(N40Event.EVENT_TYPE_OPTIONS, id: \.self) {
-                                Label($0[0], systemImage: $0[1])
-                            }
-                        }
-                        Spacer()
-                        Text("Color: ")
-                        ColorPicker("", selection: $selectedColor, supportsOpacity: false)
-                            .labelsHidden()
-                        
-                    }
-                    
-                    VStack {
-                        VStack {
-                            HStack {
-                                Text("Repeat event: ")
-                                if (!isAlreadyRepeating) {
-                                    Picker("", selection: $repeatOptionSelected) {
-                                        ForEach(repeatOptions, id: \.self) { option in
-                                            Text(option)
-                                        }
-                                    }.disabled(!isScheduled)
-                                    
-                                    Spacer()
-                                    
-                                    
-                                } else {
-                                    Text("This is a repeating event. ")
-                                    
-                                    Spacer()
-                                }
-                            }
-                            if (!isAlreadyRepeating) {
-                                HStack {
-                                    Text("For \(numberOfRepeats) Months")
-                                    Stepper("", value: $numberOfRepeats, in: 1...12)
-                                        .disabled(!isScheduled)
-                                    
-                                }
-                            }
-                        }.padding()
-                    }.border(.gray)
-                    
-                    
-                    VStack {
-                        HStack {
-                            Text("Event Description: ")
-                            Spacer()
-                        }
-                        TextEditor(text: $information)
-                            .padding(.horizontal)
-                            .shadow(color: .gray, radius: 5)
-                            .frame(minHeight: 100)
-                        
-                        
-                    }
                 }
+                
+                if information != "" {
+                    //but if the desription is not empty, put it first.
+                    eventDetailControls()
+                }
+                
                 
                 VStack {
                     HStack{
@@ -332,6 +257,7 @@ struct EditEventView: View {
                             NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
                                 Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
                             }.buttonStyle(.plain)
+                                
                             Spacer()
                             Button {
                                 removePerson(removedPerson: person)
@@ -365,7 +291,9 @@ struct EditEventView: View {
                             NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
                                 Text(goal.name)
                                 
-                            }.buttonStyle(.plain)
+                            }
+                            .buttonStyle(.plain)
+                                
                             Spacer()
                             Button {
                                 removeGoal(removedGoal: goal)
@@ -491,6 +419,144 @@ struct EditEventView: View {
         
     }
     
+    public func eventDetailControls () -> some View {
+        return VStack {
+            VStack {
+                
+                //Choosing date and time
+                HStack {
+                    Text("Scheduled: ")
+                    Toggle("Schedule Event", isOn: $isScheduled)
+                        .labelsHidden()
+                    Spacer()
+                    Text("All Day: ")
+                    Toggle("All Day: ", isOn: $allDay)
+                        .labelsHidden()
+                        .disabled(!isScheduled)
+                    
+                }
+                DatePicker(selection: $chosenStartDate) {
+                    Text("From: ")
+                }.disabled(!isScheduled)
+                    .onChange(of: chosenStartDate, perform: { (value) in
+                        chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                        allConfirmsFalse()
+                    })
+                    
+
+                DatePicker(selection: $chosenEndDate) {
+                    Text("To: ")
+                }.disabled(!isScheduled)
+                    .onChange(of: chosenEndDate, perform: { _ in
+                        duration = getMinutesDifferenceFromTwoDates(start: chosenStartDate, end: chosenEndDate)
+                        allConfirmsFalse()
+                    })
+                
+
+                HStack {
+                    
+                    
+                    Button("Set to Now") {
+                        chosenStartDate = Date()
+                        chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                    }.disabled(!isScheduled)
+                    Spacer()
+                    Button("Select on Calendar") {
+                        showingSelectOnCalendarSheet.toggle()
+                    }.buttonStyle(.bordered)
+                        .disabled(!isScheduled)
+                    .sheet(isPresented: $showingSelectOnCalendarSheet) {
+                        SelectOnScheduleView(editEventView: self, filteredDay: chosenStartDate)
+                    }
+                    
+                }
+                
+                HStack {
+                    
+                    Text("Duration: \(duration) min")
+                    Spacer()
+                    Stepper("", value: $duration, in: 0...1440, step: 5, onEditingChanged: {_ in
+                        chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                    })
+                        
+                }
+                
+            }
+            VStack {
+                HStack {
+                    Text("Event Medium: ")
+                    Spacer()
+                    Picker("Contact Method: ", selection: $contactMethod) {
+                        ForEach(N40Event.CONTACT_OPTIONS, id: \.self) {
+                            Label($0[0], systemImage: $0[1])
+                        }
+                    }
+                    
+                }
+                
+                HStack {
+                    TextField("Location:", text: $location)
+                    Spacer()
+                    if (location != "") {
+                        Button(action: {
+                            guard let address = URL(string: "https://www.google.com/maps/place/\(location.replacingOccurrences(of: " ", with: "+"))") else { return }
+                            UIApplication.shared.open(address)
+                        }) {
+                            Label("", systemImage: "map.fill")
+                        }
+                    }
+                }
+                
+                
+                HStack {
+                    Picker("Event Type: ", selection: $eventType) {
+                        ForEach(N40Event.EVENT_TYPE_OPTIONS, id: \.self) {
+                            Label($0[0], systemImage: $0[1])
+                        }
+                    }
+                    Spacer()
+                    Text("Color: ")
+                    ColorPicker("", selection: $selectedColor, supportsOpacity: false)
+                        .labelsHidden()
+                    
+                }
+                
+                VStack {
+                    VStack {
+                        HStack {
+                            Text("Repeat event: ")
+                            if (!isAlreadyRepeating) {
+                                Picker("", selection: $repeatOptionSelected) {
+                                    ForEach(repeatOptions, id: \.self) { option in
+                                        Text(option)
+                                    }
+                                }.disabled(!isScheduled)
+                                
+                                Spacer()
+                                
+                                
+                            } else {
+                                Text("This is a repeating event. ")
+                                
+                                Spacer()
+                            }
+                        }
+                        if (!isAlreadyRepeating) {
+                            HStack {
+                                Text("For \(numberOfRepeats) Months")
+                                Stepper("", value: $numberOfRepeats, in: 1...12)
+                                    .disabled(!isScheduled)
+                                
+                            }
+                        }
+                    }.padding()
+                }.border(.gray)
+            }
+        }
+    }
+    
+    
+    
     public func attachPerson(addPerson: N40Person) {
         //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
         attachedPeople.append(addPerson)
@@ -501,9 +567,6 @@ struct EditEventView: View {
         let idx = attachedPeople.firstIndex(of: removedPerson) ?? -1
         if idx != -1 {
             attachedPeople.remove(at: idx)
-            
-            editEvent?.removeFromAttachedPeople(removedPerson)
-            
         }
     }
     
@@ -515,8 +578,6 @@ struct EditEventView: View {
         let idx = attachedGoals.firstIndex(of: removedGoal) ?? -1
         if idx != -1 {
             attachedGoals.remove(at: idx)
-            
-            editEvent?.removeFromAttachedGoals(removedGoal)
         }
     }
     
@@ -935,7 +996,9 @@ struct EditEventView: View {
         
     }
     
-    
+    public func setDate(date: Date) {
+        chosenStartDate = date
+    }
     
         
 }
@@ -966,24 +1029,53 @@ fileprivate struct SelectPeopleView: View {
     @Environment(\.dismiss) private var dismiss
     
     
+    let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
+    let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    
+    
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
     private var fetchedPeople: FetchedResults<N40Person>
     
     var editEventView: EditEventView
     
     var body: some View {
-        List(fetchedPeople) {person in
-            HStack {
-                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                Spacer()
+    
+        List{
+            let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
+            if noLetterLastNames.count > 0 {
+                Section(header: Text("*")) {
+                    ForEach(noLetterLastNames, id: \.self) { person in
+                        HStack {
+                            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editEventView.attachPerson(addPerson: person)
+                            dismiss()
+                        }
+                    }
+                }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                editEventView.attachPerson(addPerson: person)
-                dismiss()
+            ForEach(alphabet, id: \.self) { letter in
+                let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                if (letterSet.count > 0) {
+                    Section(header: Text(letter)) {
+                        ForEach(letterSet, id: \.self) { person in
+                            HStack {
+                                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                editEventView.attachPerson(addPerson: person)
+                                dismiss()
+                            }
+                        }
+                    }
+                }
             }
-            
-        }
+        }.padding(.horizontal, 3)
     }
 }
 
@@ -995,18 +1087,14 @@ fileprivate struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.deadline, ascending: true)], animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
     
     var editEventView: EditEventView
     
     var body: some View {
         List(fetchedGoals) {goal in
-            HStack {
-                Text(goal.name)
-                Spacer()
-            }
-            .contentShape(Rectangle())
+            goalBox(goal)
             .onTapGesture {
                 editEventView.attachGoal(addGoal: goal)
                 dismiss()
@@ -1014,8 +1102,48 @@ fileprivate struct SelectGoalView: View {
             
         }
     }
+    
+    private func goalBox (_ goal: N40Goal) -> some View {
+        return VStack {
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .foregroundColor(Color(hex: goal.color))
+                    .opacity(1.0)
+                    .frame(height: 50.0)
+                HStack {
+                    Text(goal.name)
+                    Spacer()
+                }.padding()
+            }
+            if goal.hasDeadline {
+                HStack {
+                    Text("Deadline: \(goal.deadline.dateOnlyToString())")
+                    Spacer()
+                }.padding()
+            }
+        }.background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(hex: goal.color)!)
+                .opacity(0.5)
+        )
+    }
+    
 }
 
+
+fileprivate extension Date {
+    
+    func formatToShortDate () -> String {
+        let dateFormatter = DateFormatter()
+
+        
+        dateFormatter.dateFormat = "M/d/YY, h:mm a"
+        
+        // Convert Date to String
+        return dateFormatter.string(from: self)
+    }
+    
+}
 
 extension Color {
     init?(hex: String) {
@@ -1072,3 +1200,428 @@ extension Color {
         }
     }
 }
+
+
+
+// SELECT ON SCHEDULE VIEW
+// A lot like the daily planner view but all the buttons are just images except the ones that detect what time you click on.
+fileprivate struct SelectOnScheduleView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    public var editEventView: EditEventView? = nil
+    @State public var filteredDay: Date = Date()
+    
+   
+    
+    var body: some View {
+        VStack {
+            VStack {
+                HStack {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    Spacer()
+                    
+                }
+                HStack {
+                    HStack {
+                        Text(filteredDay.dayOfWeek())
+                        
+                        DatePicker("Selected Day", selection: $filteredDay, displayedComponents: .date)
+                            .labelsHidden()
+                        
+                        
+                        Spacer()
+                        
+                        Button("Today") {
+                            filteredDay = Date()
+                            
+                        }
+                    }
+                }
+            }.padding()
+            
+            scheduleViewCanvas(filter: filteredDay, editEventView: editEventView)
+        }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
+            .onEnded { value in
+                
+                let horizontalAmount = value.translation.width
+                let verticalAmount = value.translation.height
+                
+                if abs(horizontalAmount) > abs(verticalAmount) {
+                    if (horizontalAmount < 0) {
+                        //Left swipe
+                        filteredDay = Calendar.current.date(byAdding: .day, value: 1, to: filteredDay) ?? filteredDay
+                    } else {
+                        //right swipe
+                        filteredDay = Calendar.current.date(byAdding: .day, value: -1, to: filteredDay) ?? filteredDay
+                    }
+                }
+                
+            })
+    }
+}
+
+fileprivate struct scheduleViewCanvas: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    
+    
+    @FetchRequest var fetchedEvents: FetchedResults<N40Event>
+    
+    @State private var clickedOnTime = Date()
+    
+    public var editEventView: EditEventView? = nil
+    
+    @State private var hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
+    public static let minimumEventHeight = 25.0
+    
+    
+    public var filteredDay: Date
+    
+    var body: some View {
+        
+        //The main timeline
+        ScrollViewReader { value in
+            ScrollView {
+                ZStack(alignment: .topLeading) {
+                    
+                    //Hour Lines
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(0..<24) { hour in
+                            HStack {
+                                Text("\(((hour+11) % 12)+1)")
+                                    .font(.caption)
+                                    .frame(width: 20, alignment: .trailing)
+                                Color.gray
+                                    .frame(height: 1)
+                            }
+                            .frame(height: hourHeight)
+                            .id(hour)
+                        }
+                    }.onChange(of: filteredDay) {_ in
+                        value.scrollTo(Calendar.current.component(.hour, from: filteredDay))
+                    }
+                    
+                    //Invisible buttons to add an event
+                    VStack(alignment: .leading, spacing: 0) {
+                        Rectangle()
+                            .fill(.clear)
+                            .frame(height: hourHeight/2) //offset the buttons by 2 slots
+                        
+                        
+                        ForEach(0..<(24*Int(hourHeight/DailyPlanner.minimumEventHeight)), id: \.self) {idx in
+                            Rectangle()
+                                .fill(Color.black.opacity(0.0001))
+                                .onTapGesture {
+                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                    impactMed.impactOccurred()
+                                    
+                                    clickedOnTime = getSelectedTime(idx: idx)
+                                    editEventView?.setDate(date: clickedOnTime)
+                                    dismiss()
+                                    
+                                }
+                                .frame(height: DailyPlanner.minimumEventHeight)
+                        }
+                        
+                    }
+                    
+                    
+                    ForEach(fetchedEvents) { event in
+                        eventCell(event, allEvents: fetchedEvents.reversed())
+                    }
+                    if (filteredDay.startOfDay == Date().startOfDay) {
+                        Color.red
+                            .frame(height: 1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .offset(x: 0, y: getNowOffset() + hourHeight/2)
+                        
+                        
+                    }
+                    
+                    
+                    
+                }
+                
+            }
+            .onAppear {
+                hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
+                value.scrollTo(Calendar.current.component(.hour, from: filteredDay))
+            }
+        }
+        
+        
+        
+    }
+    
+    
+    init (filter: Date, editEventView: EditEventView?) {
+        let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
+        let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
+        let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
+        
+        let notAllDayPredicate = NSPredicate(format: "allDay == NO")
+        
+        _fetchedEvents = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, notAllDayPredicate]))
+        
+        self.filteredDay = filter
+        self.editEventView = editEventView
+    }
+    
+    func getSelectedTime (idx: Int) -> Date {
+        
+        var dateComponents = DateComponents()
+        dateComponents.year = Calendar.current.component(.year, from: filteredDay)
+        dateComponents.month = Calendar.current.component(.month, from: filteredDay)
+        dateComponents.day = Calendar.current.component(.day, from: filteredDay)
+        dateComponents.hour = Int(Double(idx)*DailyPlanner.minimumEventHeight/hourHeight)
+        dateComponents.minute = (idx % Int(hourHeight/DailyPlanner.minimumEventHeight))*Int(60*DailyPlanner.minimumEventHeight/hourHeight)
+
+        // Create date from components
+        let userCalendar = Calendar(identifier: .gregorian) // since the components above (like year 1980) are for Gregorian
+        let someDateTime: Date = userCalendar.date(from: dateComponents)!
+        
+        return someDateTime
+    }
+    
+    func allEventsAtTime(at: Date, duration: Int, allEvents: [N40Event]) -> [N40Event] {
+        //returns an int of how many events are in that location
+        var eventsAtTime: [N40Event] = []
+        
+        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
+        let testDuration = Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
+        
+        
+        let startOfInterval = at.zeroSeconds
+        var endOfInterval = Calendar.current.date(byAdding: .minute, value: testDuration, to: at.zeroSeconds) ?? startOfInterval
+        
+        if endOfInterval.timeIntervalSince(startOfInterval) > 0 {
+            endOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: endOfInterval) ?? endOfInterval
+        } //subtract a second from the end of the interval to make it less confusing.
+        
+        allEvents.forEach {eachEvent in
+            
+            let eventTestDuration = Int(eachEvent.duration) > Int(minDuration) ? Int(eachEvent.duration) : Int(minDuration)
+            
+            let eventStartOfInterval = eachEvent.startDate.zeroSeconds
+            var eventEndOfInterval = Calendar.current.date(byAdding: .minute, value: eventTestDuration, to: eventStartOfInterval) ?? eventStartOfInterval
+            
+            if eventEndOfInterval.timeIntervalSince(eventStartOfInterval) > 0 {
+                eventEndOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: eventEndOfInterval) ?? endOfInterval
+            } //subtract a second from the end of the interval to make it less confusing.
+            
+            
+            //  considering the ranges are: [x1:x2] and [y1:y2]
+            // x1 <= y2 && y1 <= x2
+            if ( startOfInterval <= eventEndOfInterval && eventStartOfInterval <= endOfInterval) {
+                eventsAtTime.append(eachEvent)
+            }
+        }
+        
+        return eventsAtTime
+    }
+
+    
+    func numberOfEventsAtTime(at: Date, duration: Int, allEvents: [N40Event]) -> Int {
+        let allEventsAtTime = allEventsAtTime(at: at, duration: duration, allEvents: allEvents)
+        return allEventsAtTime.count
+    }
+    
+    func getLowestUntakenEventIndex (overlappingEvents: [N40Event]) -> Int {
+        
+        var takenIndices: [Int] = []
+        
+        //We need to iterate in accending order, so first just get all the indices
+        overlappingEvents.forEach {eachEvent in
+            takenIndices.append(eachEvent.renderIdx ?? -1)
+        }
+        takenIndices.sort()
+        
+        var lowestUntakeIdx = 0
+        
+        //now we can iterate through them
+        takenIndices.forEach {idx in
+            if idx == lowestUntakeIdx {
+                lowestUntakeIdx += 1
+            }
+        }
+        
+        return lowestUntakeIdx
+        
+    }
+    
+    func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
+        //all events is used for wrapping around other events.
+        
+        var height = Double(event.duration) / 60 * hourHeight
+        if (height < DailyPlanner.minimumEventHeight) {
+            height = DailyPlanner.minimumEventHeight
+        }
+        
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: event.startDate)
+        let minute = calendar.component(.minute, from: event.startDate)
+        let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
+        
+        let allEventsAtThisTime = allEventsAtTime(at: event.startDate, duration: Int(event.duration), allEvents: allEvents)
+        
+        event.renderIdx = -1 // basically reset it to be recalculated
+        event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
+        
+        return GeometryReader {geometry in
+            
+            ZStack {
+                if event.eventType == N40Event.INFORMATION_TYPE {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray)
+                        .opacity(0.0001)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .opacity(0.5)
+                        )
+                } else if event.eventType == N40Event.BACKUP_TYPE {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray)
+                        .opacity(0.25)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .opacity(0.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                        .opacity(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                
+                
+                HStack {
+                    if (event.eventType == N40Event.TODO_TYPE) {
+                        
+                        Image(systemName: (event.status == 0) ? "square" : "checkmark.square")
+                            .disabled((event.status != 0))
+                        
+                    }
+                    if event.contactMethod != 0 {
+                        Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
+                    }
+                    Text(event.startDate.formatted(.dateTime.hour().minute()))
+                    Text(event.name).bold()
+                        .lineLimit(0)
+                    Spacer()
+                }
+                .offset(y: (DailyPlanner.minimumEventHeight-height)/2)
+                .padding(.horizontal, 8)
+                
+                
+                HStack {
+                    Spacer()
+                    if (event.eventType == N40Event.REPORTABLE_TYPE) {
+                        if event.startDate > Date() {
+                            Image(systemName: "circle.dotted")
+                                .resizable()
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.UNREPORTED {
+                            Image(systemName: "questionmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.orange)
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.SKIPPED {
+                            Image(systemName: "slash.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.red)
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.ATTEMPTED {
+                            Image(systemName: "xmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.red)
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.HAPPENED {
+                            Image(systemName: "checkmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.green)
+                                .frame(width: 20, height:20)
+                        }
+                    } else if (event.eventType == N40Event.INFORMATION_TYPE) {
+                        Image(systemName: "dot.radiowaves.left.and.right")
+                            .resizable()
+                            .frame(width: 20, height:20)
+                    }
+                    
+                    if (event.recurringTag != "") {
+                        ZStack {
+                            Image(systemName: "repeat")
+                            if (isRecurringEventLast(event: event)) {
+                                Image(systemName: "line.diagonal")
+                                    .scaleEffect(x: -1.2, y: 1.2)
+                            }
+                        }
+                    }
+                    
+                    
+                }.padding(.horizontal, 8)
+                
+                
+            }
+            .font(.caption)
+            .padding(.horizontal, 4)
+            .frame(height: height, alignment: .top)
+            .frame(width: (geometry.size.width-40)/CGFloat(allEventsAtThisTime.count), alignment: .leading)
+            .padding(.trailing, 30)
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(allEventsAtThisTime.count)), y: offset + hourHeight/2)
+            
+        }
+    }
+    
+    func getNowOffset() -> CGFloat {
+        
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: Date())
+        let minute = calendar.component(.minute, from: Date())
+        let offset = Double(hour)*hourHeight + Double(minute)/60*hourHeight
+        
+        return offset
+        
+        
+    }
+    
+    
+    
+    func isRecurringEventLast (event: N40Event) -> Bool {
+        var isLast = false
+        
+        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+        
+        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (event.startDate as CVarArg)) //will include this event
+        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (event.recurringTag))
+        
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+        fetchRequest.predicate = compoundPredicate
+        
+        do {
+            // Peform Fetch Request
+            let fetchedEvents = try viewContext.fetch(fetchRequest)
+            
+            if fetchedEvents.count == 1 {
+                isLast = true
+            }
+            
+        } catch {
+            print("couldn't fetch recurring events")
+        }
+        
+        return isLast
+        
+    }
+    
+    
+}
+
+
+

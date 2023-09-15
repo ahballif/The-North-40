@@ -110,13 +110,6 @@ struct MapView: View {
     }
 }
 
-struct GroupsView: View {
-    var body: some View {
-        Text("This is the groups view. ")
-    }
-}
-
-
 struct StatsView: View {
     var body: some View {
         Text("This is the stats page. ")

@@ -83,9 +83,9 @@ private struct eventDisplayBoxView: View {
                         }.buttonStyle(PlainButtonStyle())
                         
                     }
-                    
-                    Image(systemName: N40Event.CONTACT_OPTIONS[Int(myEvent.contactMethod)][1])
-                    
+                    if myEvent.contactMethod != 0 {
+                        Image(systemName: N40Event.CONTACT_OPTIONS[Int(myEvent.contactMethod)][1])
+                    }
                     VStack {
                         if (myEvent.isScheduled) {
                             HStack {
@@ -177,6 +177,12 @@ private struct eventDisplayBoxView: View {
         
         if (toDo.status == 0) {
             toDo.status = 2
+            
+            if !toDo.isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_TimelineView") {
+                toDo.startDate = Date()
+                toDo.isScheduled = true
+            }
+            
             updater.updater.toggle()
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 //Wait 2 seconds to change from attempted to completed so it doesn't disappear too quickly

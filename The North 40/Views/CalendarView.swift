@@ -17,65 +17,120 @@ struct CalendarView: View {
     
     
     @State private var selectedDay = Date()
+    @State private var isNow = false
+
+    @State private var showingCalendar = true
+    @State private var showingInfoEvents = UserDefaults.standard.bool(forKey: "showingInfoEvents")
     
     var body: some View {
         NavigationView {
             
             
             VStack {
-                Text("Daily Planner")
-                    .font(.title2)
+                ZStack {
+                    
+                    HStack {
+                        Button {
+                            showingInfoEvents.toggle()
+                            UserDefaults.standard.set(showingInfoEvents, forKey: "showingInfoEvents")
+                        } label: {
+                            ZStack {
+                                Image(systemName: "dot.radiowaves.left.and.right")
+                                    
+                                if !showingInfoEvents {
+                                    Image(systemName: "line.diagonal")
+                                        .scaleEffect(x: -1.5, y: 1.5)
+                                        .foregroundColor(((colorScheme == .dark) ? .black : .white))
+                                    Image(systemName: "line.diagonal")
+                                        .scaleEffect(x: -1.2, y: 1.2)
+                                }
+                            }
+                        }
+                        Spacer()
+                        Button {
+                            showingCalendar.toggle()
+                        } label: {
+                            if showingCalendar {
+                                Image(systemName: "list.bullet.rectangle")
+                            } else {
+                                Image(systemName: "calendar")
+                            }
+                        }
+                    }.padding(.horizontal)
+                    
+                    Text("Daily \(showingCalendar ? "Planner" : "Agenda")")
+                        .font(.title2)
+                }
                 HStack {
                     Text(selectedDay.dayOfWeek())
                     
                     DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
                         .labelsHidden()
+                        .onChange(of: selectedDay) {_ in
+                            isNow = false
+                        }
                     
                     
                     Spacer()
                     
                     Button("Today") {
+                        if !isNow {
+                            isNow.toggle()
+                        } else {
+                            isNow.toggle()
+                            isNow.toggle()
+                        }
                         selectedDay = Date()
                         
                     }
                 }
                 .padding(.horizontal)
                 
-                ZStack {
-                    DailyPlanner(filter: selectedDay)
-                        .environment(\.managedObjectContext, viewContext)
-                    
-                    
-                    
-                    VStack {
-                        AllDayList(filter: selectedDay)
+                if showingCalendar {
+                    ZStack {
+                        DailyPlanner(filter: selectedDay, isNow: isNow)
                             .environment(\.managedObjectContext, viewContext)
-                            .background(((colorScheme == .dark) ? .black : .white))
-                        Spacer()
+                        
+                        
+                        
+                        VStack {
+                            AllDayList(filter: selectedDay)
+                                .environment(\.managedObjectContext, viewContext)
+                                .background(((colorScheme == .dark) ? .black : .white))
+                            Spacer()
+                        }
+                        
                     }
+                } else {
+                    AllDayList(filter: selectedDay)
                     
+                    AgendaView(filter: selectedDay)
+                    
+                    Spacer()
                 }
                 
             }
             
         }
         .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
-                    .onEnded { value in
-                        
-                        let horizontalAmount = value.translation.width
-                        let verticalAmount = value.translation.height
-                        
-                        if abs(horizontalAmount) > abs(verticalAmount) {
-                            if (horizontalAmount < 0) {
-                                //Left swipe
-                                selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
-                            } else {
-                                //right swipe
-                                selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
-                            }
-                        }
-                        
-                    })
+            .onEnded { value in
+                
+                let horizontalAmount = value.translation.width
+                let verticalAmount = value.translation.height
+                
+                if abs(horizontalAmount) > abs(verticalAmount) {
+                    if (horizontalAmount < 0) {
+                        //Left swipe
+                        selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
+                        isNow = false
+                    } else {
+                        //right swipe
+                        selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
+                        isNow = false
+                    }
+                }
+                
+            })
     }
 }
 
@@ -222,7 +277,7 @@ struct AllDayList: View {
                 ZStack {
                     
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(.gray)
+                        .fill(Color(hex: goal.color) ?? .gray)
                         .opacity(0.5)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .foregroundColor(((colorScheme == .dark) ? .white : .black))
@@ -350,77 +405,86 @@ struct DailyPlanner: View {
     public static let minimumEventHeight = 25.0
     
     private var filteredDay: Date
-        
+    private var isNow: Bool
     
     var body: some View {
         
         //The main timeline
-        ScrollView {
-            ZStack(alignment: .topLeading) {
-                
-                //Hour Lines
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(0..<24) { hour in
-                        HStack {
-                            Text("\(((hour+11) % 12)+1)")
-                                .font(.caption)
-                                .frame(width: 20, alignment: .trailing)
-                            Color.gray
-                                .frame(height: 1)
-                        }
-                        .frame(height: hourHeight)
-                    }
-                }
-                
-                //Invisible buttons to add an event
-                VStack(alignment: .leading, spacing: 0) {
-                    Rectangle()
-                        .fill(.clear)
-                        .frame(height: hourHeight/2) //offset the buttons by 2 slots
+        ScrollViewReader {value in
+            ScrollView {
+                ZStack(alignment: .topLeading) {
                     
-                    
-                    ForEach(0..<(24*Int(hourHeight/DailyPlanner.minimumEventHeight))) {idx in
-                        Rectangle()
-                            .fill(Color.black.opacity(0.0001))
-                            .onTapGesture {
-                                let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                    impactMed.impactOccurred()
-                                
-                                clickedOnTime = getSelectedTime(idx: idx)
-                                showingEditEventSheet.toggle()
+                    //Hour Lines
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(0..<24) { hour in
+                            HStack {
+                                Text("\(((hour+11) % 12)+1)")
+                                    .font(.caption)
+                                    .frame(width: 20, alignment: .trailing)
+                                Color.gray
+                                    .frame(height: 1)
                             }
-                            .frame(height: DailyPlanner.minimumEventHeight)
+                            .frame(height: hourHeight)
+                            .id(hour)
+                        }
                     }
                     
-                }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
-                    EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
-                }
-                
-                
-                ForEach(fetchedEvents) { event in
-                    eventCell(event, allEvents: fetchedEvents.reversed())
-                }
-                if (filteredDay.startOfDay == Date().startOfDay) {
-                    Color.red
-                        .frame(height: 1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .offset(x: 0, y: getNowOffset() + hourHeight/2)
+                    //Invisible buttons to add an event
+                    VStack(alignment: .leading, spacing: 0) {
+                        Rectangle()
+                            .fill(.clear)
+                            .frame(height: hourHeight/2) //offset the buttons by 2 slots
+                        
+                        
+                        ForEach(0..<(24*Int(hourHeight/DailyPlanner.minimumEventHeight)), id: \.self) {idx in
+                            Rectangle()
+                                .fill(Color.black.opacity(0.0001))
+                                .onTapGesture {
+                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                    impactMed.impactOccurred()
+                                    
+                                    clickedOnTime = getSelectedTime(idx: idx)
+                                    showingEditEventSheet.toggle()
+                                }
+                                .frame(height: DailyPlanner.minimumEventHeight)
+                        }
+                        
+                    }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
+                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                    }
                     
                     
+                    ForEach(fetchedEvents) { event in
+                        eventCell(event, allEvents: fetchedEvents.reversed())
+                    }
+                    if (filteredDay.startOfDay == Date().startOfDay) {
+                        Color.red
+                            .frame(height: 1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .offset(x: 0, y: getNowOffset() + hourHeight/2)
+                            .id("now")
+                        
+                        
+                    }
+                    
+                    
+                    
                 }
-    
-                
+                //.gesture(magnification)
                 
             }
-            //.gesture(magnification)
-            
-        }
-        //.scrollPosition(initialAnchor: .center) // Doesn't work yet with current version of swift.
-        .onAppear {
-            hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
+            //.scrollPosition(initialAnchor: .center) // Doesn't work yet with current version of swift.
+            .onAppear {
+                hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
+                if isNow {
+                    value.scrollTo("now")
+                    print("Scrolling to now. ")
+                }
+            }
         }
         
     }
+    
     
     @GestureState private var zoomFactor: CGFloat = 1.0
     @State var oldZoomValue = 1.0
@@ -456,7 +520,7 @@ struct DailyPlanner: View {
             }
     }
     
-    init (filter: Date) {
+    init (filter: Date, isNow: Bool) {
         let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
         let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
         let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
@@ -466,6 +530,7 @@ struct DailyPlanner: View {
         _fetchedEvents = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, notAllDayPredicate]))
         
         self.filteredDay = filter
+        self.isNow = isNow
     }
     
     func getSelectedTime (idx: Int) -> Date {
@@ -609,9 +674,9 @@ struct DailyPlanner: View {
                             }.buttonStyle(PlainButtonStyle())
                             
                         }
-                        
-                        Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
-                        
+                        if event.contactMethod != 0 {
+                            Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
+                        }
                         Text(event.startDate.formatted(.dateTime.hour().minute()))
                         Text(event.name).bold()
                             .lineLimit(0)
@@ -700,6 +765,11 @@ struct DailyPlanner: View {
         
         if (toDo.status == 0) {
             toDo.status = 2
+            
+            if !toDo.isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
+                toDo.startDate = Date()
+                toDo.isScheduled = true
+            }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 //Wait 2 seconds to change from attempted to completed so it doesn't disappear too quickly
@@ -834,45 +904,4 @@ extension Date {
 
 
 
-//Thanks to Cenk Bilgen and flyer2001
-// https://stackoverflow.com/questions/63130755/custom-cross-hatched-background-shape-or-view-in-swiftui
 
-import CoreImage.CIFilterBuiltins
-
-extension CGImage {
-
-    static func generateStripePattern(
-        colors: (UIColor, UIColor) = (.clear, .black),
-        width: CGFloat = 6,
-        ratio: CGFloat = 1) -> CGImage? {
-
-    let context = CIContext()
-    let stripes = CIFilter.stripesGenerator()
-    stripes.color0 = CIColor(color: colors.0)
-    stripes.color1 = CIColor(color: colors.1)
-    stripes.width = Float(width)
-    stripes.center = CGPoint(x: 1-width*ratio, y: 0)
-    let size = CGSize(width: width, height: 1)
-
-    guard
-        let stripesImage = stripes.outputImage,
-        let image = context.createCGImage(stripesImage, from: CGRect(origin: .zero, size: size))
-    else { return nil }
-    return image
-  }
-}
-
-extension Shape {
-
-    func stripes(angle: Double = 45) -> AnyView {
-        guard
-            let stripePattern = CGImage.generateStripePattern()
-        else { return AnyView(self)}
-
-        return AnyView(Rectangle().fill(ImagePaint(
-            image: Image(decorative: stripePattern, scale: 1.0)))
-        .scaleEffect(2)
-        .rotationEffect(.degrees(angle))
-        .clipShape(self))
-    }
-}

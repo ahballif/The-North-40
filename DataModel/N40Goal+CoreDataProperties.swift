@@ -24,9 +24,10 @@ extension N40Goal {
     @NSManaged public var hasDeadline: Bool
     @NSManaged public var isCompleted: Bool
     @NSManaged public var color: String
+    @NSManaged public var priorityIndex: Int16 // 0 is lowest priority. 
     
     @NSManaged public var subGoals: NSSet?
-    @NSManaged public var endGoal: N40Goal?
+    @NSManaged public var endGoals: NSSet?
     
     @NSManaged public var groups: NSSet?
     @NSManaged public var timelineEvents: NSSet?
@@ -60,7 +61,15 @@ extension N40Goal {
         //returns an array of the goals attached as children
         let set = subGoals as? Set<N40Goal> ?? []
         return set.sorted {
-            $0.deadline < $1.deadline
+            $0.priorityIndex > $1.priorityIndex
+        }
+    }
+    
+    public var getEndGoals: [N40Goal] {
+        //returns and array of the goals attached as parents
+        let set = endGoals as? Set<N40Goal> ?? []
+        return set.sorted {
+            $0.priorityIndex > $1.priorityIndex
         }
     }
     
@@ -75,6 +84,39 @@ extension N40Goal {
         return unfinishedTodos.sorted {
             $0.startDate < $1.startDate
         }
+    }
+    
+    public var getFutureEvents: [N40Event] {
+        var futureEvents: [N40Event] = []
+        
+        for event in self.getTimelineEvents {
+            if event.startDate > Date() {
+                futureEvents.append(event)
+            }
+        }
+        return futureEvents.sorted {
+            $00.startDate < $1.startDate
+        }
+    }
+    
+    public var getPercentTodosFinished: Double {
+        let totalTodos = self.getTimelineEvents.count
+        let unfinishedTodos = self.getUnfinishedTodos.count
+        return 1.0 - Double(unfinishedTodos)/Double(totalTodos)
+    }
+    public var getNextEventDate: Date? {
+        let allEvents = self.getTimelineEvents.sorted { $0.startDate < $1.startDate}
+        var nextEventDate: Date? = nil
+        for eachEvent in allEvents {
+            if eachEvent.isScheduled && eachEvent.startDate > Date() {
+                if nextEventDate == nil {
+                    nextEventDate = eachEvent.startDate
+                } else if nextEventDate! > eachEvent.startDate {
+                    nextEventDate = eachEvent.startDate
+                }
+            }
+        }
+        return nextEventDate
     }
 
 }
@@ -110,6 +152,23 @@ extension N40Goal {
 
     @objc(removeTimelineEvents:)
     @NSManaged public func removeFromTimelineEvents(_ values: NSSet)
+
+}
+
+// MARK: Generated accessors for endGoals
+extension N40Goal {
+
+    @objc(addEndGoalsObject:)
+    @NSManaged public func addToEndGoals(_ value: N40Goal)
+
+    @objc(removeEndGoalsObject:)
+    @NSManaged public func removeFromEndGoals(_ value: N40Goal)
+
+    @objc(addEndGoals:)
+    @NSManaged public func addToEndGoals(_ values: NSSet)
+
+    @objc(removeEndGoals:)
+    @NSManaged public func removeFromEndGoals(_ values: NSSet)
 
 }
 

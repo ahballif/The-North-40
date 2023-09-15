@@ -19,6 +19,7 @@ extension N40Note {
     @NSManaged public var title: String
     @NSManaged public var information: String
     @NSManaged public var date: Date
+    @NSManaged public var archived: Bool
     
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?

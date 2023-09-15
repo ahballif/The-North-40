@@ -15,6 +15,7 @@ struct FinanceView: View {
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Envelope.name, ascending: true)])
     private var fetchedEnvelopes: FetchedResults<N40Envelope>
     
+    @State private var isShowingTransferSheet = false
     
     var body: some View {
         ZStack {
@@ -24,11 +25,17 @@ struct FinanceView: View {
                     Spacer()
                     Button {
                         //Envelope Transfer Button
-                        
+                        isShowingTransferSheet.toggle()
                     } label: {
                         Image(systemName: "arrow.left.arrow.right")
+                    }.sheet(isPresented: $isShowingTransferSheet) {
+                        EnvelopeTransferView()
                     }
-                }.padding()
+                }.padding(.horizontal)
+                HStack {
+                    Text(String(format: "Total: $%.2f", getTotal()))
+                    Spacer()
+                }.padding(.horizontal)  
                 
                 ScrollView {
                     
@@ -36,6 +43,19 @@ struct FinanceView: View {
                         envelopeCell(eachEnvelope)
                     }
                     
+                }
+            }.toolbar {
+                Button("Calculate All") {
+                    for envelope in fetchedEnvelopes {
+                        envelope.calculateBalance()
+                    }
+                    do {
+                        try viewContext.save()
+                    }
+                    catch {
+                        // Handle Error
+                        print("Error info: \(error)")
+                    }
                 }
             }
          
@@ -61,7 +81,13 @@ struct FinanceView: View {
         }
     }
     
-    
+    private func getTotal () -> Double {
+        var sum = 0.0
+        for envelope in fetchedEnvelopes {
+            sum += envelope.currentBalance
+        }
+        return sum
+    }
     
     func envelopeCell (_ envelope: N40Envelope) -> some View {
         
@@ -95,7 +121,7 @@ struct FinanceView: View {
                 
                 
             }.frame(height: 100.0)
-                .padding()
+                .padding(3)
             
         }.buttonStyle(.plain)
     }

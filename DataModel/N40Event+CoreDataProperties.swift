@@ -43,7 +43,7 @@ extension N40Event {
     
     public static let EVENT_TYPE_OPTIONS = [["Reportable", "rectangle.and.pencil.and.ellipsis"], ["Non-Reportable","calendar.day.timeline.leading"], ["Radar Event", "dot.radiowaves.left.and.right"], ["To-Do", "checklist"], ["Backup", "backpack"]]
     
-    public static let CONTACT_OPTIONS = [["In Person", "person.2.fill"],["Phone Call","phone.fill"],["Text Message","message"],["Social Media", "ellipsis.bubble"],["Video Call", "video"],["Email", "envelope"],["Computer", "desktopcomputer"],["TV", "tv"],["Other", "bubble.middle.top"]]
+    public static let CONTACT_OPTIONS = [["None", "scribble"],["In Person", "person.2.fill"],["Phone Call","phone.fill"],["Text Message","message"],["Social Media", "ellipsis.bubble"],["Video Call", "video"],["Email", "envelope"],["Computer", "desktopcomputer"],["TV", "tv"],["Other", "bubble.middle.top"]]
     
     //events status options
     public static let UNREPORTED = 0

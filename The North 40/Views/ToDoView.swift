@@ -14,7 +14,7 @@ struct ToDoView: View {
     @State private var sortByGoals = true
     //Only finds events that are to-do type (eventType == 3) and that are not fully completed (status == 3)
     
-
+    @State private var showingInboxSheet = false
     
     var body: some View {
         NavigationView {
@@ -49,6 +49,18 @@ struct ToDoView: View {
             }
             .navigationTitle(Text("All To-Do Items"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showingInboxSheet.toggle()
+                    } label: {
+                        Image(systemName: "tray")
+                    }
+                    .sheet(isPresented: $showingInboxSheet) {
+                        
+                    }
+                }
+            }
                 
         }
         
@@ -78,7 +90,7 @@ struct SortedToDoList: View {
     @FetchRequest var scheduledToDos: FetchedResults<N40Event>
     @FetchRequest var unScheduledToDos: FetchedResults<N40Event>
     
-    @FetchRequest var allGoals: FetchedResults<N40Goal>
+    @FetchRequest var allUnfinishedGoals: FetchedResults<N40Goal>
     @FetchRequest var unassignedToGoalToDos: FetchedResults<N40Event>
     
     @FetchRequest var allPeople: FetchedResults<N40Person>
@@ -91,18 +103,23 @@ struct SortedToDoList: View {
     @State private var showingFutureEvents = false
     
     
+    public var showing: Int = 0
+    public static let ALL_TODOS = 0
+    public static let SCHEDULED_TODOS = 1
+    public static let UNSCHEDULED_TODOS = 2
+    
     
     var body: some View {
         
         VStack {
             HStack {
-                Picker("Sort by: ", selection: $sortBySelected) {
+                Picker("Sort by:", selection: $sortBySelected) {
                     ForEach(sortByOptions, id: \.self) {
                         Text($0)
                     }
                 }
                 Spacer()
-                Toggle("Show Future Events: ", isOn: $showingFutureEvents)
+                Toggle("Future Events:", isOn: $showingFutureEvents)
                 
             }.padding()
             
@@ -149,11 +166,13 @@ struct SortedToDoList: View {
                             }
                         }
                     }
-                    // Now a section for each goal that has events. 
-                    ForEach(allGoals) { goal in
+                    // Now a section for each goal that has events.
+                    ForEach(allUnfinishedGoals) { goal in
+                        
+                        
                         
                         if goal.getTimelineEvents.filter({ $0.eventType == N40Event.TODO_TYPE && $0.status != N40Event.HAPPENED && !(showingFutureEvents == false && $0.isScheduled && $0.startDate.startOfDay > Date().endOfDay)}).count > 0 {
-                            Section(header: Text("Goal: \(goal.name)")) {
+                            Section(header: Text("\(goal.name)")) {
                                 
                                 ForEach(unScheduledToDos.filter { $0.isAttachedToGoal(goal: goal) }, id: \.self) { todo in
                                     if (isFirstWithRecurringTag(recurringToDo: todo, allEventsInGroup: unScheduledToDos.filter { $0.isAttachedToGoal(goal: goal) })  || (todo.startDate.startOfDay < Date().endOfDay)) {
@@ -367,8 +386,11 @@ struct SortedToDoList: View {
                         ForEach(unScheduledToDos) { todo in
                             if (isFirstWithRecurringTag(recurringToDo: todo, allEventsInGroup: unScheduledToDos.reversed())  || (todo.startDate.startOfDay < Date().endOfDay)) {
                                 
-                                if (!(showingFutureEvents == false && todo.isScheduled && todo.startDate.startOfDay > Date().endOfDay)) {
-                                    //now check if it's in the future after today
+                                if (showing == SortedToDoList.ALL_TODOS
+                                    || (showing == SortedToDoList.SCHEDULED_TODOS && todo.isScheduled && todo.startDate.startOfDay > Date().endOfDay)
+                                    || (showing == SortedToDoList.UNSCHEDULED_TODOS && !todo.isScheduled ))) {
+                                    // the if statement that makes sure the todo matches the sort descriptor
+                                    
                                     
                                     HStack {
                                         
@@ -456,12 +478,14 @@ struct SortedToDoList: View {
         _scheduledToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)],predicate: NSCompoundPredicate(type: .and, subpredicates: scheduledPredicates), animation: .default)
         _unScheduledToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)],predicate: NSCompoundPredicate(type: .and, subpredicates: unscheduledPredicates), animation: .default)
         
-        _allGoals = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], animation: .default)
+        _allUnfinishedGoals = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
         _unassignedToGoalToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED), NSPredicate(format: "attachedGoals.@count == 0")]), animation: .default)
 
         _allPeople = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
         _unassignedToPersonToDos = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED), NSPredicate(format: "attachedPeople.@count == 0")]), animation: .default)
         
+        
+        //Note: if a todo item is attached to a completed goal it will never show up in the list. Thats how I want it. 
         
     }
     
@@ -470,6 +494,11 @@ struct SortedToDoList: View {
         
         if (toDo.status == 0) {
             toDo.status = 2
+            
+            if !toDo.isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView") {
+                toDo.startDate = Date()
+                toDo.isScheduled = true
+            }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 //Wait 2 seconds to change from attempted to completed so it doesn't disappear too quickly

@@ -33,7 +33,11 @@ struct GoalDetailView: View {
                             Label("", systemImage: "pencil")
                         }
                     }.padding()
-                }
+                }.background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(hex: selectedGoal.color) ?? .clear)
+                        .opacity(0.5)
+                )
                 
                 HStack {
                     
@@ -143,7 +147,7 @@ struct GoalDetailView: View {
                                     EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingGoal: selectedGoal)
                                 }
                                 .sheet(isPresented: $showingEditGoalSheet, onDismiss: {updater.updater.toggle()}) {
-                                    EditGoalView(parentGoal: selectedGoal, editGoal: nil)
+                                    EditGoalView(editGoal: nil, parentGoal: selectedGoal)
                                 }
                                 
                             }
@@ -153,7 +157,7 @@ struct GoalDetailView: View {
                 
                 
                 Spacer()
-            }
+            }.background(Color(hex: selectedGoal.color)?.opacity(0.25))
             
         
     }
@@ -199,22 +203,26 @@ struct GoalInfoView: View {
             }.scrollContentBackground(.hidden)
             
             //Show Parent Goal
-            if (selectedGoal.endGoal != nil) {
+            if ((selectedGoal.endGoals ?? ([] as NSSet)).count > 0) {
                 VStack {
                     HStack {
-                        Text("End Goal: ").bold()
+                        Text("End Goals: ").bold()
                         Spacer()
                     }.padding(.horizontal)
-                    NavigationLink(destination: GoalDetailView(selectedGoal: selectedGoal.endGoal!)) {
-                        HStack {
-                            Text(selectedGoal.endGoal!.name)
-                            Spacer()
-                            if (selectedGoal.endGoal!.hasDeadline) {
-                                Text((selectedGoal.endGoal?.deadline.dateOnlyToString())!)
-                            }
+                    VStack {
+                        ForEach(selectedGoal.getEndGoals) {goal in
+                            NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
+                                HStack {
+                                    Text(goal.name).lineLimit(0)
+                                    Spacer()
+                                    if (goal.hasDeadline) {
+                                        Text(goal.deadline.dateOnlyToString())
+                                    }
+                                }
+                            }.buttonStyle(.plain)
+                                .padding(.horizontal)
                         }
-                    }.buttonStyle(.plain)
-                        .padding(.horizontal)
+                    }
                 }
             }
             

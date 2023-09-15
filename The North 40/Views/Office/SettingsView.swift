@@ -6,18 +6,28 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct SettingsView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    
     
     @State private var smallestDivision = Int( 60 * DailyPlanner.minimumEventHeight / UserDefaults.standard.double(forKey: "hourHeight"))
     @State private var randomEventColor = UserDefaults.standard.bool(forKey: "randomEventColor")
+    @State private var guessEventColor = UserDefaults.standard.bool(forKey: "guessEventColor")
     
     @State private var contactMethod = N40Event.CONTACT_OPTIONS[UserDefaults.standard.integer(forKey: "defaultContactMethod")]
     @State public var eventType: [String] = N40Event.EVENT_TYPE_OPTIONS[UserDefaults.standard.integer(forKey: "defaultCalendarEventType")]
     
+    @State private var setTimeOnTodoCompletion_ToDoView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView")
+    @State private var setTimeOnTodoCompletion_CalendarView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView")
+    @State private var setTimeOnTodoCompletion_EditEventView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView")
+    @State private var setTimeOnTodoCompletion_TimelineView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_TimelineView")
+    @State private var setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
+    
     
     var body: some View {
-        VStack {
+        ScrollView {
             Text("Settings")
                 .font(.title2)
             
@@ -73,24 +83,129 @@ struct SettingsView: View {
                     }
                 }
             }
-            
-            HStack {
-                Text("Default Color Random: ")
-                Spacer()
-                Toggle("randomEventColor",isOn: $randomEventColor)
-                    .onChange(of: randomEventColor) {_ in
-                        UserDefaults.standard.set(randomEventColor, forKey: "randomEventColor")
-                    }
-                    .labelsHidden()
+            VStack {
+                HStack {
+                    Text("Default Color Random: ")
+                    Spacer()
+                    Toggle("randomEventColor",isOn: $randomEventColor)
+                        .onChange(of: randomEventColor) {_ in
+                            UserDefaults.standard.set(randomEventColor, forKey: "randomEventColor")
+                        }
+                        .labelsHidden()
+                }
+                
+                HStack {
+                    Text("Guess event color: ")
+                    Spacer()
+                    Toggle("guessEventColor", isOn: $guessEventColor)
+                        .onChange(of: guessEventColor) {_ in
+                            UserDefaults.standard.set(guessEventColor, forKey: "guessEventColor")
+                        }
+                        .labelsHidden()
+                }
+            }
+            VStack{
+                HStack {
+                    Text("Set time on to-do completion: ")
+                    Spacer()
+                }
+                HStack {
+                    Text("on To-Do View: ").padding(.leading)
+                    Spacer()
+                    Toggle("scheduleOnComplete", isOn: $setTimeOnTodoCompletion_ToDoView)
+                        .labelsHidden()
+                        .onChange(of: setTimeOnTodoCompletion_ToDoView) {_ in
+                            UserDefaults.standard.set(setTimeOnTodoCompletion_ToDoView, forKey: "scheduleCompletedTodos_ToDoView")
+                        }
+                }
+                HStack {
+                    Text("on Calendar View: ").padding(.leading)
+                    Spacer()
+                    Toggle("scheduleOnComplete", isOn: $setTimeOnTodoCompletion_CalendarView)
+                        .labelsHidden()
+                        .onChange(of: setTimeOnTodoCompletion_CalendarView) {_ in
+                            UserDefaults.standard.set(setTimeOnTodoCompletion_CalendarView, forKey: "scheduleCompletedTodos_CalendarView")
+                        }
+                }
+                HStack {
+                    Text("on Agenda View: ").padding(.leading)
+                    Spacer()
+                    Toggle("scheduleOnComplete", isOn: $setTimeOnTodoCompletion_AgendaView)
+                        .labelsHidden()
+                        .onChange(of: setTimeOnTodoCompletion_AgendaView) {_ in
+                            UserDefaults.standard.set(setTimeOnTodoCompletion_AgendaView, forKey: "scheduleCompletedTodos_AgendaView")
+                        }
+                }
+                HStack {
+                    Text("on Edit To-Do View: ").padding(.leading)
+                    Spacer()
+                    Toggle("scheduleOnComplete", isOn: $setTimeOnTodoCompletion_EditEventView)
+                        .labelsHidden()
+                        .onChange(of: setTimeOnTodoCompletion_EditEventView) {_ in
+                            UserDefaults.standard.set(setTimeOnTodoCompletion_EditEventView, forKey: "scheduleCompletedTodos_EditEventView")
+                        }
+                }
+                HStack {
+                    Text("on Timeline View: ").padding(.leading)
+                    Spacer()
+                    Toggle("scheduleOnComplete", isOn: $setTimeOnTodoCompletion_TimelineView)
+                        .labelsHidden()
+                        .onChange(of: setTimeOnTodoCompletion_TimelineView) {_ in
+                            UserDefaults.standard.set(setTimeOnTodoCompletion_TimelineView, forKey: "scheduleCompletedTodos_TimelineView")
+                        }
+                }
             }
             
-            Spacer()
+            
+            
+            
+            
+            HStack {
+                Button("Delete Inaccessible Events") {
+                    
+                    let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+                    
+                    let isNotScheduledPredicate = NSPredicate(format: "isScheduled = %d", false)
+                    let hasNoPeoplePredicate = NSPredicate(format: "attachedPeople.@count == 0")
+                    let hasNoGoalsPredicate = NSPredicate(format: "attachedGoals.@count == 0")
+                    let hasNoTransactionsPredicate = NSPredicate(format: "attachedTransactions.@count == 0")
+                    let isNotTodoPredicate = NSPredicate(format: "eventType != %i", N40Event.TODO_TYPE)
+                    
+                    let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isNotScheduledPredicate, hasNoGoalsPredicate, hasNoPeoplePredicate, isNotTodoPredicate, hasNoTransactionsPredicate])
+                    fetchRequest.predicate = compoundPredicate
+                    
+                    do {
+                        // Peform Fetch Request
+                        let fetchedEvents = try viewContext.fetch(fetchRequest)
+                        
+                        fetchedEvents.forEach { recurringEvent in
+                            viewContext.delete(recurringEvent)
+                        }
+                        
+                        // To save the entities to the persistent store, call
+                        // save on the context
+                        do {
+                            try viewContext.save()
+                        }
+                        catch {
+                            // Handle Error
+                            print("Error info: \(error)")
+                            
+                        }
+                        
+                        
+                    } catch let error as NSError {
+                        print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+                    }
+                    
+                    
+                }
+                Spacer()
+            }
+            HStack {
+                Text("This will only delete any events that cannot be accessed in any way, such as events that are unscheduled and are not attached to any goals or people. ").font(.caption)
+            }
+            
         }.padding()
-    }
-}
-
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
     }
 }
