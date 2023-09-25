@@ -38,6 +38,8 @@ struct EditEventView: View {
     private let circleDiameter = 30.0
     private let statusLabels = ["Unreported", "Skipped", "Attempted", "Happened"]
     
+    @State private var showingSetToNow = true
+    
     @State private var attachedPeople: [N40Person] = []
     @State private var showingAttachPeopleSheet = false
     
@@ -80,244 +82,250 @@ struct EditEventView: View {
                 }
             
             }
-            
-            ScrollView {
-                
-                HStack {
-                    if (eventType == N40Event.EVENT_TYPE_OPTIONS[3]) {
-                        //Button to check off the to-do
-                        Button(action: {
-                            if status == 0 {
-                                status = 3
-                                
-                                if !isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView") {
-                                    chosenStartDate = Date()
-                                    isScheduled = true
-                                }
-                                
-                            } else {
-                                status = 0
-                            }
-                            
-                            
-                        }) {
-                            Image(systemName: (status == 0) ? "square" : "checkmark.square")
-                        }.buttonStyle(PlainButtonStyle())
-                    }
-                    //Title of the event
-                    TextField("Event Title", text: $eventTitle)
-                        .font(.title2)
-                        .padding(.vertical,  5)
-                        .onSubmit {
-                            
-                            let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
-                            fetchRequest.predicate = NSPredicate(format: "name == %@", eventTitle)
-                            
-                            do {
-                                // Peform Fetch Request
-                                let fetchedSimilarEvents = try viewContext.fetch(fetchRequest)
-                                
-                                if fetchedSimilarEvents.count > 0 {
-                                    selectedColor = Color(hex: fetchedSimilarEvents[0].color) ?? selectedColor
+            ScrollViewReader {value in
+                ScrollView {
+                    
+                    HStack {
+                        if (eventType == N40Event.EVENT_TYPE_OPTIONS[3]) {
+                            //Button to check off the to-do
+                            Button(action: {
+                                if status == 0 {
+                                    status = 3
+                                    
+                                    if !isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView") {
+                                        chosenStartDate = Date()
+                                        isScheduled = true
+                                    }
+                                    
+                                } else {
+                                    status = 0
                                 }
                                 
                                 
-                            } catch let error as NSError {
-                                print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
-                            }
-                            
-                            
+                            }) {
+                                Image(systemName: (status == 0) ? "square" : "checkmark.square")
+                            }.buttonStyle(PlainButtonStyle())
                         }
+                        //Title of the event
+                        TextField("Event Title", text: $eventTitle)
+                            .font(.title2)
+                            .padding(.vertical,  5)
+                            .onSubmit {
+                                
+                                let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+                                fetchRequest.predicate = NSPredicate(format: "name == %@", eventTitle)
+                                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
+                                
+                                do {
+                                    // Peform Fetch Request
+                                    let fetchedSimilarEvents = try viewContext.fetch(fetchRequest)
+                                    
+                                    if fetchedSimilarEvents.count > 0 {
+                                        selectedColor = Color(hex: fetchedSimilarEvents[0].color) ?? selectedColor
+                                    }
+                                    
+                                    
+                                } catch let error as NSError {
+                                    print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+                                }
+                                
+                                
+                            }
+                        
+                        
+                        
+                    }
                     
-                    
-                    
-                }
-                
-                if (eventType == N40Event.EVENT_TYPE_OPTIONS[0]) && chosenStartDate < Date() {
-                    //If it's a reportable event and it's in the past:
-                    
-                    VStack {
-                        //This is the view where you can report on the event.
-                        HStack {
-                            Text("Status: \(statusLabels[status])")
-                            Spacer()
-                            if status == N40Event.UNREPORTED {
-                                Image(systemName: "questionmark.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(Color.orange)
-                                    .frame(width: circleDiameter, height:circleDiameter)
-                            } else {
-                                Button {
-                                    status = N40Event.UNREPORTED
-                                } label: {
+                    if (eventType == N40Event.EVENT_TYPE_OPTIONS[0]) && chosenStartDate < Date() {
+                        //If it's a reportable event and it's in the past:
+                        
+                        VStack {
+                            //This is the view where you can report on the event.
+                            HStack {
+                                Text("Status: \(statusLabels[status])")
+                                Spacer()
+                                if status == N40Event.UNREPORTED {
                                     Image(systemName: "questionmark.circle.fill")
                                         .resizable()
+                                        .foregroundColor(Color.orange)
                                         .frame(width: circleDiameter, height:circleDiameter)
+                                } else {
+                                    Button {
+                                        status = N40Event.UNREPORTED
+                                    } label: {
+                                        Image(systemName: "questionmark.circle.fill")
+                                            .resizable()
+                                            .frame(width: circleDiameter, height:circleDiameter)
+                                    }
                                 }
-                            }
-                            
-                            if status == N40Event.SKIPPED {
-                                Image(systemName: "slash.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(Color.red)
-                                    .frame(width: circleDiameter, height:circleDiameter)
-                            } else {
-                                Button {
-                                    status = N40Event.SKIPPED
-                                } label: {
+                                
+                                if status == N40Event.SKIPPED {
                                     Image(systemName: "slash.circle.fill")
                                         .resizable()
+                                        .foregroundColor(Color.red)
                                         .frame(width: circleDiameter, height:circleDiameter)
+                                } else {
+                                    Button {
+                                        status = N40Event.SKIPPED
+                                    } label: {
+                                        Image(systemName: "slash.circle.fill")
+                                            .resizable()
+                                            .frame(width: circleDiameter, height:circleDiameter)
+                                    }
                                 }
-                            }
-                            
-                            if status == N40Event.ATTEMPTED {
-                                Image(systemName: "xmark.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(Color.red)
-                                    .frame(width: circleDiameter, height:circleDiameter)
-                            } else {
-                                Button {
-                                    status = N40Event.ATTEMPTED
-                                } label: {
+                                
+                                if status == N40Event.ATTEMPTED {
                                     Image(systemName: "xmark.circle.fill")
                                         .resizable()
+                                        .foregroundColor(Color.red)
                                         .frame(width: circleDiameter, height:circleDiameter)
+                                } else {
+                                    Button {
+                                        status = N40Event.ATTEMPTED
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .resizable()
+                                            .frame(width: circleDiameter, height:circleDiameter)
+                                    }
                                 }
-                            }
-                            
-                            if status == N40Event.HAPPENED {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(Color.green)
-                                    .frame(width: circleDiameter, height:circleDiameter)
-                            } else {
-                                Button {
-                                    status = N40Event.HAPPENED
-                                } label: {
+                                
+                                if status == N40Event.HAPPENED {
                                     Image(systemName: "checkmark.circle.fill")
                                         .resizable()
+                                        .foregroundColor(Color.green)
                                         .frame(width: circleDiameter, height:circleDiameter)
+                                } else {
+                                    Button {
+                                        status = N40Event.HAPPENED
+                                    } label: {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .resizable()
+                                            .frame(width: circleDiameter, height:circleDiameter)
+                                    }
                                 }
+                                
+                                
+                                
                             }
                             
+                            HStack {
+                                Text("Summary: ")
+                                Spacer()
+                            }
+                            TextEditor(text: $summary)
+                                .padding(.horizontal)
+                                .shadow(color: .gray, radius: 5)
+                                .frame(minHeight: 100)
                             
                             
                         }
                         
+                    }
+                    
+                    if information == "" {
+                        //If the description is empty put the controls at the top
+                        eventDetailControls()
+                    }
+                    
+                    
+                    VStack {
                         HStack {
-                            Text("Summary: ")
+                            Text("Event Description: ")
                             Spacer()
                         }
-                        TextEditor(text: $summary)
+                        TextEditor(text: $information)
                             .padding(.horizontal)
                             .shadow(color: .gray, radius: 5)
                             .frame(minHeight: 100)
-                        
-                        
-                    }
-                    
-                }
-                
-                if information == "" {
-                    //If the description is empty put the controls at the top
-                    eventDetailControls()
-                }
-                
-                    
-                VStack {
-                    HStack {
-                        Text("Event Description: ")
-                        Spacer()
-                    }
-                    TextEditor(text: $information)
-                        .padding(.horizontal)
-                        .shadow(color: .gray, radius: 5)
-                        .frame(minHeight: 100)
-                    
-                    
-                }
-                
-                if information != "" {
-                    //but if the desription is not empty, put it first.
-                    eventDetailControls()
-                }
-                
-                
-                VStack {
-                    HStack{
-                        Text("Attached People:")
-                            .font(.title3)
-                        Spacer()
-                    }
-                    
-                    ForEach(attachedPeople) { person in
-                        
-                        HStack {
-                            NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                                Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
-                            }.buttonStyle(.plain)
+                            .id("descriptionBox")
+                            .onChange(of: information) { newValue in
                                 
+                                value.scrollTo("descriptionBox")
+                                
+                            }
+                        
+                    }
+                    
+                    if information != "" {
+                        //but if the desription is not empty, put it first.
+                        eventDetailControls()
+                    }
+                    
+                    
+                    VStack {
+                        HStack{
+                            Text("Attached People:")
+                                .font(.title3)
                             Spacer()
-                            Button {
-                                removePerson(removedPerson: person)
-                            } label: {
-                                Image(systemName: "multiply")
-                            }
-                        }.padding()
-                    }
-                    
-                    Button(action: {
-                        showingAttachPeopleSheet.toggle()
-                    }) {
-                        Label("Attach Person", systemImage: "plus").padding()
-                    }.sheet(isPresented: $showingAttachPeopleSheet) {
-                        SelectPeopleView(editEventView: self)
-                    }
-                    
+                        }
                         
-                    
-                }
-                
-                VStack {
-                    HStack{
-                        Text("Attached Goals:")
-                            .font(.title3)
-                        Spacer()
+                        ForEach(attachedPeople) { person in
+                            
+                            HStack {
+                                NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                                    Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
+                                }.buttonStyle(.plain)
+                                
+                                Spacer()
+                                Button {
+                                    removePerson(removedPerson: person)
+                                } label: {
+                                    Image(systemName: "multiply")
+                                }
+                            }.padding()
+                        }
+                        
+                        Button(action: {
+                            showingAttachPeopleSheet.toggle()
+                        }) {
+                            Label("Attach Person", systemImage: "plus").padding()
+                        }.sheet(isPresented: $showingAttachPeopleSheet) {
+                            SelectPeopleView(editEventView: self)
+                        }
+                        
+                        
+                        
                     }
                     
-                    ForEach(attachedGoals) { goal in
-                        HStack {
-                            NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
-                                Text(goal.name)
-                                
-                            }
-                            .buttonStyle(.plain)
-                                
+                    VStack {
+                        HStack{
+                            Text("Attached Goals:")
+                                .font(.title3)
                             Spacer()
-                            Button {
-                                removeGoal(removedGoal: goal)
-                            } label: {
-                                Image(systemName: "multiply")
-                            }
-                        }.padding()
-                    }
-                    
-                    Button(action: {
-                        showingAttachGoalSheet.toggle()
-                    }) {
-                        Label("Attach Goal", systemImage: "plus").padding()
-                    }.sheet(isPresented: $showingAttachGoalSheet) {
-                        SelectGoalView(editEventView: self)
-                    }
-                    
+                        }
                         
+                        ForEach(attachedGoals) { goal in
+                            HStack {
+                                NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
+                                    Text(goal.name)
+                                    
+                                }
+                                .buttonStyle(.plain)
+                                
+                                Spacer()
+                                Button {
+                                    removeGoal(removedGoal: goal)
+                                } label: {
+                                    Image(systemName: "multiply")
+                                }
+                            }.padding()
+                        }
+                        
+                        Button(action: {
+                            showingAttachGoalSheet.toggle()
+                        }) {
+                            Label("Attach Goal", systemImage: "plus").padding()
+                        }.sheet(isPresented: $showingAttachGoalSheet) {
+                            SelectGoalView(editEventView: self)
+                        }
+                        
+                        
+                        
+                    }
+                    
                     
                 }
-                
-                
             }
-            
         }.padding()
             .onAppear {
                 populateFields()
@@ -454,12 +462,33 @@ struct EditEventView: View {
                 
 
                 HStack {
+                    ZStack {
+                        if showingSetToNow {
+                            Button("Set to Now") {
+                                chosenStartDate = Date()
+                                chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                                
+                                showingSetToNow = false
+                            }.disabled(!isScheduled)
+                        } else {
+                            Button("Round Time") {
+                                let minutes: Int = Calendar.current.component(.minute, from: chosenStartDate)
+                                let minuteInterval = Int(25.0/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+                                
+                                //now round it
+                                let roundedMinutes = Int(minutes / minuteInterval) * minuteInterval
+                                
+                                chosenStartDate = Calendar.current.date(byAdding: .minute, value: Int(roundedMinutes - minutes), to: chosenStartDate) ?? chosenStartDate
+                                
+                                showingSetToNow = true
+                            }
+                        }
+                    }.onAppear {
+                        if Calendar.current.component(.minute, from: chosenStartDate) == Calendar.current.component(.minute, from: Date()) {
+                            showingSetToNow = false
+                        }
+                    }
                     
-                    
-                    Button("Set to Now") {
-                        chosenStartDate = Date()
-                        chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
-                    }.disabled(!isScheduled)
                     Spacer()
                     Button("Select on Calendar") {
                         showingSelectOnCalendarSheet.toggle()
@@ -726,7 +755,11 @@ struct EditEventView: View {
             }
             
             
-            
+            if saveAsCopy {
+                //don't repeat the duplicate
+                repeatOptionSelected = repeatOptions[0]
+                newEvent.recurringTag = ""
+            }
             
             //Making recurring events
             if repeatOptionSelected != repeatOptions[0] {
@@ -1036,32 +1069,81 @@ fileprivate struct SelectPeopleView: View {
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
     private var fetchedPeople: FetchedResults<N40Person>
     
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
+    private var allGroups: FetchedResults<N40Group>
+    
+    @State private var sortingAlphabetical = false
+    
     var editEventView: EditEventView
     
     var body: some View {
-    
-        List{
-            let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
-            if noLetterLastNames.count > 0 {
-                Section(header: Text("*")) {
-                    ForEach(noLetterLastNames, id: \.self) { person in
-                        HStack {
-                            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            editEventView.attachPerson(addPerson: person)
-                            dismiss()
+        VStack {
+            HStack {
+                Text("Sort all alphabetically: ")
+                Spacer()
+                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+            }.padding()
+            
+            if sortingAlphabetical {
+                
+                List{
+                    let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
+                    if noLetterLastNames.count > 0 {
+                        Section(header: Text("*")) {
+                            ForEach(noLetterLastNames, id: \.self) { person in
+                                HStack {
+                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editEventView.attachPerson(addPerson: person)
+                                    dismiss()
+                                }
+                            }
                         }
                     }
-                }
-            }
-            ForEach(alphabet, id: \.self) { letter in
-                let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
-                if (letterSet.count > 0) {
-                    Section(header: Text(letter)) {
-                        ForEach(letterSet, id: \.self) { person in
+                    ForEach(alphabet, id: \.self) { letter in
+                        let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                        if (letterSet.count > 0) {
+                            Section(header: Text(letter)) {
+                                ForEach(letterSet, id: \.self) { person in
+                                    HStack {
+                                        Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                        Spacer()
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        editEventView.attachPerson(addPerson: person)
+                                        dismiss()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }.listStyle(.sidebar)
+                    .padding(.horizontal, 3)
+                
+            } else {
+                
+                List {
+                    ForEach(allGroups) {group in
+                        Section(header: Text(group.name)) {
+                            ForEach(group.getPeople, id: \.self) {person in
+                                HStack {
+                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editEventView.attachPerson(addPerson: person)
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    Section(header: Text("Ungrouped People")) {
+                        ForEach(fetchedPeople.filter { $0.getGroups.count < 1 }) {person in
                             HStack {
                                 Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
                                 Spacer()
@@ -1073,9 +1155,11 @@ fileprivate struct SelectPeopleView: View {
                             }
                         }
                     }
-                }
+                }.listStyle(.sidebar)
             }
-        }.padding(.horizontal, 3)
+            
+        }
+        
     }
 }
 
@@ -1087,18 +1171,31 @@ fileprivate struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
     
     var editEventView: EditEventView
     
     var body: some View {
         List(fetchedGoals) {goal in
-            goalBox(goal)
-            .onTapGesture {
-                editEventView.attachGoal(addGoal: goal)
-                dismiss()
+            if goal.getEndGoals.count == 0 {
+                goalBox(goal)
+                    .onTapGesture {
+                        editEventView.attachGoal(addGoal: goal)
+                        dismiss()
+                    }
+                ForEach(goal.getSubGoals, id: \.self) {subGoal in
+                    if !subGoal.isCompleted {
+                        goalBox(subGoal)
+                            .padding(.leading, 25.0)
+                            .onTapGesture {
+                                editEventView.attachGoal(addGoal: subGoal)
+                                dismiss()
+                            }
+                    }
+                }
             }
+            
             
         }
     }
@@ -1327,10 +1424,16 @@ fileprivate struct scheduleViewCanvas: View {
                         
                     }
                     
-                    
-                    ForEach(fetchedEvents) { event in
-                        eventCell(event, allEvents: fetchedEvents.reversed())
+                    let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
+                    ForEach(radarEvents) { event in
+                        eventCell(event, allEvents: radarEvents)
                     }
+                    
+                    let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE })
+                    ForEach(otherEvents) { event in
+                        eventCell(event, allEvents: otherEvents)
+                    }
+                    
                     if (filteredDay.startOfDay == Date().startOfDay) {
                         Color.red
                             .frame(height: 1)
@@ -1469,6 +1572,23 @@ fileprivate struct scheduleViewCanvas: View {
         event.renderIdx = -1 // basically reset it to be recalculated
         event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
         
+        //get color for event cell
+        var colorHex = "#FF7051" //default redish color
+        
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
+            if event.getAttachedGoals.count > 0 {
+                colorHex = event.getAttachedGoals.first!.color
+            } else {
+                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
+                } else {
+                    colorHex = event.color
+                }
+            }
+        } else {
+            colorHex = event.color
+        }
+        
         return GeometryReader {geometry in
             
             ZStack {
@@ -1479,7 +1599,7 @@ fileprivate struct scheduleViewCanvas: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
                                 .opacity(0.5)
                         )
                 } else if event.eventType == N40Event.BACKUP_TYPE {
@@ -1489,12 +1609,12 @@ fileprivate struct scheduleViewCanvas: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
                                 .opacity(0.5)
                         )
                 } else {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                        .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
                         .opacity(0.5)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }

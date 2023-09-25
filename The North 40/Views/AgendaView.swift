@@ -36,7 +36,7 @@ struct AgendaView: View {
             ScrollViewReader {value in
                 ScrollView {
                     VStack {
-                        let nowHour = Calendar.current.component(.hour, from: Date())
+                        
                         ForEach(0..<fetchedEvents.count, id: \.self) {i in
                             let event = fetchedEvents[i]
                             
@@ -67,7 +67,6 @@ struct AgendaView: View {
                                         .frame(height: 1)
                                     
                                 }
-                                .id(hour)
                             }
                             
                             if Date() > event.startDate && filteredDay.startOfDay == Date().startOfDay {
@@ -76,7 +75,7 @@ struct AgendaView: View {
                                     if fetchedEvents[i-1].startDate < Date() && event.startDate > Date() {
                                         Color.red
                                             .frame(height: 1)
-                                            .tag("now")
+                                            .id("now")
                                     }
                                 }
                                 
@@ -246,7 +245,7 @@ struct AgendaView: View {
         if (toDo.status == 0) {
             toDo.status = 2
             
-            if !toDo.isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView") {
+            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView") {
                 toDo.startDate = Date()
                 toDo.isScheduled = true
             }

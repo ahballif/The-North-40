@@ -24,6 +24,11 @@ struct FinanceView: View {
                     Text("My Finances").font(.title)
                     Spacer()
                     Button {
+                        addEnvelope()
+                    } label: {
+                        Image(systemName: "plus")
+                    }.padding(.horizontal)
+                    Button {
                         //Envelope Transfer Button
                         isShowingTransferSheet.toggle()
                     } label: {
@@ -56,25 +61,6 @@ struct FinanceView: View {
                         // Handle Error
                         print("Error info: \(error)")
                     }
-                }
-            }
-         
-            
-            
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    
-                    Button(action: {addEnvelope()}) {
-                        Image(systemName: "plus.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(Circle())
-                            .frame(minWidth: 50, maxWidth: 50)
-                            .padding(30)
-                    }
-                    
                 }
             }
             

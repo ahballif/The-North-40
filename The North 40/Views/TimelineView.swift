@@ -22,28 +22,37 @@ struct TimelineView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack {
-                
-                //unschedule first
-                ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
-                    eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
-                }
-                //scheduled next
-                ForEach(events.filter { ($0.startDate > Date() && $0.isScheduled) && $0.eventType != N40Event.BACKUP_TYPE }) { eachEvent in
-                    eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
-                }
-                
+        ScrollViewReader {value in
+            ScrollView {
                 VStack {
-                    Rectangle()
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 5)
                     
+                    //unschedule first
+                    ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
+                        eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                            
+                    }
+                    //scheduled next
+                    ForEach(events.filter { ($0.startDate > Date() && $0.isScheduled) && $0.eventType != N40Event.BACKUP_TYPE }) { eachEvent in
+                        eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                            
+                    }
+                    
+                    VStack {
+                        Rectangle()
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 5)
+                            
+                    }.id("nowLine")
+                    
+                    
+                    ForEach(events.filter { ($0.startDate < Date() && $0.isScheduled) && $0.eventType != N40Event.BACKUP_TYPE }) { eachEvent in
+                        eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                            
+                    }
                 }
-                
-                ForEach(events.filter { ($0.startDate < Date() && $0.isScheduled) && $0.eventType != N40Event.BACKUP_TYPE }) { eachEvent in
-                    eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                .onAppear {
+                    value.scrollTo("nowLine")
                 }
             }
         }
@@ -89,8 +98,13 @@ private struct eventDisplayBoxView: View {
                     VStack {
                         if (myEvent.isScheduled) {
                             HStack {
-                                Text(formatDateToString(date: myEvent.startDate))
-                                    .bold()
+                                if myEvent.allDay {
+                                    Text(myEvent.startDate.dateOnlyToString())
+                                        .bold()
+                                } else {
+                                    Text(formatDateToString(date: myEvent.startDate))
+                                        .bold()
+                                }
                                 Spacer()
                             }
                         }
@@ -178,7 +192,7 @@ private struct eventDisplayBoxView: View {
         if (toDo.status == 0) {
             toDo.status = 2
             
-            if !toDo.isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_TimelineView") {
+            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_TimelineView") {
                 toDo.startDate = Date()
                 toDo.isScheduled = true
             }

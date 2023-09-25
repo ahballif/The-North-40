@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 private let placeholderString = "Event Description"
 
@@ -227,7 +228,7 @@ struct EditGoalView: View {
                 newGoal.addToEndGoals(goal)
             }
             
-            
+            newGoal.priorityIndex = getDefaultPriorityIndex()
             
             
             // To save the new entity to the persistent store, call
@@ -297,6 +298,25 @@ struct EditGoalView: View {
         }
     }
     
+    private func getDefaultPriorityIndex () -> Int16 {
+        let fetchGoalsRequest: NSFetchRequest<N40Goal> = N40Goal.fetchRequest()
+        fetchGoalsRequest.sortDescriptors = [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)]
+        fetchGoalsRequest.predicate = NSPredicate(format: "isCompleted == NO")
+        
+        var answer = 0
+        
+        do {
+            // Peform Fetch Request
+            let allGoals = try viewContext.fetch(fetchGoalsRequest)
+            
+            answer = allGoals.count
+        } catch {
+            print("couldn't fetch goals")
+        }
+        
+        return Int16(answer)
+    }
+    
 }
 
 // ********************** SELECT PEOPLE VIEW ***************************
@@ -309,6 +329,10 @@ fileprivate struct SelectPeopleView: View {
     let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
     let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     
+    @State private var sortingAlphabetical = false
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
+    private var allGroups: FetchedResults<N40Group>
     
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
@@ -317,29 +341,73 @@ fileprivate struct SelectPeopleView: View {
     var editGoalView: EditGoalView
     
     var body: some View {
-        
-        List {
-            let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
-            if noLetterLastNames.count > 0 {
-                Section(header: Text("*")) {
-                    ForEach(noLetterLastNames, id: \.self) { person in
-                        HStack {
-                            Text("\(person.firstName) \(person.lastName)")
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            editGoalView.attachPerson(addPerson: person)
-                            dismiss()
+        VStack {
+            HStack {
+                Text("Sort all alphabetically: ")
+                Spacer()
+                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+            }.padding()
+            
+            if sortingAlphabetical {
+                
+                List{
+                    let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
+                    if noLetterLastNames.count > 0 {
+                        Section(header: Text("*")) {
+                            ForEach(noLetterLastNames, id: \.self) { person in
+                                HStack {
+                                    Text("\(person.firstName) \(person.lastName)")
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editGoalView.attachPerson(addPerson: person)
+                                    dismiss()
+                                }
+                            }
                         }
                     }
-                }
-            }
-            ForEach(alphabet, id: \.self) { letter in
-                let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
-                if (letterSet.count > 0) {
-                    Section(header: Text(letter)) {
-                        ForEach(letterSet, id: \.self) { person in
+                    ForEach(alphabet, id: \.self) { letter in
+                        let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                        if (letterSet.count > 0) {
+                            Section(header: Text(letter)) {
+                                ForEach(letterSet, id: \.self) { person in
+                                    HStack {
+                                        Text("\(person.firstName) \(person.lastName)")
+                                        Spacer()
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        editGoalView.attachPerson(addPerson: person)
+                                        dismiss()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }.listStyle(.sidebar)
+                    .padding(.horizontal, 3)
+                
+            } else {
+                
+                List {
+                    ForEach(allGroups) {group in
+                        Section(header: Text(group.name)) {
+                            ForEach(group.getPeople, id: \.self) {person in
+                                HStack {
+                                    Text("\(person.firstName) \(person.lastName)")
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editGoalView.attachPerson(addPerson: person)
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    Section(header: Text("Ungrouped People")) {
+                        ForEach(fetchedPeople.filter { $0.getGroups.count < 1 }) {person in
                             HStack {
                                 Text("\(person.firstName) \(person.lastName)")
                                 Spacer()
@@ -351,9 +419,10 @@ fileprivate struct SelectPeopleView: View {
                             }
                         }
                     }
-                }
+                }.listStyle(.sidebar)
             }
-        }.padding(.horizontal, 3)
+            
+        }
 
     }
 }
@@ -374,7 +443,7 @@ fileprivate struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
     
     var editGoalView: EditGoalView
@@ -383,10 +452,22 @@ fileprivate struct SelectGoalView: View {
         List {
             ForEach(fetchedGoals) {goal in
                 if (goal != editGoalView.editGoal) {
-                    goalBox(goal)
-                    .onTapGesture {
-                        editGoalView.addEndGoal(newEndGoal: goal)
-                        dismiss()
+                    if goal.getEndGoals.count == 0 {
+                        goalBox(goal)
+                            .onTapGesture {
+                                editGoalView.addEndGoal(newEndGoal: goal)
+                                dismiss()
+                            }
+                        ForEach(goal.getSubGoals, id: \.self) {subGoal in
+                            if !subGoal.isCompleted && (subGoal != editGoalView.editGoal) {
+                                goalBox(subGoal)
+                                    .padding(.leading, 25.0)
+                                    .onTapGesture {
+                                        editGoalView.addEndGoal(newEndGoal: subGoal)
+                                        dismiss()
+                                    }
+                            }
+                        }
                     }
                 }
             }

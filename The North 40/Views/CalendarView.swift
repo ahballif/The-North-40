@@ -17,10 +17,13 @@ struct CalendarView: View {
     
     
     @State private var selectedDay = Date()
-    @State private var isNow = false
 
     @State private var showingCalendar = true
-    @State private var showingInfoEvents = UserDefaults.standard.bool(forKey: "showingInfoEvents")
+    
+    //@State private var showingInfoEvents = UserDefaults.standard.bool(forKey: "showingInfoEvents")
+    @State private var showingInfoEvents = true
+    @State private var showingBackgroundEvents = true
+    
     
     var body: some View {
         NavigationView {
@@ -38,6 +41,22 @@ struct CalendarView: View {
                                 Image(systemName: "dot.radiowaves.left.and.right")
                                     
                                 if !showingInfoEvents {
+                                    Image(systemName: "line.diagonal")
+                                        .scaleEffect(x: -1.5, y: 1.5)
+                                        .foregroundColor(((colorScheme == .dark) ? .black : .white))
+                                    Image(systemName: "line.diagonal")
+                                        .scaleEffect(x: -1.2, y: 1.2)
+                                }
+                            }
+                        }
+                        Button {
+                            showingBackgroundEvents.toggle()
+                            UserDefaults.standard.set(showingBackgroundEvents, forKey: "showingBackupEvents")
+                        } label: {
+                            ZStack {
+                                Image(systemName: "backpack")
+                                    
+                                if !showingBackgroundEvents {
                                     Image(systemName: "line.diagonal")
                                         .scaleEffect(x: -1.5, y: 1.5)
                                         .foregroundColor(((colorScheme == .dark) ? .black : .white))
@@ -66,20 +85,11 @@ struct CalendarView: View {
                     
                     DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
                         .labelsHidden()
-                        .onChange(of: selectedDay) {_ in
-                            isNow = false
-                        }
                     
                     
                     Spacer()
                     
                     Button("Today") {
-                        if !isNow {
-                            isNow.toggle()
-                        } else {
-                            isNow.toggle()
-                            isNow.toggle()
-                        }
                         selectedDay = Date()
                         
                     }
@@ -88,7 +98,7 @@ struct CalendarView: View {
                 
                 if showingCalendar {
                     ZStack {
-                        DailyPlanner(filter: selectedDay, isNow: isNow)
+                        DailyPlanner(filter: selectedDay, showingInfoEvents: $showingInfoEvents, showingBackgroundEvents: $showingBackgroundEvents)
                             .environment(\.managedObjectContext, viewContext)
                         
                         
@@ -122,11 +132,9 @@ struct CalendarView: View {
                     if (horizontalAmount < 0) {
                         //Left swipe
                         selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
-                        isNow = false
                     } else {
                         //right swipe
                         selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
-                        isNow = false
                     }
                 }
                 
@@ -198,8 +206,9 @@ struct AllDayList: View {
         let dueDatePredicateA = NSPredicate(format: "deadline >= %@", filter.startOfDay as NSDate)
         let dueDatePredicateB = NSPredicate(format: "deadline <= %@", filter.endOfDay as NSDate)
         let hasDeadlinePredicate = NSPredicate(format: "hasDeadline == YES")
+        let isNotCompletedPredicate = NSPredicate(format: "isCompleted == NO")
         
-        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate]))
+        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate, isNotCompletedPredicate]))
         
         let birthdayMonthPredicate = NSPredicate(format: "birthdayMonth == %i", Int16(filter.get(.month)))
         let birthdayDayPredicate = NSPredicate(format: "birthdayDay == %i", Int16(filter.get(.day)))
@@ -214,13 +223,29 @@ struct AllDayList: View {
     func allDayEvent(_ event: N40Event) -> some View {
         //all events is used for wrapping around other events.
         
+        //get color for event cell
+        var colorHex = "#FF7051" //default redish color
+        
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
+            if event.getAttachedGoals.count > 0 {
+                colorHex = event.getAttachedGoals.first!.color
+            } else {
+                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
+                } else {
+                    colorHex = event.color
+                }
+            }
+        } else {
+            colorHex = event.color
+        }
 
         return NavigationLink(destination: EditEventView(editEvent: event), label: {
                 
                 ZStack {
                     
                     RoundedRectangle(cornerRadius: 8)
-                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                        .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
                         .opacity(0.5)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -401,11 +426,15 @@ struct DailyPlanner: View {
     @State private var showingEditEventSheet = false
     @State private var clickedOnTime = Date()
     
+    
     @State private var hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
     public static let minimumEventHeight = 25.0
     
     private var filteredDay: Date
-    private var isNow: Bool
+    
+    @Binding var showingRadarEvents: Bool
+    @Binding var showingBackgroundEvents: Bool
+    
     
     var body: some View {
         
@@ -452,11 +481,20 @@ struct DailyPlanner: View {
                     }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
                         EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
                     }
-                    
-                    
-                    ForEach(fetchedEvents) { event in
-                        eventCell(event, allEvents: fetchedEvents.reversed())
+                    let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
+                    if showingRadarEvents {
+                        ForEach(radarEvents) { event in
+                            eventCell(event, allEvents: radarEvents)
+                        }
                     }
+                    
+                    let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE && (showingBackgroundEvents || $0.eventType != N40Event.BACKUP_TYPE)})
+                    
+                    ForEach(otherEvents) { event in
+                        eventCell(event, allEvents: otherEvents)
+                    }
+                    
+                    
                     if (filteredDay.startOfDay == Date().startOfDay) {
                         Color.red
                             .frame(height: 1)
@@ -472,15 +510,18 @@ struct DailyPlanner: View {
                 }
                 //.gesture(magnification)
                 
+                .onAppear {
+                    hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
+                    let nowMinute = Calendar.current.component(.minute, from: Date())
+                    let selectedMinute = Calendar.current.component(.minute, from: filteredDay)
+                    if nowMinute == selectedMinute {
+                        //value.scrollTo("now")
+                    }
+                }
+                
             }
             //.scrollPosition(initialAnchor: .center) // Doesn't work yet with current version of swift.
-            .onAppear {
-                hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
-                if isNow {
-                    value.scrollTo("now")
-                    print("Scrolling to now. ")
-                }
-            }
+            
         }
         
     }
@@ -520,7 +561,7 @@ struct DailyPlanner: View {
             }
     }
     
-    init (filter: Date, isNow: Bool) {
+    init (filter: Date, showingInfoEvents: Binding<Bool>? = nil, showingBackgroundEvents: Binding<Bool>? = nil) {
         let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
         let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
         let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
@@ -530,7 +571,10 @@ struct DailyPlanner: View {
         _fetchedEvents = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, notAllDayPredicate]))
         
         self.filteredDay = filter
-        self.isNow = isNow
+        
+        
+        self._showingRadarEvents = showingInfoEvents ?? Binding.constant(true)
+        self._showingBackgroundEvents = showingBackgroundEvents ?? Binding.constant(true)
     }
     
     func getSelectedTime (idx: Int) -> Date {
@@ -549,46 +593,59 @@ struct DailyPlanner: View {
         return someDateTime
     }
     
-    func allEventsAtTime(at: Date, duration: Int, allEvents: [N40Event]) -> [N40Event] {
+    
+    func allEventsAtTime(event: N40Event, allEvents: [N40Event]) -> [N40Event] {
         //returns an int of how many events are in that location
         var eventsAtTime: [N40Event] = []
         
-        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
-        let testDuration = Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
-        
-        
-        let startOfInterval = at.zeroSeconds
-        var endOfInterval = Calendar.current.date(byAdding: .minute, value: testDuration, to: at.zeroSeconds) ?? startOfInterval
-        
-        if endOfInterval.timeIntervalSince(startOfInterval) > 0 {
-            endOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: endOfInterval) ?? endOfInterval
-        } //subtract a second from the end of the interval to make it less confusing.
-        
         allEvents.forEach {eachEvent in
-            
-            let eventTestDuration = Int(eachEvent.duration) > Int(minDuration) ? Int(eachEvent.duration) : Int(minDuration)
-            
-            let eventStartOfInterval = eachEvent.startDate.zeroSeconds
-            var eventEndOfInterval = Calendar.current.date(byAdding: .minute, value: eventTestDuration, to: eventStartOfInterval) ?? eventStartOfInterval
-            
-            if eventEndOfInterval.timeIntervalSince(eventStartOfInterval) > 0 {
-                eventEndOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: eventEndOfInterval) ?? endOfInterval
-            } //subtract a second from the end of the interval to make it less confusing.
-            
-            
-            //  considering the ranges are: [x1:x2] and [y1:y2]
-            // x1 <= y2 && y1 <= x2
-            if ( startOfInterval <= eventEndOfInterval && eventStartOfInterval <= endOfInterval) {
+            if doEventsOverlap(event1: event, event2: eachEvent) {
                 eventsAtTime.append(eachEvent)
             }
         }
         
         return eventsAtTime
     }
+    
+    func doEventsOverlap (event1: N40Event, event2: N40Event) -> Bool {
+        var answer = false
+        
+        
+        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
+        let testDuration = Int(event1.duration) > Int(minDuration) ? Int(event1.duration) : Int(minDuration)
+        
+        
+        let startOfInterval = event1.startDate.zeroSeconds
+        var endOfInterval = Calendar.current.date(byAdding: .minute, value: testDuration, to: event1.startDate.zeroSeconds) ?? startOfInterval
+        
+        if endOfInterval.timeIntervalSince(startOfInterval) > 0 {
+            endOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: endOfInterval) ?? endOfInterval
+        } //subtract a second from the end of the interval to make it less confusing.
+        
+        
+        let eventTestDuration = Int(event2.duration) > Int(minDuration) ? Int(event2.duration) : Int(minDuration)
+        
+        let eventStartOfInterval = event2.startDate.zeroSeconds
+        var eventEndOfInterval = Calendar.current.date(byAdding: .minute, value: eventTestDuration, to: eventStartOfInterval) ?? eventStartOfInterval
+        
+        if eventEndOfInterval.timeIntervalSince(eventStartOfInterval) > 0 {
+            eventEndOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: eventEndOfInterval) ?? endOfInterval
+        } //subtract a second from the end of the interval to make it less confusing.
+        
+        
+        //  considering the ranges are: [x1:x2] and [y1:y2]
+        // x1 <= y2 && y1 <= x2
+        if ( startOfInterval <= eventEndOfInterval && eventStartOfInterval <= endOfInterval) {
+            answer = true
+        }
+        
+        return answer
+        
+    }
 
     
-    func numberOfEventsAtTime(at: Date, duration: Int, allEvents: [N40Event]) -> Int {
-        let allEventsAtTime = allEventsAtTime(at: at, duration: duration, allEvents: allEvents)
+    func numberOfEventsAtTime(event: N40Event, allEvents: [N40Event]) -> Int {
+        let allEventsAtTime = allEventsAtTime(event: event, allEvents: allEvents)
         return allEventsAtTime.count
     }
     
@@ -628,10 +685,29 @@ struct DailyPlanner: View {
         let minute = calendar.component(.minute, from: event.startDate)
         let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
         
-        let allEventsAtThisTime = allEventsAtTime(at: event.startDate, duration: Int(event.duration), allEvents: allEvents)
+        let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
         
         event.renderIdx = -1 // basically reset it to be recalculated
         event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
+        
+        
+        //get color for event cell
+        var colorHex = "#FF7051" //default redish color
+        
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
+            if event.getAttachedGoals.count > 0 {
+                colorHex = event.getAttachedGoals.first!.color
+            } else {
+                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
+                } else {
+                    colorHex = event.color
+                }
+            }
+        } else {
+            colorHex = event.color
+        }
+        
         
         return GeometryReader {geometry in
             NavigationLink(destination: EditEventView(editEvent: event), label: {
@@ -644,7 +720,7 @@ struct DailyPlanner: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                    .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
                                     .opacity(0.5)
                             )
                     } else if event.eventType == N40Event.BACKUP_TYPE {
@@ -654,12 +730,12 @@ struct DailyPlanner: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                    .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
                                     .opacity(0.5)
                             )
                     } else {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                            .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
                             .opacity(0.5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
@@ -764,34 +840,22 @@ struct DailyPlanner: View {
         //checks off to do items or unchecks them
         
         if (toDo.status == 0) {
-            toDo.status = 2
+            toDo.status = 3
             
-            if !toDo.isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
+            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
                 toDo.startDate = Date()
                 toDo.isScheduled = true
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                //Wait 2 seconds to change from attempted to completed so it doesn't disappear too quickly
-                if (toDo.status == 2) {
-                    //This means it was checked off but hasn't been finally hidden
-                    toDo.status = 3
-                    //toDo.startDate = Date() //Set it as completed now.
-                    do {
-                        try viewContext.save()
-                    } catch {
-                        // handle error
-                    }
-                }
-            }
         } else {
             toDo.status = 0
             
-            do {
-                try viewContext.save()
-            } catch {
-                // handle error
-            }
+        }
+        
+        do {
+            try viewContext.save()
+        } catch {
+            // handle error
         }
     }
     

@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct GoalListView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    private var updater: RefreshView = RefreshView()
+    private var listUpdater: RefreshView = RefreshView()
     
     @State private var showingEditGoalSheet = false
+    @State private var showingVisionSheet = false
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
-    private var fetchedUnfinishedGoals: FetchedResults<N40Goal>
-    
-    @State private var goalsArray: [N40Goal] = []
+    @State private var setOfGoals: [N40Goal] = []
     
     @State private var isTiered = true
+    
     
     var body: some View {
         
@@ -26,16 +26,16 @@ struct GoalListView: View {
             ZStack {
                 
                 List {
-                    ForEach(fetchedUnfinishedGoals) { goal in
+                    ForEach(setOfGoals) { goal in
                         if !isTiered {
-                            GoalBoard(goal).environmentObject(updater)
+                            GoalBoard(goal).environmentObject(listUpdater)
                         } else {
                             if goal.getEndGoals.count == 0 {
-                                GoalBoard(goal).environmentObject(updater)
+                                GoalBoard(goal).environmentObject(listUpdater)
                                 ForEach(goal.getSubGoals, id: \.self) {subGoal in
                                     if !subGoal.isCompleted {
                                         GoalBoard(subGoal)
-                                            .environmentObject(updater)
+                                            .environmentObject(listUpdater)
                                             .padding(.leading, 25.0)
                                     }
                                 }
@@ -49,21 +49,31 @@ struct GoalListView: View {
                         if !isTiered {
                             EditButton()
                         }
-                        NavigationLink(destination: CompletedGoalsList().environmentObject(updater)) {
+                        NavigationLink(destination: CompletedGoalsList().environmentObject(listUpdater)) {
                             
                             Label("Completed", systemImage: "graduationcap.fill")
                         }
                     }
                     ToolbarItemGroup(placement: .navigationBarLeading) {
                         Button {
-                            redistributePriorityIndices()
+                            loadSetOfGoals()
                             isTiered.toggle()
+                            
                         } label: {
                             if isTiered {
                                 Image(systemName: "list.number")
                             } else {
                                 Image(systemName: "list.bullet.indent")
                             }
+                        }
+                        
+                        Button {
+                            showingVisionSheet.toggle()
+                        } label: {
+                            Image(systemName: "location.north.circle")
+                        }
+                        .sheet(isPresented: $showingVisionSheet) {
+                            EditNoteView(editNote: getVisionNote())
                         }
                     }
                 }
@@ -82,7 +92,7 @@ struct GoalListView: View {
                                 .frame(minWidth: 50, maxWidth: 50)
                                 .padding(30)
                         }
-                        .sheet(isPresented: $showingEditGoalSheet) {
+                        .sheet(isPresented: $showingEditGoalSheet, onDismiss: { listUpdater.updater.toggle() }) {
                             EditGoalView(editGoal: nil)
                             
                         }
@@ -93,43 +103,106 @@ struct GoalListView: View {
             }
             .navigationTitle(Text("Goals"))
             .navigationBarTitleDisplayMode(.inline)
-                
-        }.onAppear {
-            goalsArray = fetchedUnfinishedGoals.reversed().sorted {
-                $0.priorityIndex > $1.priorityIndex
+            .onAppear {
+                loadSetOfGoals()
             }
-            redistributePriorityIndices()
+                
+        }.onReceive(listUpdater.$updater) {_ in
+            loadSetOfGoals()
         }
         
         
     }
     
-    
-    
-    
-    func move(from source: IndexSet, to destination: Int) {
-        goalsArray.move(fromOffsets: source, toOffset: destination)
-        redistributePriorityIndices()
+    private func loadSetOfGoals () {
+        let fetchGoalsRequest: NSFetchRequest<N40Goal> = N40Goal.fetchRequest()
+        fetchGoalsRequest.sortDescriptors = [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)]
+        fetchGoalsRequest.predicate = NSPredicate(format: "isCompleted == NO")
+        
+        do {
+            // Peform Fetch Request
+            let allGoals = try viewContext.fetch(fetchGoalsRequest)
+            
+            setOfGoals = allGoals.reversed().sorted { $0.priorityIndex > $1.priorityIndex }
+            
+            calculatePriorityIndices()
+            
+            
+        } catch {
+            print("couldn't fetch goals")
+        }
+        
         
     }
     
-    
-    
-    private func redistributePriorityIndices () {
-        var nextPriorityIndex = goalsArray.count - 1
-        goalsArray.forEach {goal in
-            goal.priorityIndex = Int16(nextPriorityIndex)
-            nextPriorityIndex -= 1
+    private func calculatePriorityIndices () {
+        var i = setOfGoals.count - 1
+        for goal in setOfGoals {
+            goal.priorityIndex = Int16(i)
+            i -= 1
         }
         
         do {
             try viewContext.save()
-        }
-        catch {
+        } catch {
             // Handle Error
             print("Error info: \(error)")
         }
-        updater.updater.toggle()
+    }
+    
+    
+    func move(from source: IndexSet, to destination: Int) {
+        setOfGoals.move(fromOffsets: source, toOffset: destination)
+        calculatePriorityIndices()
+        loadSetOfGoals()
+    }
+    
+    
+    //vision note for vision sheet
+    private func getVisionNote () -> N40Note {
+        var visionNote: N40Note? = nil
+        
+        let fetchVisionNote: NSFetchRequest<N40Note> = N40Note.fetchRequest()
+        fetchVisionNote.sortDescriptors = [NSSortDescriptor(keyPath: \N40Note.date, ascending: false)]
+        fetchVisionNote.predicate = NSPredicate(format: "title == '_Life Vision_'")
+        
+        do {
+            // Peform Fetch Request
+            let fetchedVisionNotes = try viewContext.fetch(fetchVisionNote)
+            
+            if fetchedVisionNotes.count < 1 {
+                //we need to make one
+            } else if fetchedVisionNotes.count > 1 {
+                print("There are multiple vision notes")
+                visionNote = fetchedVisionNotes.reversed()[0]
+            } else {
+                visionNote = fetchedVisionNotes.reversed()[0]
+            }
+            
+            
+        } catch {
+            print("couldn't fetch vision note")
+        }
+        
+        if visionNote == nil {
+            let newNote = N40Note(context: viewContext)
+            
+            newNote.title = "_Life Vision_"
+            newNote.information = "My visions for my life: "
+            newNote.date = Date()
+            
+            do {
+                try viewContext.save()
+            }
+            catch {
+                // Handle Error
+                print("Error info: \(error)")
+            }
+            
+            visionNote = newNote
+        }
+        
+        return visionNote!
     }
     
     
@@ -153,6 +226,7 @@ struct GoalBoard: View {
         return VStack {
             VStack {
                 //header
+                
                 NavigationLink(destination: GoalDetailView(selectedGoal: goal)) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 6)
@@ -161,31 +235,34 @@ struct GoalBoard: View {
                             .frame(height: headerHeight)
                         
                         HStack {
+                            Button {
+                                withAnimation {
+                                    collapsed.toggle()
+                                }
+                            } label: {
+                                Image(systemName: (collapsed ? "chevron.forward" : "chevron.down"))
+                            }.buttonStyle(PlainButtonStyle())
+                            
                             Text(goal.name)
                             Spacer()
                         }.padding()
                     }
                 }.buttonStyle(PlainButtonStyle())
+                
+                
                 VStack {
                     //detail flap
                     HStack {
-                        Button {
-                            withAnimation {
-                                collapsed.toggle()
-                            }
-                        } label: {
-                            Image(systemName: (collapsed ? "chevron.forward" : "chevron.down"))
-                        }.buttonStyle(PlainButtonStyle())
                         if !goal.isCompleted {
                             if goal.hasDeadline {
                                 Text("By: \(goal.deadline.dateOnlyToString())")
-                            } else {
-                                Text("No Deadline")
+                                Spacer()
                             }
                         } else {
                             Text("Completed: \(goal.dateCompleted.dateOnlyToString())")
+                            Spacer()
                         }
-                        Spacer()
+                        
                     }
                     
                     if !collapsed {
@@ -349,5 +426,6 @@ struct CompletedGoalsList: View {
                 }
             }.listStyle(.plain)
         }.padding()
+            .onDisappear{updater.updater.toggle()}
     }
 }

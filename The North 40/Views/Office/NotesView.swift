@@ -68,14 +68,17 @@ struct NotesView: View {
                 } label: {
                     Label("Archived", systemImage: "archivebox")
                 }.sheet(isPresented: $showingArchivedNotesSheet) {
-                    VStack {
-                        HStack {
-                            Text("Archived Notes").font(.title2)
-                            Spacer()
-                        }.padding()
-                        List {
-                            ForEach(fetchedArchivedNotes) {archiveNote in
-                                Text(archiveNote.title)
+                    NavigationView {
+                        VStack {
+                            HStack {
+                                Text("Archived Notes").font(.title2)
+                                Spacer()
+                            }.padding()
+                            List {
+                                ForEach(fetchedArchivedNotes) {archiveNote in
+                                    NavigationLink(destination: EditNoteView(editNote: archiveNote)) {
+                                        Text(archiveNote.title)
+                                    }
                                     .swipeActions {
                                         Button {
                                             archiveNote.archived = false
@@ -83,6 +86,7 @@ struct NotesView: View {
                                             Label("Unarchive", systemImage: "arrowshape.left.fill")
                                         }.tint(.green)
                                     }
+                                }
                             }
                         }
                     }
@@ -367,6 +371,11 @@ fileprivate struct SelectPeopleView: View {
     let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
     let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     
+    @State private var sortingAlphabetical = false
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
+    private var allGroups: FetchedResults<N40Group>
+    
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
     private var fetchedPeople: FetchedResults<N40Person>
@@ -374,30 +383,73 @@ fileprivate struct SelectPeopleView: View {
     var editNoteView: EditNoteView
     
     var body: some View {
-        
-        
-        List{
-            let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
-            if noLetterLastNames.count > 0 {
-                Section(header: Text("*")) {
-                    ForEach(noLetterLastNames, id: \.self) { person in
-                        HStack {
-                            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            editNoteView.attachPerson(addPerson: person)
-                            dismiss()
+        VStack {
+            HStack {
+                Text("Sort all alphabetically: ")
+                Spacer()
+                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+            }.padding()
+            
+            if sortingAlphabetical {
+                
+                List{
+                    let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
+                    if noLetterLastNames.count > 0 {
+                        Section(header: Text("*")) {
+                            ForEach(noLetterLastNames, id: \.self) { person in
+                                HStack {
+                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editNoteView.attachPerson(addPerson: person)
+                                    dismiss()
+                                }
+                            }
                         }
                     }
-                }
-            }
-            ForEach(alphabet, id: \.self) { letter in
-                let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
-                if (letterSet.count > 0) {
-                    Section(header: Text(letter)) {
-                        ForEach(letterSet, id: \.self) { person in
+                    ForEach(alphabet, id: \.self) { letter in
+                        let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
+                        if (letterSet.count > 0) {
+                            Section(header: Text(letter)) {
+                                ForEach(letterSet, id: \.self) { person in
+                                    HStack {
+                                        Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                        Spacer()
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        editNoteView.attachPerson(addPerson: person)
+                                        dismiss()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }.listStyle(.sidebar)
+                    .padding(.horizontal, 3)
+                
+            } else {
+                
+                List {
+                    ForEach(allGroups) {group in
+                        Section(header: Text(group.name)) {
+                            ForEach(group.getPeople, id: \.self) {person in
+                                HStack {
+                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editNoteView.attachPerson(addPerson: person)
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+                    Section(header: Text("Ungrouped People")) {
+                        ForEach(fetchedPeople.filter { $0.getGroups.count < 1 }) {person in
                             HStack {
                                 Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
                                 Spacer()
@@ -409,9 +461,10 @@ fileprivate struct SelectPeopleView: View {
                             }
                         }
                     }
-                }
+                }.listStyle(.sidebar)
             }
-        }.padding(.horizontal, 3)
+            
+        }
     }
 }
 
@@ -423,17 +476,29 @@ fileprivate struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
     
     var editNoteView: EditNoteView
     
     var body: some View {
         List(fetchedGoals) {goal in
-            goalBox(goal)
-            .onTapGesture {
-                editNoteView.attachGoal(addGoal: goal)
-                dismiss()
+            if goal.getEndGoals.count == 0 {
+                goalBox(goal)
+                    .onTapGesture {
+                        editNoteView.attachGoal(addGoal: goal)
+                        dismiss()
+                    }
+                ForEach(goal.getSubGoals, id: \.self) {subGoal in
+                    if !subGoal.isCompleted {
+                        goalBox(subGoal)
+                            .padding(.leading, 25.0)
+                            .onTapGesture {
+                                editNoteView.attachGoal(addGoal: subGoal)
+                                dismiss()
+                            }
+                    }
+                }
             }
             
         }

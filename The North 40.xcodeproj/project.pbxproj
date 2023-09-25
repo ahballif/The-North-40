@@ -47,7 +47,6 @@
 		0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C77F2A89B2F400E29EBD /* GoalListView.swift */; };
 		0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7812A89B4E900E29EBD /* CalendarView.swift */; };
 		0768C7842A89B63500E29EBD /* EditPersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7832A89B63500E29EBD /* EditPersonView.swift */; };
-		0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7872A89C02900E29EBD /* InformationProcessing.swift */; };
 		079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F068D2A8ED14A009A01F5 /* ToDoView.swift */; };
 		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
 /* End PBXBuildFile section */
@@ -116,7 +115,6 @@
 		0768C77F2A89B2F400E29EBD /* GoalListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalListView.swift; sourceTree = "<group>"; };
 		0768C7812A89B4E900E29EBD /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		0768C7832A89B63500E29EBD /* EditPersonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPersonView.swift; sourceTree = "<group>"; };
-		0768C7872A89C02900E29EBD /* InformationProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationProcessing.swift; sourceTree = "<group>"; };
 		079F068D2A8ED14A009A01F5 /* ToDoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView.swift; sourceTree = "<group>"; };
 		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -149,6 +147,8 @@
 		0711DEE72A9D3958006C0005 /* Office */ = {
 			isa = PBXGroup;
 			children = (
+				07241D292A98E983009DE0E0 /* OfficeView.swift */,
+				07180B002AAE5F54008DC9E0 /* GroupsView.swift */,
 				0711DF1E2AAA463A006C0005 /* Finances */,
 				0711DEE52A9D3947006C0005 /* NotesView.swift */,
 				0711DEE82A9E4DE6006C0005 /* SettingsView.swift */,
@@ -194,7 +194,6 @@
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
 				079F068F2A8ED215009A01F5 /* Views */,
 				0768C6F82A81E15600E29EBD /* The_North_40App.swift */,
-				0768C7872A89C02900E29EBD /* InformationProcessing.swift */,
 				0768C6FC2A81E15600E29EBD /* Assets.xcassets */,
 				0768C7062A81E15600E29EBD /* Info.plist */,
 				0768C6FE2A81E15600E29EBD /* Preview Content */,
@@ -264,8 +263,6 @@
 				07241D262A9596B2009DE0E0 /* PersonDetailView.swift */,
 				0768C77F2A89B2F400E29EBD /* GoalListView.swift */,
 				0711DEDB2A9A434B006C0005 /* GoalDetailView.swift */,
-				07241D292A98E983009DE0E0 /* OfficeView.swift */,
-				07180B002AAE5F54008DC9E0 /* GroupsView.swift */,
 				0711DEE72A9D3958006C0005 /* Office */,
 			);
 			path = Views;
@@ -406,7 +403,6 @@
 				0768C7022A81E15600E29EBD /* Persistence.swift in Sources */,
 				0768C7802A89B2F400E29EBD /* GoalListView.swift in Sources */,
 				07180B012AAE5F54008DC9E0 /* GroupsView.swift in Sources */,
-				0768C7882A89C02900E29EBD /* InformationProcessing.swift in Sources */,
 				0768C7722A87188C00E29EBD /* N40Event+CoreDataClass.swift in Sources */,
 				0711DEE42A9D371C006C0005 /* N40Note+CoreDataProperties.swift in Sources */,
 				0711DEFF2AA393B2006C0005 /* FinanceView.swift in Sources */,

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import Foundation
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -15,6 +16,9 @@ struct SettingsView: View {
     @State private var smallestDivision = Int( 60 * DailyPlanner.minimumEventHeight / UserDefaults.standard.double(forKey: "hourHeight"))
     @State private var randomEventColor = UserDefaults.standard.bool(forKey: "randomEventColor")
     @State private var guessEventColor = UserDefaults.standard.bool(forKey: "guessEventColor")
+    
+    @State private var showEventsWithGoalColor = UserDefaults.standard.bool(forKey: "showEventsInGoalColor")
+    @State private var showEventsWithoutGoalGray = UserDefaults.standard.bool(forKey: "showNoGoalEventsGray")
     
     @State private var contactMethod = N40Event.CONTACT_OPTIONS[UserDefaults.standard.integer(forKey: "defaultContactMethod")]
     @State public var eventType: [String] = N40Event.EVENT_TYPE_OPTIONS[UserDefaults.standard.integer(forKey: "defaultCalendarEventType")]
@@ -62,6 +66,27 @@ struct SettingsView: View {
                         UserDefaults.standard.set(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1, forKey: "defaultCalendarEventType")
                     }
                 }
+            }
+            
+            VStack {
+                HStack {
+                    Text("Show Events with Goal Color: ")
+                    Spacer()
+                    Toggle("eventsWithGoalColor", isOn: $showEventsWithGoalColor)
+                        .labelsHidden()
+                        .onChange(of: showEventsWithGoalColor) {_ in
+                            UserDefaults.standard.set(showEventsWithGoalColor, forKey: "showEventsInGoalColor")
+                        }
+                }
+                HStack {
+                    Text("Make Events without Goal Gray: ")
+                    Spacer()
+                    Toggle("eventsWithoutGoalColor", isOn: $showEventsWithoutGoalGray)
+                        .labelsHidden()
+                        .onChange(of: showEventsWithoutGoalGray) {_ in
+                            UserDefaults.standard.set(showEventsWithoutGoalGray, forKey: "showNoGoalEventsGray")
+                        }
+                }.disabled(!showEventsWithGoalColor)
             }
             
             
@@ -158,54 +183,72 @@ struct SettingsView: View {
             
             
             
-            
-            
-            HStack {
-                Button("Delete Inaccessible Events") {
-                    
-                    let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
-                    
-                    let isNotScheduledPredicate = NSPredicate(format: "isScheduled = %d", false)
-                    let hasNoPeoplePredicate = NSPredicate(format: "attachedPeople.@count == 0")
-                    let hasNoGoalsPredicate = NSPredicate(format: "attachedGoals.@count == 0")
-                    let hasNoTransactionsPredicate = NSPredicate(format: "attachedTransactions.@count == 0")
-                    let isNotTodoPredicate = NSPredicate(format: "eventType != %i", N40Event.TODO_TYPE)
-                    
-                    let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isNotScheduledPredicate, hasNoGoalsPredicate, hasNoPeoplePredicate, isNotTodoPredicate, hasNoTransactionsPredicate])
-                    fetchRequest.predicate = compoundPredicate
-                    
-                    do {
-                        // Peform Fetch Request
-                        let fetchedEvents = try viewContext.fetch(fetchRequest)
+            VStack {
+                
+                HStack {
+                    Button("Delete Inaccessible Events") {
                         
-                        fetchedEvents.forEach { recurringEvent in
-                            viewContext.delete(recurringEvent)
-                        }
+                        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
                         
-                        // To save the entities to the persistent store, call
-                        // save on the context
+                        let isNotScheduledPredicate = NSPredicate(format: "isScheduled = %d", false)
+                        let hasNoPeoplePredicate = NSPredicate(format: "attachedPeople.@count == 0")
+                        let hasNoGoalsPredicate = NSPredicate(format: "attachedGoals.@count == 0")
+                        let hasNoTransactionsPredicate = NSPredicate(format: "attachedTransactions.@count == 0")
+                        let isNotTodoPredicate = NSPredicate(format: "eventType != %i", N40Event.TODO_TYPE)
+                        
+                        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isNotScheduledPredicate, hasNoGoalsPredicate, hasNoPeoplePredicate, isNotTodoPredicate, hasNoTransactionsPredicate])
+                        fetchRequest.predicate = compoundPredicate
+                        
                         do {
-                            try viewContext.save()
-                        }
-                        catch {
-                            // Handle Error
-                            print("Error info: \(error)")
+                            // Peform Fetch Request
+                            let fetchedEvents = try viewContext.fetch(fetchRequest)
                             
+                            fetchedEvents.forEach { recurringEvent in
+                                viewContext.delete(recurringEvent)
+                            }
+                            
+                            // To save the entities to the persistent store, call
+                            // save on the context
+                            do {
+                                try viewContext.save()
+                            }
+                            catch {
+                                // Handle Error
+                                print("Error info: \(error)")
+                                
+                            }
+                            
+                            
+                        } catch let error as NSError {
+                            print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
                         }
                         
                         
-                    } catch let error as NSError {
-                        print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
                     }
-                    
-                    
+                    Spacer()
                 }
-                Spacer()
-            }
-            HStack {
-                Text("This will only delete any events that cannot be accessed in any way, such as events that are unscheduled and are not attached to any goals or people. ").font(.caption)
+                HStack {
+                    Text("This will only delete any events that cannot be accessed in any way, such as events that are unscheduled and are not attached to any goals or people. ").font(.caption)
+                }
+                
+//                HStack {
+//                    Button("Export Database to File") {
+//                        exportDatabaseToFile()
+//                    }
+//                    Spacer()
+//                }
+//                HStack {
+//                    Text("Export your data base to a file for backup. ").font(.caption)
+//                }
+                
+                
             }
             
         }.padding()
+    }
+    
+    
+    private func exportDatabaseToFile() {
+        
     }
 }

@@ -76,10 +76,28 @@ struct EditPersonView: View {
                 
                 VStack {
                     
-                    TextField("Phone Number 1", text: $phoneNumber1)
-                    TextField("Phone Number 2", text: $phoneNumber2)
-                    TextField("Email 1", text: $email1)
-                    TextField("Email 2", text: $email2)
+                    TextField("Phone Number 1", text: $phoneNumber1).keyboardType(.phonePad)
+                        .onChange(of: phoneNumber1) {_ in
+                            if phoneNumber1.filter("1234567890".contains).count == 10 {
+                                phoneNumber1 = formatPhoneNumber(inputString: phoneNumber1)
+                            } else if phoneNumber1.filter("1234567890".contains).count == 11 {
+                                phoneNumber1 = formatPhoneNumber11(inputString: phoneNumber1)
+                            } else {
+                                phoneNumber1 = phoneNumber1.filter("1234567890".contains)
+                            }
+                        }
+                    TextField("Phone Number 2", text: $phoneNumber2).keyboardType(.phonePad)
+                        .onChange(of: phoneNumber2) {_ in
+                            if phoneNumber2.filter("1234567890".contains).count == 10 {
+                                phoneNumber2 = formatPhoneNumber(inputString: phoneNumber2)
+                            } else if phoneNumber2.filter("1234567890".contains).count == 11 {
+                                phoneNumber2 = formatPhoneNumber11(inputString: phoneNumber2)
+                            } else {
+                                phoneNumber2 = phoneNumber2.filter("1234567890".contains)
+                            }
+                        }
+                    TextField("Email 1", text: $email1).keyboardType(.emailAddress)
+                    TextField("Email 2", text: $email2).keyboardType(.emailAddress)
                     TextField("Social Media 1", text: $socialMedia1)
                     TextField("Social Media 2", text: $socialMedia2)
                     
@@ -173,11 +191,11 @@ struct EditPersonView: View {
             
             let newPerson = editPerson ?? N40Person(context: viewContext)
             
-            newPerson.firstName = firstName
-            newPerson.lastName = lastName
-            newPerson.title = title
+            newPerson.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+            newPerson.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+            newPerson.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            newPerson.address = address
+            newPerson.address = address.trimmingCharacters(in: .whitespacesAndNewlines)
             
             newPerson.hasBirthday = hasBirthday
             newPerson.birthday = birthday
@@ -235,4 +253,27 @@ struct AddPersonView_Previews: PreviewProvider {
     static var previews: some View {
         EditPersonView()
     }
+}
+
+// ----------- for formatting phone numbers
+public func formatPhoneNumber(inputString: String) -> String {
+    var pn = inputString.filter("0123456789".contains)
+    if (pn.count == 10) {
+        let pnIn = pn.split(separator: "")
+        pn = "("+pnIn[0]+pnIn[1]+pnIn[2]+") "
+        pn += pnIn[3]+pnIn[4]+pnIn[5]+"-"
+        pn += pnIn[6]+pnIn[7]+pnIn[8]+pnIn[9]
+    }
+    return pn
+}
+
+public func formatPhoneNumber11(inputString: String) -> String {
+    var pn = inputString.filter("0123456789".contains)
+    if (pn.count == 11) {
+        let pnIn = pn.split(separator: "")
+        pn = pnIn[0]+" ("+pnIn[1]+pnIn[2]+pnIn[3]+") "
+        pn += pnIn[4]+pnIn[5]+pnIn[6]+"-"
+        pn += pnIn[7]+pnIn[8]+pnIn[9]+pnIn[10]
+    }
+    return pn
 }
