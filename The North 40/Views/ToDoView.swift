@@ -18,10 +18,11 @@ struct ToDoView: View {
     //Only finds events that are to-do type (eventType == 3) and that are not fully completed (status == 3)
     
     @State private var showingInboxSheet = false
+    @State private var showingBucketSheet = false
     @State private var sortBy = 2
     
     //This fetch request is only used for the badge.
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED), NSPredicate(format: "isScheduled == NO")]), animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED), NSPredicate(format: "isScheduled == NO"), NSPredicate(format: "bucketlist == NO")]), animation: .default)
     private var inboxToDos: FetchedResults<N40Event>
     
     var body: some View {
@@ -64,18 +65,37 @@ struct ToDoView: View {
             .navigationTitle(Text("To-Do's Today"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
                         showingInboxSheet.toggle()
                     } label: {
-                        Image(systemName: "tray")
-                            .overlay(Badge(count: inboxToDos.count))
+                        if inboxToDos.count > 0 {
+                            Image(systemName: "tray")
+                                .overlay(Badge(count: inboxToDos.count))
+                        } else {
+                            Image(systemName: "tray")
+                        }
                     }
                     .sheet(isPresented: $showingInboxSheet, onDismiss: {updater.updater.toggle()}) {
                         NavigationView {
                             VStack {
                                 Text("Inbox").font(.title2).padding()
                                 SortedToDoList(showing: SortedToDoList.UNSCHEDULED_TODOS).environmentObject(updater)
+                                Spacer()
+                            }
+                        }
+                    }
+                    
+                    Button {
+                        showingBucketSheet.toggle()
+                    } label: {
+                        Image(systemName: "archivebox")
+                    }
+                    .sheet(isPresented: $showingBucketSheet, onDismiss: {updater.updater.toggle()}) {
+                        NavigationView {
+                            VStack {
+                                Text("Bucketlist").font(.title2).padding()
+                                SortedToDoList(showing: SortedToDoList.BUCKET_TODOS).environmentObject(updater)
                                 Spacer()
                             }
                         }
@@ -136,6 +156,11 @@ private let lateFormatter: DateFormatter = {
     formatter.dateFormat = "MMM d, h:mma"
     return formatter
 }()
+private let lateFormatterDayOnly: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "MMM d"
+    return formatter
+}()
 
 
 
@@ -164,6 +189,7 @@ struct SortedToDoList: View {
     public static let SCHEDULED_TODOS = 1
     public static let UNSCHEDULED_TODOS = 2
     public static let TODAY_TODOS = 3
+    public static let BUCKET_TODOS = 4
     
     @State private var setOfToDos: [N40Event] = []
     
@@ -183,11 +209,13 @@ struct SortedToDoList: View {
             if showing == SortedToDoList.ALL_TODOS {
                 //just leave it as is
             } else if showing == SortedToDoList.UNSCHEDULED_TODOS {
-                setOfToDos = setOfToDos.filter({ $0.isScheduled == false })
+                setOfToDos = setOfToDos.filter({ $0.isScheduled == false && $0.bucketlist == false })
             } else if showing == SortedToDoList.SCHEDULED_TODOS {
                 setOfToDos = setOfToDos.filter({ $0.isScheduled == true })
             } else if showing == SortedToDoList.TODAY_TODOS {
                 setOfToDos = setOfToDos.filter({ $0.isScheduled && $0.startDate < Date().endOfDay })
+            } else if showing == SortedToDoList.BUCKET_TODOS {
+                setOfToDos = setOfToDos.filter({ $0.isScheduled == false && $0.bucketlist == true })
             }
             
             //now filter out future events if necessary
@@ -224,7 +252,7 @@ struct SortedToDoList: View {
                         if unassignedSetOfToDos.count > 0 {
                             Section(header: Text("Unassigned To-Do Items")) {
                                 ForEach(unassignedSetOfToDos) { todo in
-                                    ToDoListItem(todo: todo, updateFunction: loadSetOfToDos)
+                                    ToDoListItem(todo: todo, updateFunction: loadSetOfToDos, showing: showing)
                                 }
                             }
                         }
@@ -235,7 +263,7 @@ struct SortedToDoList: View {
                             if goalSetOfToDos.count > 0 {
                                 Section(header: Text("\(goal.name)")) {
                                     ForEach(goalSetOfToDos) { todo in
-                                        ToDoListItem(todo: todo, updateFunction: loadSetOfToDos)
+                                        ToDoListItem(todo: todo, updateFunction: loadSetOfToDos, showing: showing)
                                     }
                                 }
                             }
@@ -253,7 +281,7 @@ struct SortedToDoList: View {
                             if personSetOfToDos.count > 0 {
                                 Section(header: Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")) {
                                     ForEach(personSetOfToDos) { todo in
-                                        ToDoListItem(todo: todo, updateFunction: loadSetOfToDos)
+                                        ToDoListItem(todo: todo, updateFunction: loadSetOfToDos, showing: showing)
                                     }
                                 }
                             }
@@ -264,7 +292,7 @@ struct SortedToDoList: View {
                         if unassignedSetOfToDos.count > 0 {
                             Section(header: Text("Unassigned To-Do Items")) {
                                 ForEach(unassignedSetOfToDos) { todo in
-                                    ToDoListItem(todo: todo, updateFunction: loadSetOfToDos)
+                                    ToDoListItem(todo: todo, updateFunction: loadSetOfToDos, showing: showing)
                                 }
                             }
                         }
@@ -273,7 +301,7 @@ struct SortedToDoList: View {
                     } else {
                         ForEach(setOfToDos) {todo in
                             VStack(alignment: .trailing) {
-                                ToDoListItem(todo: todo, updateFunction: loadSetOfToDos)
+                                ToDoListItem(todo: todo, updateFunction: loadSetOfToDos, showing: showing)
                                 ForEach(todo.getAttachedGoals) {eachGoal in
                                     Text(eachGoal.name).font(.caption)
                                 }
@@ -287,14 +315,27 @@ struct SortedToDoList: View {
                 //show a congrats tab
                 if showing == SortedToDoList.UNSCHEDULED_TODOS {
                     Text("You have no unscheduled To-Do Items.")
+                    
+                    Image(systemName: "bird")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .padding()
+                    Text("You're on top of it!")
+                } else if showing == SortedToDoList.BUCKET_TODOS {
+                    
+                    Text("You have no To-Do Items on your bucket list. ")
+                    
+                    
                 } else {
-                    Text("You have no to-do items today.")
+                    Text("You have no more to-do items today.")
+                    
+                    Image(systemName: "bird")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .padding()
+                    Text("You're on top of it!")
                 }
-                Image(systemName: "bird")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .padding()
-                Text("You're on top of it!")
+                
             }
         }.onAppear{
             loadSetOfToDos()
@@ -329,11 +370,14 @@ fileprivate struct ToDoListItem: View {
     
     @State public var todo: N40Event
     
+    @State private var showing: Int
+    
     private var updateFunc: () -> Void
     
-    init (todo: N40Event, updateFunction: @escaping () -> Void) {
+    init (todo: N40Event, updateFunction: @escaping () -> Void, showing: Int = SortedToDoList.TODAY_TODOS) {
         self.updateFunc = updateFunction
         self.todo = todo
+        self.showing = showing
     }
     
     var body: some View {
@@ -355,15 +399,54 @@ fileprivate struct ToDoListItem: View {
                     Spacer()
                     if (todo.isScheduled) {
                         if (todo.startDate < Date()) {
-                            Text(todo.startDate, formatter: lateFormatter)
+                            Text(todo.startDate, formatter: todo.allDay ? lateFormatterDayOnly : lateFormatter)
                                 .foregroundColor(.red)
                         } else {
-                            Text(todo.startDate, formatter: todayFormatter)
-                            //Don't change color if it's not overdue
+                            if !todo.allDay { //Don't show the date if it's an all day event. 
+                                Text(todo.startDate, formatter: todayFormatter)
+                                //Don't change color if it's not overdue
+                            }
                         }
                     }
                 }
             })
+        }
+        .swipeActions {
+            if showing == SortedToDoList.UNSCHEDULED_TODOS {
+                Button("Bucket") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation {
+                            todo.bucketlist = true
+                            
+                            do {
+                                try viewContext.save()
+                            } catch {
+                                // handle error
+                            }
+                            
+                            updateFunc()
+                        }
+                    }
+                }
+                .tint(.pink)
+            } else if showing == SortedToDoList.BUCKET_TODOS{
+                Button ("Unbucket") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation {
+                            todo.bucketlist = false
+                            
+                            do {
+                                try viewContext.save()
+                            } catch {
+                                // handle error
+                            }
+                            
+                            updateFunc()
+                        }
+                    }
+                }
+                .tint(.pink)
+            }
         }
     }
     
@@ -381,19 +464,21 @@ fileprivate struct ToDoListItem: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                     //Wait 2 seconds to change from attempted to completed so it doesn't disappear too quickly
                     if (toDo.status == 2) {
-                        //This means it was checked off but hasn't been finally hidden
-                        toDo.status = 3
-                        updateFunc()
-                        
-                        if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView") {
-                            toDo.startDate = Date()
-                            toDo.isScheduled = true
-                        }
-                        
-                        do {
-                            try viewContext.save()
-                        } catch {
-                            // handle error
+                        withAnimation {
+                            //This means it was checked off but hasn't been finally hidden
+                            toDo.status = 3
+                            updateFunc()
+                            
+                            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView") {
+                                toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
+                                toDo.isScheduled = true
+                            }
+                            
+                            do {
+                                try viewContext.save()
+                            } catch {
+                                // handle error
+                            }
                         }
                     }
                 }

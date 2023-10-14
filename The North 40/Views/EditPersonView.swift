@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Contacts
+import PhotosUI
 
 struct EditPersonView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -33,6 +35,13 @@ struct EditPersonView: View {
     
     @State private var isPresentingDeleteConfirm = false
     
+    @State private var showingContactPickerSheet = false
+    @State private var selectedContact: CNContact? = nil
+    
+    @State private var photoItem: PhotosPickerItem?
+    @State private var photoImage: Image?
+    @State private var photoData: Data?
+    private let photoWidth = 512
     
     var body: some View {
         VStack {
@@ -54,14 +63,50 @@ struct EditPersonView: View {
             
             
             ScrollView {
+                if (editPerson == nil) {
+                    Button("Import from Contacts") {
+                        showingContactPickerSheet.toggle()
+                    }.sheet(isPresented: $showingContactPickerSheet, onDismiss: {loadContact(contact: selectedContact)}) {
+                        ContactPicker(selectedContact: $selectedContact)
+                    }
+                }
+                
                 //photo line
-                HStack {
+                VStack {
                     
+                    if photoImage != nil {
+                        photoImage!
+                            .resizable()
+                            .scaledToFit()
+                    }
+                    HStack {
+                        PhotosPicker("Add Image", selection: $photoItem, matching: .images)
+                            .onChange(of: photoItem) { _ in
+                                Task {
+                                    if let data = try? await photoItem?.loadTransferable(type: Data.self) {
+                                        
+                                        if let uiImage = UIImage(data: data) {
+                                            var newImage = uiImage
+                                            newImage = cropImageToSquare(image: newImage) ?? newImage
+                                            newImage = resizeImage(image: newImage, targetSize: CGSize(width: photoWidth, height: photoWidth)) ?? newImage
+                                            photoData = newImage.pngData()
+                                            photoImage = Image(uiImage: newImage)
+                                            return
+                                        }
+                                    }
+                                    
+                                    print("Failed")
+                                }
+                            }
+                        if (photoImage != nil) {
+                            Button("Remove Photo") {
+                                photoItem = nil
+                                photoData = nil
+                                photoImage = nil
+                            }
+                        }
+                    }
                     
-                    
-                    
-                    Spacer()
-                    Text("(Picture of someone)")
                 }.padding()
                 
                 // Information Lines
@@ -185,6 +230,60 @@ struct EditPersonView: View {
             }
     }
     
+    private func loadContact(contact: CNContact?) {
+        if contact != nil {
+            firstName = contact!.givenName
+            lastName = contact!.familyName
+            title = contact!.namePrefix
+            
+            
+            //get the address
+            let cnAddress = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.street)" : ""
+            let cnCity = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.city)" : ""
+            let cnState = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.state)" : ""
+            let cnZipCode = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.postalCode)" : ""
+            let cnCountry = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.country)" : ""
+            address = "\(cnAddress), \(cnCity), \(cnState), \(cnZipCode), \(cnCountry)"
+            
+            
+            phoneNumber1 = contact!.phoneNumbers.count > 0 ? contact!.phoneNumbers[0].value.stringValue : ""
+            if phoneNumber1.filter("1234567890".contains).count == 10 {
+                phoneNumber1 = formatPhoneNumber(inputString: phoneNumber1)
+            } else if phoneNumber1.filter("1234567890".contains).count == 11 {
+                phoneNumber1 = formatPhoneNumber11(inputString: phoneNumber1)
+            } else {
+                phoneNumber1 = phoneNumber1.filter("1234567890".contains)
+            }
+            phoneNumber2 = contact!.phoneNumbers.count > 1 ? contact!.phoneNumbers[1].value.stringValue : ""
+            if phoneNumber2.filter("1234567890".contains).count == 10 {
+                phoneNumber2 = formatPhoneNumber(inputString: phoneNumber2)
+            } else if phoneNumber2.filter("1234567890".contains).count == 11 {
+                phoneNumber2 = formatPhoneNumber11(inputString: phoneNumber2)
+            } else {
+                phoneNumber2 = phoneNumber2.filter("1234567890".contains)
+            }
+            
+            email1 = contact!.emailAddresses.count > 0 ? contact!.emailAddresses[0].value as String : ""
+            email2 = contact!.emailAddresses.count > 1 ? contact!.emailAddresses[1].value as String : ""
+            
+            socialMedia1 = contact!.socialProfiles.count > 0 ? contact!.socialProfiles[0].value.urlString : ""
+            socialMedia1 = contact!.socialProfiles.count > 1 ? contact!.socialProfiles[1].value.urlString : ""
+            
+            //get the image
+            if contact!.imageDataAvailable {
+                if let uiImage = UIImage(data: contact!.imageData!) {
+                    var newImage = uiImage
+                    newImage = cropImageToSquare(image: newImage) ?? newImage
+                    newImage = resizeImage(image: newImage, targetSize: CGSize(width: 250, height: 250)) ?? newImage
+                    photoData = newImage.pngData()
+                    photoImage = Image(uiImage: newImage)
+                } else {
+                    print("Could not import contact photo")
+                }
+            }
+        }
+    }
+    
     
     private func savePerson () {
         withAnimation {
@@ -210,6 +309,8 @@ struct EditPersonView: View {
             newPerson.email2 = email2
             newPerson.socialMedia1 = socialMedia1
             newPerson.socialMedia2 = socialMedia2
+            
+            newPerson.photo = photoData
             
             // To save the new entity to the persistent store, call
             // save on the context
@@ -245,7 +346,16 @@ struct EditPersonView: View {
         socialMedia1 = editPerson?.socialMedia1 ?? ""
         socialMedia2 = editPerson?.socialMedia2 ?? ""
         
-        
+        if editPerson != nil {
+            if editPerson!.photo != nil {
+                photoData = editPerson!.photo!
+                if let uiImage = UIImage(data: editPerson!.photo!) {
+                    photoImage = Image(uiImage: uiImage)
+                } else {
+                    print("Could not import contact photo")
+                }
+            }
+        }
     }
 }
 
@@ -276,4 +386,58 @@ public func formatPhoneNumber11(inputString: String) -> String {
         pn += pnIn[7]+pnIn[8]+pnIn[9]+pnIn[10]
     }
     return pn
+}
+
+
+func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage? {
+    let size = image.size
+    
+    let widthRatio  = targetSize.width  / size.width
+    let heightRatio = targetSize.height / size.height
+    
+    // Figure out what our orientation is, and use that to form the rectangle
+    var newSize: CGSize
+    if(widthRatio > heightRatio) {
+        newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+    } else {
+        newSize = CGSize(width: size.width * widthRatio, height: size.height * widthRatio)
+    }
+    
+    // This is the rect that we've calculated out and this is what is actually used below
+    let rect = CGRect(origin: .zero, size: newSize)
+    
+    // Actually do the resizing to the rect using the ImageContext stuff
+    UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+    image.draw(in: rect)
+    let newImage = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    
+    return newImage
+}
+
+func cropImageToSquare(image: UIImage) -> UIImage? {
+    var imageHeight = image.size.height
+    var imageWidth = image.size.width
+
+    if imageHeight > imageWidth {
+        imageHeight = imageWidth
+    }
+    else {
+        imageWidth = imageHeight
+    }
+
+    let size = CGSize(width: imageWidth, height: imageHeight)
+
+    let refWidth : CGFloat = CGFloat(image.cgImage!.width)
+    let refHeight : CGFloat = CGFloat(image.cgImage!.height)
+
+    let x = (refWidth - size.width) / 2
+    let y = (refHeight - size.height) / 2
+
+    let cropRect = CGRect(x: x, y: y, width: size.height, height: size.width)
+    if let imageRef = image.cgImage!.cropping(to: cropRect) {
+        return UIImage(cgImage: imageRef, scale: 0, orientation: image.imageOrientation)
+    }
+
+    return nil
 }

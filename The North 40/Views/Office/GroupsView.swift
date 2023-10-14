@@ -375,105 +375,103 @@ fileprivate struct SelectPeopleView: View {
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
     private var fetchedPeople: FetchedResults<N40Person>
     
-    var editGroupView: EditGroupView
+    public var editGroupView: EditGroupView
+    
+    @State private var isArchived = false
+    @State private var searchText: String = ""
     
     var body: some View {
-        VStack {
-            HStack {
-                Text("Sort all alphabetically: ")
-                Spacer()
-                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
-            }.padding()
-            
-            if sortingAlphabetical {
+        NavigationStack {
+            VStack {
+                HStack {
+                    Text("Sort all alphabetically: ")
+                    Spacer()
+                    Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+                }.padding()
                 
-                List{
-                    let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
-                    if noLetterLastNames.count > 0 {
-                        Section(header: Text("*")) {
-                            ForEach(noLetterLastNames, id: \.self) { person in
-                                //see if the person is already in the group.
-                                if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                    HStack {
-                                        Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                        Spacer()
-                                    }
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        editGroupView.attachPerson(addPerson: person)
-                                        dismiss()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    ForEach(alphabet, id: \.self) { letter in
-                        let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
-                        if (letterSet.count > 0) {
-                            Section(header: Text(letter)) {
-                                ForEach(letterSet, id: \.self) { person in
+                if sortingAlphabetical {
+                    
+                    List{
+                        let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
+                        if noLetterLastNames.count > 0 {
+                            Section(header: Text("*")) {
+                                ForEach(noLetterLastNames, id: \.self) { person in
                                     //see if the person is already in the group.
                                     if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                        HStack {
-                                            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                            Spacer()
+                                        personListItem(person: person)
+                                    }
+                                }
+                            }
+                        }
+                        ForEach(alphabet, id: \.self) { letter in
+                            let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
+                            if (letterSet.count > 0) {
+                                Section(header: Text(letter)) {
+                                    ForEach(letterSet, id: \.self) { person in
+                                        //see if the person is already in the group.
+                                        if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
+                                            personListItem(person: person)
                                         }
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
-                                            editGroupView.attachPerson(addPerson: person)
-                                            dismiss()
+                                    }
+                                }
+                            }
+                        }
+                    }.listStyle(.sidebar)
+                        .padding(.horizontal, 3)
+                    
+                } else {
+                    
+                    List {
+                        //Only here do we put the ungroup set first.
+                        let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {$0.lastName < $1.lastName}
+                        if ungroupedSet.count > 0 {
+                            Section(header: Text("Ungrouped People")) {
+                                ForEach(ungroupedSet) {person in
+                                    //see if the person is already in the group.
+                                    if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
+                                        personListItem(person: person)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        
+                        ForEach(allGroups) {group in
+                            let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                            if groupSet.count > 0 {
+                                Section(header: Text(group.name)) {
+                                    ForEach(groupSet) {person in
+                                        //see if the person is already in the group.
+                                        if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
+                                            personListItem(person: person)
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }.listStyle(.sidebar)
-                    .padding(.horizontal, 3)
+                        
+                    }.listStyle(.sidebar)
+                }
                 
-            } else {
-                
-                List {
-                    ForEach(allGroups) {group in
-                        Section(header: Text(group.name)) {
-                            ForEach(group.getPeople, id: \.self) {person in
-                                //see if the person is already in the group.
-                                if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                    HStack {
-                                        Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                        Spacer()
-                                    }
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        editGroupView.attachPerson(addPerson: person)
-                                        dismiss()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Section(header: Text("Ungrouped People")) {
-                        ForEach(fetchedPeople.filter { $0.getGroups.count < 1 }) {person in
-                            //see if the person is already in the group.
-                            if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                HStack {
-                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                    Spacer()
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    editGroupView.attachPerson(addPerson: person)
-                                    dismiss()
-                                }
-                            }
-                        }
-                    }
-                }.listStyle(.sidebar)
-            }
-            
+            }.searchable(text: $searchText)
         }
-        
     }
+    
+    
+    
+    
+    private func personListItem (person: N40Person) -> some View {
+        return HStack {
+            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            editGroupView.attachPerson(addPerson: person)
+            dismiss()
+        }
+    }
+    
 }
 
 

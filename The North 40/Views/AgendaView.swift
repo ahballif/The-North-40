@@ -246,7 +246,7 @@ struct AgendaView: View {
             toDo.status = 2
             
             if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView") {
-                toDo.startDate = Date()
+                toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                 toDo.isScheduled = true
             }
             

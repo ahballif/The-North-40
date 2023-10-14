@@ -12,6 +12,8 @@ import CoreData
 struct The_North_40App: App {
     let persistenceController = PersistenceController.shared
 
+    @State private var showingTutorialSheet = false
+    
     init() {
         UserDefaults.standard.register(defaults: [
             "hourHeight": 100.0,
@@ -27,7 +29,8 @@ struct The_North_40App: App {
             "showingInfoEvents": true,
             "showingBackupEvents": true,
             "showEventsInGoalColor": false,
-            "showNoGoalEventsGray": true
+            "showNoGoalEventsGray": true,
+            "firstOpen": true
         ])
         
         
@@ -38,6 +41,18 @@ struct The_North_40App: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .onAppear {
+                    //UserDefaults.standard.set(true, forKey: "firstOpen")//just for testing
+                    
+                    if UserDefaults.standard.bool(forKey: "firstOpen") {
+                        UserDefaults.standard.set(false, forKey: "firstOpen")
+                        showingTutorialSheet.toggle()
+                    }
+                }.sheet(isPresented: $showingTutorialSheet) {
+                    NavigationView {
+                        AboutView(hasDoneBar: true)
+                    }
+                }
         }
     }
 }

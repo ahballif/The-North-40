@@ -18,7 +18,8 @@ extension N40Group {
 
     @NSManaged public var priorityIndex: Int16
     @NSManaged public var name: String
-    @NSManaged public var information: String?
+    @NSManaged public var information: String
+    
     @NSManaged public var people: NSSet?
     @NSManaged public var goals: NSSet?
     

@@ -77,7 +77,11 @@ struct NotesView: View {
                             List {
                                 ForEach(fetchedArchivedNotes) {archiveNote in
                                     NavigationLink(destination: EditNoteView(editNote: archiveNote)) {
-                                        Text(archiveNote.title)
+                                        HStack {
+                                            Text(archiveNote.title)
+                                            Spacer()
+                                            Text(archiveNote.date.dateOnlyToString())
+                                        }
                                     }
                                     .swipeActions {
                                         Button {
@@ -352,7 +356,7 @@ struct EditNoteView: View {
                 
             }
             Spacer()
-        }
+        }.padding()
     }
     
 }
@@ -382,88 +386,82 @@ fileprivate struct SelectPeopleView: View {
     
     var editNoteView: EditNoteView
     
+    @State private var isArchived = false
+    @State private var searchText: String = ""
+    
     var body: some View {
-        VStack {
-            HStack {
-                Text("Sort all alphabetically: ")
-                Spacer()
-                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
-            }.padding()
-            
-            if sortingAlphabetical {
+        NavigationStack {
+            VStack {
+                HStack {
+                    Text("Sort all alphabetically: ")
+                    Spacer()
+                    Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+                }.padding()
                 
-                List{
-                    let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
-                    if noLetterLastNames.count > 0 {
-                        Section(header: Text("*")) {
-                            ForEach(noLetterLastNames, id: \.self) { person in
-                                HStack {
-                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                    Spacer()
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    editNoteView.attachPerson(addPerson: person)
-                                    dismiss()
+                if sortingAlphabetical {
+                    
+                    List{
+                        let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
+                        if noLetterLastNames.count > 0 {
+                            Section(header: Text("*")) {
+                                ForEach(noLetterLastNames, id: \.self) { person in
+                                    personListItem(person: person)
                                 }
                             }
                         }
-                    }
-                    ForEach(alphabet, id: \.self) { letter in
-                        let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
-                        if (letterSet.count > 0) {
-                            Section(header: Text(letter)) {
-                                ForEach(letterSet, id: \.self) { person in
-                                    HStack {
-                                        Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                        Spacer()
-                                    }
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        editNoteView.attachPerson(addPerson: person)
-                                        dismiss()
+                        ForEach(alphabet, id: \.self) { letter in
+                            let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
+                            if (letterSet.count > 0) {
+                                Section(header: Text(letter)) {
+                                    ForEach(letterSet, id: \.self) { person in
+                                        personListItem(person: person)
                                     }
                                 }
                             }
                         }
-                    }
-                }.listStyle(.sidebar)
-                    .padding(.horizontal, 3)
-                
-            } else {
-                
-                List {
-                    ForEach(allGroups) {group in
-                        Section(header: Text(group.name)) {
-                            ForEach(group.getPeople, id: \.self) {person in
-                                HStack {
-                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                    Spacer()
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    editNoteView.attachPerson(addPerson: person)
-                                    dismiss()
+                    }.listStyle(.sidebar)
+                        .padding(.horizontal, 3)
+                    
+                } else {
+                    
+                    List {
+                        ForEach(allGroups) {group in
+                            let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                            if groupSet.count > 0 {
+                                Section(header: Text(group.name)) {
+                                    ForEach(groupSet) {person in
+                                        personListItem(person: person)
+                                    }
                                 }
                             }
                         }
-                    }
-                    Section(header: Text("Ungrouped People")) {
-                        ForEach(fetchedPeople.filter { $0.getGroups.count < 1 }) {person in
-                            HStack {
-                                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                Spacer()
-                            }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                editNoteView.attachPerson(addPerson: person)
-                                dismiss()
+                        let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {$0.lastName < $1.lastName}
+                        if ungroupedSet.count > 0 {
+                            Section(header: Text("Ungrouped People")) {
+                                ForEach(ungroupedSet) {person in
+                                    personListItem(person: person)
+                                }
                             }
                         }
-                    }
-                }.listStyle(.sidebar)
-            }
-            
+                    }.listStyle(.sidebar)
+                }
+                
+            }.searchable(text: $searchText)
+        }
+    }
+    
+    
+    
+    
+    private func personListItem (person: N40Person) -> some View {
+        return HStack {
+            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            editNoteView.attachPerson(addPerson: person)
+            dismiss()
         }
     }
 }

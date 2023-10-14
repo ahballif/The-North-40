@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OfficeView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.colorScheme) var colorScheme
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "status == %i", N40Event.UNREPORTED), NSPredicate(format: "eventType == %i", N40Event.REPORTABLE_TYPE), NSPredicate(format: "startDate < %@", Date() as NSDate)]))
     private var fetchedUnreporteds: FetchedResults<N40Event>
@@ -41,8 +42,35 @@ struct OfficeView: View {
                     NavigationLink(destination: MapView()) {
                         Label("Map", systemImage: "map")
                     }
+                    NavigationLink(destination: PersonListView(archive: true)) {
+                        Label("Archived People", systemImage: "person.badge.clock")
+                    }
                     NavigationLink(destination: SettingsView()) {
                         Label("Settings", systemImage: "gearshape.2")
+                    }
+                    Group {
+                        NavigationLink(destination: AboutView()) {
+                            Label {
+                                Text("About North 40")
+                            } icon: {
+                                if colorScheme == .dark {
+                                    Image("N40Black")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .colorInvert()
+                                } else {
+                                    Image("N40Black")
+                                        .resizable()
+                                        .scaledToFit()
+                                }
+                            }
+                        }
+//                        NavigationLink(destination: TutorialView()) {
+//                            Text("Using the App")
+//                        }
+//                        NavigationLink(destination: GoalTipsView()) {
+//                            Text("Tips for Goal Setting")
+//                        }
                     }
                 }
                 Spacer()
@@ -52,7 +80,7 @@ struct OfficeView: View {
 }
 
 struct UnreportedView: View {
-    
+    private var updater: RefreshView = RefreshView()
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "status == %i", N40Event.UNREPORTED), NSPredicate(format: "eventType == %i", N40Event.REPORTABLE_TYPE), NSPredicate(format: "startDate < %@", Date() as NSDate)]))
     private var fetchedUnreporteds: FetchedResults<N40Event>
     
@@ -63,6 +91,7 @@ struct UnreportedView: View {
                 Text("Unreported Events: ").font(.title2)
                 Spacer()
             }.padding(.horizontal)
+            
             
             if (fetchedUnreporteds.count > 0) {
                 List(fetchedUnreporteds) { event in
@@ -78,7 +107,9 @@ struct UnreportedView: View {
                         }
                     }
                 }.scrollContentBackground(.hidden)
+                    
             } else {
+            
                 VStack {
                     Text("You have no unreported events.")
                     Image(systemName: "bird")
@@ -87,7 +118,7 @@ struct UnreportedView: View {
                         .padding()
                     Text("You're on top of it!")
                 }.padding()
-                
+            
             }
         }
     }

@@ -8,6 +8,7 @@
     </entity>
     <entity name="N40Event" representedClassName=".N40Event" syncable="YES">
         <attribute name="allDay" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="bucketlist" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="color" attributeType="String" defaultValueString="#FF7051"/>
         <attribute name="contactMethod" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="duration" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -41,7 +42,7 @@
         <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedGoals" inverseEntity="N40Event"/>
     </entity>
     <entity name="N40Group" representedClassName=".N40Group" syncable="YES">
-        <attribute name="information" optional="YES" attributeType="String"/>
+        <attribute name="information" attributeType="String" defaultValueString=""/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="goals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="groups" inverseEntity="N40Goal"/>
@@ -64,10 +65,12 @@
         <attribute name="email2" attributeType="String" defaultValueString=""/>
         <attribute name="firstName" attributeType="String" defaultValueString=""/>
         <attribute name="hasBirthday" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isArchived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="lastName" attributeType="String" defaultValueString=""/>
         <attribute name="notes" attributeType="String" defaultValueString=""/>
         <attribute name="phoneNumber1" attributeType="String" defaultValueString=""/>
         <attribute name="phoneNumber2" attributeType="String" defaultValueString=""/>
+        <attribute name="photo" optional="YES" attributeType="Binary"/>
         <attribute name="socialMedia1" attributeType="String" defaultValueString=""/>
         <attribute name="socialMedia2" attributeType="String" defaultValueString=""/>
         <attribute name="title" attributeType="String" defaultValueString=""/>

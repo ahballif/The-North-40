@@ -119,26 +119,26 @@ struct CalendarView: View {
                     Spacer()
                 }
                 
-            }
+            }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
+                .onEnded { value in
+                    
+                    let horizontalAmount = value.translation.width
+                    let verticalAmount = value.translation.height
+                    
+                    if abs(horizontalAmount) > abs(verticalAmount) {
+                        if (horizontalAmount < 0) {
+                            //Left swipe
+                            selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
+                        } else {
+                            //right swipe
+                            selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
+                        }
+                    }
+                    
+                })
             
         }
-        .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
-            .onEnded { value in
-                
-                let horizontalAmount = value.translation.width
-                let verticalAmount = value.translation.height
-                
-                if abs(horizontalAmount) > abs(verticalAmount) {
-                    if (horizontalAmount < 0) {
-                        //Left swipe
-                        selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
-                    } else {
-                        //right swipe
-                        selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
-                    }
-                }
-                
-            })
+        
     }
 }
 
@@ -165,10 +165,12 @@ struct AllDayList: View {
     
     
     var body: some View {
-        if (fetchedAllDays.count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
+        if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE }).count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
             ScrollView {
                 ForEach(fetchedAllDays) { eachEvent in
-                    allDayEvent(eachEvent)
+                    if eachEvent.eventType != N40Event.TODO_TYPE { //I don't want TODOS in the all day list.
+                        allDayEvent(eachEvent)
+                    }
                 }
                 ForEach(fetchedGoalsDueToday) { eachGoal in
                     dueGoal(eachGoal)
@@ -180,7 +182,9 @@ struct AllDayList: View {
         } else {
             VStack {
                 ForEach(fetchedAllDays) { eachEvent in
-                    allDayEvent(eachEvent)
+                    if eachEvent.eventType != N40Event.TODO_TYPE { //I don't want TODOS in the all day list.
+                        allDayEvent(eachEvent)
+                    }
                 }
                 ForEach(fetchedGoalsDueToday) { eachGoal in
                     dueGoal(eachGoal)
@@ -435,6 +439,7 @@ struct DailyPlanner: View {
     @Binding var showingRadarEvents: Bool
     @Binding var showingBackgroundEvents: Bool
     
+    @GestureState var press = false
     
     var body: some View {
         
@@ -672,6 +677,34 @@ struct DailyPlanner: View {
         
     }
     
+    func getHighestEventIndex (allEvents: [N40Event], from: Date, to: Date) -> Int {
+        
+        var relevantEvents: [N40Event] = []
+        
+        for eachEvent in allEvents {
+            
+            let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
+            let testDuration = Int(eachEvent.duration) > Int(minDuration) ? Int(eachEvent.duration) : Int(minDuration)
+            
+            
+            if eachEvent.startDate > from && Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate < to {
+                //if the event is in the interval
+                relevantEvents.append(eachEvent)
+            }
+        }
+        
+        var greatestEventIndex = 0
+        //now find the greatestEventIndex
+        for eachRelevantEvent in relevantEvents {
+            if eachRelevantEvent.renderIdx ?? 0 > greatestEventIndex {
+                greatestEventIndex = eachRelevantEvent.renderIdx ?? greatestEventIndex
+            }
+        }
+        
+        return greatestEventIndex
+        
+    }
+    
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
         //all events is used for wrapping around other events.
         
@@ -818,10 +851,17 @@ struct DailyPlanner: View {
             .padding(.horizontal, 4)
             .frame(height: height, alignment: .top)
             .frame(width: (geometry.size.width-40)/CGFloat(allEventsAtThisTime.count), alignment: .leading)
+            //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
             .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(allEventsAtThisTime.count)), y: offset + hourHeight/2)
             
         }
+    }
+    
+    func getTestDuration(duration: Int) -> Int {
+        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
+        return Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
+        
     }
     
     func getNowOffset() -> CGFloat {
@@ -843,7 +883,7 @@ struct DailyPlanner: View {
             toDo.status = 3
             
             if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
-                toDo.startDate = Date()
+                toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                 toDo.isScheduled = true
             }
             

@@ -29,6 +29,7 @@ extension N40Event {
     @NSManaged public var color: String
     @NSManaged public var recurringTag: String
     @NSManaged public var allDay: Bool
+    @NSManaged public var bucketlist: Bool
     
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?

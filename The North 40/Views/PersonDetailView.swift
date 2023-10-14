@@ -19,6 +19,7 @@ struct PersonDetailView: View {
     @State private var editEventEventType = N40Event.NON_REPORTABLE_TYPE
     @State private var showingEditEventSheet = false
     
+    
     var body: some View {
         
         VStack {
@@ -155,11 +156,19 @@ struct PersonInfoView: View {
     
     @ObservedObject var selectedPerson: N40Person
     
+    @State private var photoImage: Image?
     
     
     var body: some View {
         VStack {
             ScrollView {
+                if photoImage != nil {
+                    photoImage!
+                        .resizable()
+                        .scaledToFit()
+                }
+                
+                
                 if (selectedPerson.address != "") {
                     addressBar(contactInfoValue: selectedPerson.address)
                 }
@@ -199,7 +208,16 @@ struct PersonInfoView: View {
             }
             
         }
-        
+        .onAppear {
+            //Load the image from data
+            if selectedPerson.photo != nil {
+                if let uiImage = UIImage(data: selectedPerson.photo!) {
+                    photoImage = Image(uiImage: uiImage)
+                } else {
+                    print("Could not import contact photo")
+                }
+            }
+        }
         
     }
     

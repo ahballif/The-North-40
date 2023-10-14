@@ -27,6 +27,7 @@ extension N40Person {
     @NSManaged public var socialMedia1: String
     @NSManaged public var socialMedia2: String
     
+    @NSManaged public var isArchived: Bool
     @NSManaged public var notes: String
     
     @NSManaged public var hasBirthday: Bool
@@ -39,6 +40,7 @@ extension N40Person {
     @NSManaged public var attachedNotes: NSSet?
     @NSManaged public var attachedGoals: NSSet?
 
+    @NSManaged public var photo: Data?
     
     public var getGroups: [N40Group] {
         //returns an array of the groups attached to the person
@@ -52,6 +54,10 @@ extension N40Person {
         return set.sorted {
             $0.startDate > $1.startDate //returns oldest last
         }
+    }
+    
+    public var getFullName: String {
+        return title + " " + firstName + " " + lastName
     }
     
 }

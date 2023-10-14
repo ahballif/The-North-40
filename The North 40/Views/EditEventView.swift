@@ -501,8 +501,11 @@ struct EditEventView: View {
                 }
                 
                 HStack {
-                    
-                    Text("Duration: \(duration) min")
+                    if duration < 60 {
+                        Text("Duration: \(duration) min")
+                    } else {
+                        Text("Duration: \(Int(duration/60)) h \(String(format: "%02d", duration%60)) min")
+                    }
                     Spacer()
                     Stepper("", value: $duration, in: 0...1440, step: 5, onEditingChanged: {_ in
                         chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
@@ -692,9 +695,9 @@ struct EditEventView: View {
             
             if (self.eventTitle == "") {
     
-                var defaultName = "Do Something"
+                var defaultName = "Event"
                 
-                if editEvent == nil {
+                if newEvent.name == "" {
                     if attachedPeople.count > 0 {
                         defaultName = attachedPeople[0].firstName + " " + attachedPeople[0].lastName
                         for eachPerson in attachedPeople {
@@ -983,7 +986,6 @@ struct EditEventView: View {
                 catch {
                     // Handle Error
                     print("Error info: \(error)")
-                    
                 }
                 
                 
@@ -1075,91 +1077,84 @@ fileprivate struct SelectPeopleView: View {
     @State private var sortingAlphabetical = false
     
     var editEventView: EditEventView
+    @State private var isArchived = false
+    
+    @State private var searchText: String = ""
     
     var body: some View {
-        VStack {
-            HStack {
-                Text("Sort all alphabetically: ")
-                Spacer()
-                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
-            }.padding()
-            
-            if sortingAlphabetical {
+        NavigationStack {
+            VStack {
+                HStack {
+                    Text("Sort all alphabetically: ")
+                    Spacer()
+                    Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+                }.padding()
                 
-                List{
-                    let noLetterLastNames = fetchedPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == ""}
-                    if noLetterLastNames.count > 0 {
-                        Section(header: Text("*")) {
-                            ForEach(noLetterLastNames, id: \.self) { person in
-                                HStack {
-                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                    Spacer()
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    editEventView.attachPerson(addPerson: person)
-                                    dismiss()
+                if sortingAlphabetical {
+                    
+                    List{
+                        let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
+                        if noLetterLastNames.count > 0 {
+                            Section(header: Text("*")) {
+                                ForEach(noLetterLastNames, id: \.self) { person in
+                                    personListItem(person: person)
                                 }
                             }
                         }
-                    }
-                    ForEach(alphabet, id: \.self) { letter in
-                        let letterSet = fetchedPeople.filter { $0.lastName.hasPrefix(letter) }
-                        if (letterSet.count > 0) {
-                            Section(header: Text(letter)) {
-                                ForEach(letterSet, id: \.self) { person in
-                                    HStack {
-                                        Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                        Spacer()
-                                    }
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        editEventView.attachPerson(addPerson: person)
-                                        dismiss()
+                        ForEach(alphabet, id: \.self) { letter in
+                            let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
+                            if (letterSet.count > 0) {
+                                Section(header: Text(letter)) {
+                                    ForEach(letterSet, id: \.self) { person in
+                                        personListItem(person: person)
                                     }
                                 }
                             }
                         }
-                    }
-                }.listStyle(.sidebar)
-                    .padding(.horizontal, 3)
-                
-            } else {
-                
-                List {
-                    ForEach(allGroups) {group in
-                        Section(header: Text(group.name)) {
-                            ForEach(group.getPeople, id: \.self) {person in
-                                HStack {
-                                    Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                    Spacer()
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    editEventView.attachPerson(addPerson: person)
-                                    dismiss()
+                    }.listStyle(.sidebar)
+                        .padding(.horizontal, 3)
+                    
+                } else {
+                    
+                    List {
+                        ForEach(allGroups) {group in
+                            let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                            if groupSet.count > 0 {
+                                Section(header: Text(group.name)) {
+                                    ForEach(groupSet) {person in
+                                        personListItem(person: person)
+                                    }
                                 }
                             }
                         }
-                    }
-                    Section(header: Text("Ungrouped People")) {
-                        ForEach(fetchedPeople.filter { $0.getGroups.count < 1 }) {person in
-                            HStack {
-                                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-                                Spacer()
-                            }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                editEventView.attachPerson(addPerson: person)
-                                dismiss()
+                        let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {$0.lastName < $1.lastName}
+                        if ungroupedSet.count > 0 {
+                            Section(header: Text("Ungrouped People")) {
+                                ForEach(ungroupedSet) {person in
+                                    personListItem(person: person)
+                                }
                             }
                         }
-                    }
-                }.listStyle(.sidebar)
-            }
-            
+                    }.listStyle(.sidebar)
+                }
+                
+            }.searchable(text: $searchText)
         }
-        
+    }
+    
+    
+    
+    
+    private func personListItem (person: N40Person) -> some View {
+        return HStack {
+            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            editEventView.attachPerson(addPerson: person)
+            dismiss()
+        }
     }
 }
 
