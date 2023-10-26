@@ -87,8 +87,8 @@ struct EditPersonView: View {
                                         
                                         if let uiImage = UIImage(data: data) {
                                             var newImage = uiImage
-                                            newImage = cropImageToSquare(image: newImage) ?? newImage
-                                            newImage = resizeImage(image: newImage, targetSize: CGSize(width: photoWidth, height: photoWidth)) ?? newImage
+                                            //newImage = cropImageToSquare(image: newImage) ?? newImage
+                                            //newImage = resizeImage(image: newImage, targetSize: CGSize(width: photoWidth, height: photoWidth)) ?? newImage
                                             photoData = newImage.pngData()
                                             photoImage = Image(uiImage: newImage)
                                             return
@@ -273,8 +273,8 @@ struct EditPersonView: View {
             if contact!.imageDataAvailable {
                 if let uiImage = UIImage(data: contact!.imageData!) {
                     var newImage = uiImage
-                    newImage = cropImageToSquare(image: newImage) ?? newImage
-                    newImage = resizeImage(image: newImage, targetSize: CGSize(width: 250, height: 250)) ?? newImage
+                    //newImage = cropImageToSquare(image: newImage) ?? newImage
+                    //newImage = resizeImage(image: newImage, targetSize: CGSize(width: 250, height: 250)) ?? newImage
                     photoData = newImage.pngData()
                     photoImage = Image(uiImage: newImage)
                 } else {

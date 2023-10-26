@@ -119,25 +119,25 @@ struct CalendarView: View {
                     Spacer()
                 }
                 
-            }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
-                .onEnded { value in
-                    
-                    let horizontalAmount = value.translation.width
-                    let verticalAmount = value.translation.height
-                    
-                    if abs(horizontalAmount) > abs(verticalAmount) {
-                        if (horizontalAmount < 0) {
-                            //Left swipe
-                            selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
-                        } else {
-                            //right swipe
-                            selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
-                        }
-                    }
-                    
-                })
+            }
             
-        }
+        }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
+            .onEnded { value in
+                
+                let horizontalAmount = value.translation.width
+                let verticalAmount = value.translation.height
+                
+                if abs(horizontalAmount) > abs(verticalAmount) {
+                    if (horizontalAmount < 0) {
+                        //Left swipe
+                        selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
+                    } else {
+                        //right swipe
+                        selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
+                    }
+                }
+                
+            })
         
     }
 }
