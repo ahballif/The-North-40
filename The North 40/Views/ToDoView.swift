@@ -19,7 +19,7 @@ struct ToDoView: View {
     
     @State private var showingInboxSheet = false
     @State private var showingBucketSheet = false
-    @State private var sortBy = 2
+    @State private var sortBy = UserDefaults.standard.bool(forKey: "showTodayTodosFront") ? SortedToDoList.SORT_BY_DATE : SortedToDoList.SORT_BY_GOALS
     
     //This fetch request is only used for the badge.
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED), NSPredicate(format: "isScheduled == NO"), NSPredicate(format: "bucketlist == NO")]), animation: .default)
@@ -29,12 +29,14 @@ struct ToDoView: View {
         NavigationView {
             ZStack {
                 
-                if sortBy == 0 {
-                    SortedToDoList(sortBy: 0, showing: SortedToDoList.SCHEDULED_TODOS).environmentObject(updater)
-                } else if sortBy == 1 {
-                    SortedToDoList(sortBy: 1, showing: SortedToDoList.SCHEDULED_TODOS).environmentObject(updater)
+                
+                let showing = UserDefaults.standard.bool(forKey: "showTodayTodosFront") ? SortedToDoList.SCHEDULED_TODOS : SortedToDoList.ALL_TODOS
+                if sortBy == SortedToDoList.SORT_BY_GOALS {
+                    SortedToDoList(sortBy: SortedToDoList.SORT_BY_GOALS, showing: showing).environmentObject(updater)
+                } else if sortBy == SortedToDoList.SORT_BY_PEOPLE {
+                    SortedToDoList(sortBy: SortedToDoList.SORT_BY_PEOPLE, showing: showing).environmentObject(updater)
                 } else {
-                    SortedToDoList(sortBy: 2, showing: SortedToDoList.SCHEDULED_TODOS).environmentObject(updater)
+                    SortedToDoList(sortBy: SortedToDoList.SORT_BY_DATE, showing: showing).environmentObject(updater)
                 }
                 
                     
@@ -65,43 +67,44 @@ struct ToDoView: View {
             .navigationTitle(Text("To-Do's Today"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button {
-                        showingInboxSheet.toggle()
-                    } label: {
-                        if inboxToDos.count > 0 {
-                            Image(systemName: "tray")
-                                .overlay(Badge(count: inboxToDos.count))
-                        } else {
-                            Image(systemName: "tray")
-                        }
-                    }
-                    .sheet(isPresented: $showingInboxSheet, onDismiss: {updater.updater.toggle()}) {
-                        NavigationView {
-                            VStack {
-                                Text("Inbox").font(.title2).padding()
-                                SortedToDoList(showing: SortedToDoList.UNSCHEDULED_TODOS).environmentObject(updater)
-                                Spacer()
+                if UserDefaults.standard.bool(forKey: "showTodayTodosFront") {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        Button {
+                            showingInboxSheet.toggle()
+                        } label: {
+                            if inboxToDos.count > 0 {
+                                Image(systemName: "tray")
+                                    .overlay(Badge(count: inboxToDos.count))
+                            } else {
+                                Image(systemName: "tray")
                             }
                         }
-                    }
-                    
-                    Button {
-                        showingBucketSheet.toggle()
-                    } label: {
-                        Image(systemName: "archivebox")
-                    }
-                    .sheet(isPresented: $showingBucketSheet, onDismiss: {updater.updater.toggle()}) {
-                        NavigationView {
-                            VStack {
-                                Text("Bucketlist").font(.title2).padding()
-                                SortedToDoList(showing: SortedToDoList.BUCKET_TODOS).environmentObject(updater)
-                                Spacer()
+                        .sheet(isPresented: $showingInboxSheet, onDismiss: {updater.updater.toggle()}) {
+                            NavigationView {
+                                VStack {
+                                    Text("Inbox").font(.title2).padding()
+                                    SortedToDoList(showing: SortedToDoList.UNSCHEDULED_TODOS).environmentObject(updater)
+                                    Spacer()
+                                }
+                            }
+                        }
+                        
+                        Button {
+                            showingBucketSheet.toggle()
+                        } label: {
+                            Image(systemName: "archivebox")
+                        }
+                        .sheet(isPresented: $showingBucketSheet, onDismiss: {updater.updater.toggle()}) {
+                            NavigationView {
+                                VStack {
+                                    Text("Bucketlist").font(.title2).padding()
+                                    SortedToDoList(showing: SortedToDoList.BUCKET_TODOS).environmentObject(updater)
+                                    Spacer()
+                                }
                             }
                         }
                     }
                 }
-                
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -226,6 +229,51 @@ struct SortedToDoList: View {
             //see if it's a recurring event that doesn't need to be shown
             setOfToDos = setOfToDos.filter({ isFirstWithRecurringTag(recurringToDo: $0, allEventsInGroup: allToDos.reversed())  || ($0.startDate.startOfDay < Date().endOfDay) })
             
+            
+            //Add reportable type events if that setting is selected.
+            if UserDefaults.standard.bool(forKey: "reportablesOnTodoList") {
+                
+                let fetchReportablesRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+                fetchReportablesRequest.sortDescriptors = [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)]
+                fetchReportablesRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.REPORTABLE_TYPE), NSPredicate(format: "status == %i", N40Event.UNREPORTED)])
+                
+                do {
+                    // Peform Fetch Request
+                    let allReportables = try viewContext.fetch(fetchReportablesRequest)
+                    
+                    //start with all
+                    var setOfReportables = allReportables.reversed().sorted{ $0.startDate < $1.startDate }
+                    
+                    //now filter out future events if necessary
+                    if !showingFutureEvents {
+                        setOfReportables = setOfReportables.filter { $0.startDate < Date().endOfDay || $0.isScheduled == false }
+                    }
+                    
+                    if showing == SortedToDoList.ALL_TODOS {
+                        //just leave it as is
+                    } else if showing == SortedToDoList.UNSCHEDULED_TODOS {
+                        setOfReportables = []
+                    } else if showing == SortedToDoList.SCHEDULED_TODOS {
+                        setOfReportables = setOfReportables.filter({ $0.isScheduled == true })
+                    } else if showing == SortedToDoList.TODAY_TODOS {
+                        setOfReportables = setOfReportables.filter({ $0.isScheduled && $0.startDate < Date().endOfDay })
+                    } else if showing == SortedToDoList.BUCKET_TODOS {
+                        setOfReportables = []
+                    }
+                    
+                    //Add reportables to setOfToDos
+                    setOfToDos.append(contentsOf: setOfReportables)
+                    
+                    //see if it's a recurring event that doesn't need to be shown
+                    setOfToDos = setOfToDos.filter({ isFirstWithRecurringTag(recurringToDo: $0, allEventsInGroup: allToDos.reversed())  || ($0.startDate.startOfDay < Date().endOfDay) })
+                    
+                    //Sort it so the reportables arent all at the end.
+                    setOfToDos = setOfToDos.sorted{ $0.startDate < $1.startDate}
+                    
+                } catch {
+                    print("couldn't fetch")
+                }
+            }
             
             
         } catch {
@@ -384,14 +432,28 @@ fileprivate struct ToDoListItem: View {
         
         HStack {
             
-            //Button to check off the to-do
-            Button{
-                completeToDoEvent(toDo: todo)
-                
-            } label: {
-                Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
-                    .disabled((todo.status != 0))
-            }.buttonStyle(PlainButtonStyle())
+            //Button to check off the to-do (only for ToDo Type)
+            if todo.eventType == N40Event.TODO_TYPE {
+                Button{
+                    completeToDoEvent(toDo: todo)
+                    
+                } label: {
+                    Image(systemName: (todo.status == 0) ? "square" : "checkmark.square")
+                        .disabled((todo.status != 0))
+                }.buttonStyle(PlainButtonStyle())
+            } else {
+                //Put a button circle for reportable type
+                if (todo.startDate < Date()) {
+                    Image(systemName: "questionmark.circle.fill")
+                        .resizable()
+                        .foregroundColor(Color.orange)
+                        .frame(width: 20, height:20)
+                } else {
+                    Image(systemName: "circle.dotted")
+                        .resizable()
+                        .frame(width: 20, height:20)
+                }
+            }
             NavigationLink(destination: EditEventView(editEvent: todo), label: {
                 HStack {
                     Text(todo.name)
@@ -412,40 +474,42 @@ fileprivate struct ToDoListItem: View {
             })
         }
         .swipeActions {
-            if showing == SortedToDoList.UNSCHEDULED_TODOS {
-                Button("Bucket") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        withAnimation {
-                            todo.bucketlist = true
-                            
-                            do {
-                                try viewContext.save()
-                            } catch {
-                                // handle error
+            if todo.eventType == N40Event.TODO_TYPE {
+                if showing == SortedToDoList.UNSCHEDULED_TODOS {
+                    Button("Bucket") {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation {
+                                todo.bucketlist = true
+                                
+                                do {
+                                    try viewContext.save()
+                                } catch {
+                                    // handle error
+                                }
+                                
+                                updateFunc()
                             }
-                            
-                            updateFunc()
                         }
                     }
-                }
-                .tint(.pink)
-            } else if showing == SortedToDoList.BUCKET_TODOS{
-                Button ("Unbucket") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        withAnimation {
-                            todo.bucketlist = false
-                            
-                            do {
-                                try viewContext.save()
-                            } catch {
-                                // handle error
+                    .tint(.pink)
+                } else if showing == SortedToDoList.BUCKET_TODOS{
+                    Button ("Unbucket") {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation {
+                                todo.bucketlist = false
+                                
+                                do {
+                                    try viewContext.save()
+                                } catch {
+                                    // handle error
+                                }
+                                
+                                updateFunc()
                             }
-                            
-                            updateFunc()
                         }
                     }
+                    .tint(.pink)
                 }
-                .tint(.pink)
             }
         }
     }

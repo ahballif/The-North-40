@@ -20,6 +20,9 @@ struct SettingsView: View {
     @State private var showEventsWithGoalColor = UserDefaults.standard.bool(forKey: "showEventsInGoalColor")
     @State private var showEventsWithoutGoalGray = UserDefaults.standard.bool(forKey: "showNoGoalEventsGray")
     
+    @State private var showReportablesOnTodo = UserDefaults.standard.bool(forKey: "reportablesOnTodoList")
+    @State private var showTodayTodosFront = UserDefaults.standard.bool(forKey: "showTodayTodosFront")
+    
     @State private var contactMethod = N40Event.CONTACT_OPTIONS[UserDefaults.standard.integer(forKey: "defaultContactMethod")]
     @State public var eventType: [String] = N40Event.EVENT_TYPE_OPTIONS[UserDefaults.standard.integer(forKey: "defaultCalendarEventType")]
     
@@ -92,11 +95,34 @@ struct SettingsView: View {
                             }
                     }.disabled(!showEventsWithGoalColor)
                 }
+                VStack {
+                    Text("To-Do List Settings").font(.title3).padding()
+                    
+                    HStack {
+                        Text("Show Reportables in To-Do List: ")
+                        Spacer()
+                        Toggle("reportablesOnTodoList", isOn: $showReportablesOnTodo)
+                            .labelsHidden()
+                            .onChange(of: showReportablesOnTodo) {_ in
+                                UserDefaults.standard.set(showReportablesOnTodo, forKey: "reportablesOnTodoList")
+                            }
+                    }
+                    HStack {
+                        Text("Use Today/Inbox/Buckelist Sorting: ")
+                        Spacer()
+                        Toggle("showTodayTodosFront", isOn: $showTodayTodosFront)
+                            .labelsHidden()
+                            .onChange(of: showTodayTodosFront) {_ in
+                                UserDefaults.standard.set(showTodayTodosFront, forKey: "showTodayTodosFront")
+                            }
+                    }
+                }
                 
-                
-                Text("Event Settings").font(.title3).padding()
                 
                 VStack {
+                    
+                    Text("Event Settings").font(.title3).padding()
+                    
                     HStack {
                         Text("Default Contact Method: ")
                         Spacer()
