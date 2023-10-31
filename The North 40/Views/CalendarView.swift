@@ -600,7 +600,7 @@ struct DailyPlanner: View {
     
     
     func allEventsAtTime(event: N40Event, allEvents: [N40Event]) -> [N40Event] {
-        //returns an int of how many events are in that location
+        //returns an array of events that are in that location
         var eventsAtTime: [N40Event] = []
         
         allEvents.forEach {eachEvent in
@@ -686,11 +686,15 @@ struct DailyPlanner: View {
             let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
             let testDuration = Int(eachEvent.duration) > Int(minDuration) ? Int(eachEvent.duration) : Int(minDuration)
             
+            let endDate = Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate
             
-            if eachEvent.startDate > from && Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate < to {
-                //if the event is in the interval
+            if (eachEvent.startDate >= from && eachEvent.startDate < to) || (endDate >= from && endDate < to) || (eachEvent.startDate <= from && endDate > to) || (eachEvent.startDate >= from && endDate < to) {
+                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after, or the whole thing is within the interval.
                 relevantEvents.append(eachEvent)
             }
+        }
+        if relevantEvents.count > 0 {
+            print("\(relevantEvents.count) from \(from) to \(to)")
         }
         
         var greatestEventIndex = 0
@@ -719,6 +723,7 @@ struct DailyPlanner: View {
         let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
         
         let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
+        let numberOfColumns = getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: Int(event.duration), to: event.startDate) ?? event.startDate)  + 1
         
         event.renderIdx = -1 // basically reset it to be recalculated
         event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
@@ -850,10 +855,10 @@ struct DailyPlanner: View {
             .font(.caption)
             .padding(.horizontal, 4)
             .frame(height: height, alignment: .top)
-            .frame(width: (geometry.size.width-40)/CGFloat(allEventsAtThisTime.count), alignment: .leading)
+            .frame(width: (geometry.size.width-40)/CGFloat(numberOfColumns), alignment: .leading)
             //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
-            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(allEventsAtThisTime.count)), y: offset + hourHeight/2)
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
             
         }
     }
