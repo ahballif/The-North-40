@@ -688,13 +688,10 @@ struct DailyPlanner: View {
             
             let endDate = Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate
             
-            if (eachEvent.startDate >= from && eachEvent.startDate < to) || (endDate >= from && endDate < to) || (eachEvent.startDate <= from && endDate > to) || (eachEvent.startDate >= from && endDate < to) {
+            if (eachEvent.startDate >= from && eachEvent.startDate < to) || (endDate > from && endDate < to) || (eachEvent.startDate <= from && endDate > to) || (eachEvent.startDate >= from && endDate < to) {
                 //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after, or the whole thing is within the interval.
                 relevantEvents.append(eachEvent)
             }
-        }
-        if relevantEvents.count > 0 {
-            print("\(relevantEvents.count) from \(from) to \(to)")
         }
         
         var greatestEventIndex = 0
