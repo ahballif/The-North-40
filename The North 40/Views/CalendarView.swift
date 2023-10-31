@@ -121,7 +121,7 @@ struct CalendarView: View {
                 
             }
             
-        }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
+        }.gesture(DragGesture(minimumDistance: 25, coordinateSpace: .global)
             .onEnded { value in
                 
                 let horizontalAmount = value.translation.width
@@ -165,10 +165,10 @@ struct AllDayList: View {
     
     
     var body: some View {
-        if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE }).count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
+        if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
             ScrollView {
                 ForEach(fetchedAllDays) { eachEvent in
-                    if eachEvent.eventType != N40Event.TODO_TYPE { //I don't want TODOS in the all day list.
+                    if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") { 
                         allDayEvent(eachEvent)
                     }
                 }
@@ -182,7 +182,7 @@ struct AllDayList: View {
         } else {
             VStack {
                 ForEach(fetchedAllDays) { eachEvent in
-                    if eachEvent.eventType != N40Event.TODO_TYPE { //I don't want TODOS in the all day list.
+                    if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
                         allDayEvent(eachEvent)
                     }
                 }

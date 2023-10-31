@@ -316,7 +316,7 @@ struct EditNoteView: View {
                 }) {
                     Label("Attach Person", systemImage: "plus").padding()
                 }.sheet(isPresented: $showingAttachPeopleSheet) {
-                    SelectPeopleView(editNoteView: self)
+                    SelectPeopleView(editNoteView: self, selectedPeopleList: attachedPeople)
                 }
                 
                 
@@ -385,6 +385,7 @@ fileprivate struct SelectPeopleView: View {
     private var fetchedPeople: FetchedResults<N40Person>
     
     var editNoteView: EditNoteView
+    var selectedPeopleList: [N40Person]
     
     @State private var isArchived = false
     @State private var searchText: String = ""
@@ -405,7 +406,9 @@ fileprivate struct SelectPeopleView: View {
                         if noLetterLastNames.count > 0 {
                             Section(header: Text("*")) {
                                 ForEach(noLetterLastNames, id: \.self) { person in
-                                    personListItem(person: person)
+                                    if !selectedPeopleList.contains(person) {
+                                        personListItem(person: person)
+                                    }
                                 }
                             }
                         }
@@ -414,7 +417,9 @@ fileprivate struct SelectPeopleView: View {
                             if (letterSet.count > 0) {
                                 Section(header: Text(letter)) {
                                     ForEach(letterSet, id: \.self) { person in
-                                        personListItem(person: person)
+                                        if !selectedPeopleList.contains(person) {
+                                            personListItem(person: person)
+                                        }
                                     }
                                 }
                             }
@@ -430,7 +435,9 @@ fileprivate struct SelectPeopleView: View {
                             if groupSet.count > 0 {
                                 Section(header: Text(group.name)) {
                                     ForEach(groupSet) {person in
-                                        personListItem(person: person)
+                                        if !selectedPeopleList.contains(person) {
+                                            personListItem(person: person)
+                                        }
                                     }
                                 }
                             }
@@ -439,7 +446,9 @@ fileprivate struct SelectPeopleView: View {
                         if ungroupedSet.count > 0 {
                             Section(header: Text("Ungrouped People")) {
                                 ForEach(ungroupedSet) {person in
-                                    personListItem(person: person)
+                                    if !selectedPeopleList.contains(person) {
+                                        personListItem(person: person)
+                                    }
                                 }
                             }
                         }

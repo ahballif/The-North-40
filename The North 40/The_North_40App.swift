@@ -32,7 +32,8 @@ struct The_North_40App: App {
             "showNoGoalEventsGray": true,
             "firstOpen": true,
             "reportablesOnTodoList": false,
-            "showTodayTodosFront": true
+            "showTodayTodosFront": true,
+            "showAllDayTodos":true
         ])
         
         

@@ -163,7 +163,7 @@ struct EditGroupView: View {
                 }) {
                     Label("Attach Person", systemImage: "plus").padding()
                 }.sheet(isPresented: $showingAttachPeopleSheet) {
-                    SelectPeopleView(editGroupView: self)
+                    SelectPeopleView(editGroupView: self, selectedPeopleList: attachedPeople)
                 }
             }.listStyle(.plain)
             .toolbar {
@@ -376,6 +376,7 @@ fileprivate struct SelectPeopleView: View {
     private var fetchedPeople: FetchedResults<N40Person>
     
     public var editGroupView: EditGroupView
+    public var selectedPeopleList: [N40Person]
     
     @State private var isArchived = false
     @State private var searchText: String = ""
@@ -398,7 +399,9 @@ fileprivate struct SelectPeopleView: View {
                                 ForEach(noLetterLastNames, id: \.self) { person in
                                     //see if the person is already in the group.
                                     if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                        personListItem(person: person)
+                                        if !selectedPeopleList.contains(person) {
+                                            personListItem(person: person)
+                                        }
                                     }
                                 }
                             }
@@ -410,7 +413,9 @@ fileprivate struct SelectPeopleView: View {
                                     ForEach(letterSet, id: \.self) { person in
                                         //see if the person is already in the group.
                                         if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                            personListItem(person: person)
+                                            if !selectedPeopleList.contains(person) {
+                                                personListItem(person: person)
+                                            }
                                         }
                                     }
                                 }
@@ -429,7 +434,9 @@ fileprivate struct SelectPeopleView: View {
                                 ForEach(ungroupedSet) {person in
                                     //see if the person is already in the group.
                                     if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                        personListItem(person: person)
+                                        if !selectedPeopleList.contains(person) {
+                                            personListItem(person: person)
+                                        }
                                     }
                                 }
                             }
@@ -443,7 +450,9 @@ fileprivate struct SelectPeopleView: View {
                                     ForEach(groupSet) {person in
                                         //see if the person is already in the group.
                                         if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {
-                                            personListItem(person: person)
+                                            if !selectedPeopleList.contains(person) {
+                                                personListItem(person: person)
+                                            }
                                         }
                                     }
                                 }

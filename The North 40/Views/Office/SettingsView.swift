@@ -20,6 +20,8 @@ struct SettingsView: View {
     @State private var showEventsWithGoalColor = UserDefaults.standard.bool(forKey: "showEventsInGoalColor")
     @State private var showEventsWithoutGoalGray = UserDefaults.standard.bool(forKey: "showNoGoalEventsGray")
     
+    @State private var showAllDayTodos = UserDefaults.standard.bool(forKey: "showAllDayTodos")
+    
     @State private var showReportablesOnTodo = UserDefaults.standard.bool(forKey: "reportablesOnTodoList")
     @State private var showTodayTodosFront = UserDefaults.standard.bool(forKey: "showTodayTodosFront")
     
@@ -94,6 +96,15 @@ struct SettingsView: View {
                                 UserDefaults.standard.set(showEventsWithoutGoalGray, forKey: "showNoGoalEventsGray")
                             }
                     }.disabled(!showEventsWithGoalColor)
+                    HStack{
+                        Text("Show All-Day To-Dos: ")
+                        Spacer()
+                        Toggle("showAllDayTodos", isOn: $showAllDayTodos)
+                            .labelsHidden()
+                            .onChange(of: showAllDayTodos) {_ in
+                                UserDefaults.standard.set(showAllDayTodos, forKey: "showAllDayTodos")
+                            }
+                    }
                 }
                 VStack {
                     Text("To-Do List Settings").font(.title3).padding()
