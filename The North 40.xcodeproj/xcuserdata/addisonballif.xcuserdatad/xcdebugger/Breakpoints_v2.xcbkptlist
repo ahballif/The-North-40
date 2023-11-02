@@ -30,8 +30,8 @@
             filePath = "The North 40/Views/CalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "705"
-            endingLineNumber = "705"
+            startingLineNumber = "702"
+            endingLineNumber = "702"
             landmarkName = "getHighestEventIndex(allEvents:from:to:)"
             landmarkType = "7">
          </BreakpointContent>

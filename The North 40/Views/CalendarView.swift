@@ -487,9 +487,8 @@ struct DailyPlanner: View {
                         EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
                     }
                     let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
-//                    HStack{}.onAppear {
-//                        recalculateRenderIndices(radarEvents)
-//                    }
+
+                    recalculateRenderIndices(radarEvents)
                     
                     if showingRadarEvents {
                         ForEach(radarEvents) { event in
@@ -499,9 +498,7 @@ struct DailyPlanner: View {
                     
                     let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE && (showingBackgroundEvents || $0.eventType != N40Event.BACKUP_TYPE)})
                     
-//                    HStack{}.onAppear {
-//                        recalculateRenderIndices(otherEvents)
-//                    }
+                    recalculateRenderIndices(otherEvents)
                     
                     ForEach(otherEvents) { event in
                         eventCell(event, allEvents: otherEvents)
@@ -704,8 +701,8 @@ struct DailyPlanner: View {
             let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
             
             
-            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate < refTo) || (startDate <= refFrom && endDate > refTo) || (startDate >= refFrom && endDate < refTo) {
-                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after, or the whole thing is within the interval.
+            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate <= refTo) || (startDate < refFrom && endDate > refTo) || (startDate >= refFrom && endDate <= refTo) {
+                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after
                 relevantEvents.append(eachEvent)
             }
         }
@@ -723,8 +720,6 @@ struct DailyPlanner: View {
     }
     
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
-        recalculateRenderIndices(allEvents)
-        
         //all events is used for wrapping around other events.
         
         var height = Double(event.duration) / 60 * hourHeight
@@ -879,12 +874,13 @@ struct DailyPlanner: View {
         }
     }
     
-    func recalculateRenderIndices (_ allEvents: [N40Event]) {
+    func recalculateRenderIndices (_ allEvents: [N40Event]) -> some View {
         for eachEvent in allEvents {
             let allEventsAtThisTime = allEventsAtTime(event: eachEvent, allEvents: allEvents)
             eachEvent.renderIdx = -1 // basically reset it to be recalculated
             eachEvent.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
         }
+        return EmptyView()
     }
     
     func getTestDuration(duration: Int) -> Int {
