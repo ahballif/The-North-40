@@ -487,6 +487,10 @@ struct DailyPlanner: View {
                         EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
                     }
                     let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
+//                    HStack{}.onAppear {
+//                        recalculateRenderIndices(radarEvents)
+//                    }
+                    
                     if showingRadarEvents {
                         ForEach(radarEvents) { event in
                             eventCell(event, allEvents: radarEvents)
@@ -494,6 +498,10 @@ struct DailyPlanner: View {
                     }
                     
                     let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE && (showingBackgroundEvents || $0.eventType != N40Event.BACKUP_TYPE)})
+                    
+//                    HStack{}.onAppear {
+//                        recalculateRenderIndices(otherEvents)
+//                    }
                     
                     ForEach(otherEvents) { event in
                         eventCell(event, allEvents: otherEvents)
@@ -580,6 +588,9 @@ struct DailyPlanner: View {
         
         self._showingRadarEvents = showingInfoEvents ?? Binding.constant(true)
         self._showingBackgroundEvents = showingBackgroundEvents ?? Binding.constant(true)
+        
+        
+        
     }
     
     func getSelectedTime (idx: Int) -> Date {
@@ -681,14 +692,19 @@ struct DailyPlanner: View {
         
         var relevantEvents: [N40Event] = []
         
+        let refTo = Calendar.current.date(bySetting: .second, value: 0, of: to) ?? to
+        let refFrom = Calendar.current.date(bySetting: .second, value: 0, of: from) ?? from
+        
         for eachEvent in allEvents {
             
             let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
             let testDuration = Int(eachEvent.duration) > Int(minDuration) ? Int(eachEvent.duration) : Int(minDuration)
             
-            let endDate = Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate
+            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
+            let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
             
-            if (eachEvent.startDate >= from && eachEvent.startDate < to) || (endDate > from && endDate < to) || (eachEvent.startDate <= from && endDate > to) || (eachEvent.startDate >= from && endDate < to) {
+            
+            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate < refTo) || (startDate <= refFrom && endDate > refTo) || (startDate >= refFrom && endDate < refTo) {
                 //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after, or the whole thing is within the interval.
                 relevantEvents.append(eachEvent)
             }
@@ -707,6 +723,8 @@ struct DailyPlanner: View {
     }
     
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
+        recalculateRenderIndices(allEvents)
+        
         //all events is used for wrapping around other events.
         
         var height = Double(event.duration) / 60 * hourHeight
@@ -719,12 +737,12 @@ struct DailyPlanner: View {
         let minute = calendar.component(.minute, from: event.startDate)
         let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
         
-        let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
+        //let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
         let numberOfColumns = getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: Int(event.duration), to: event.startDate) ?? event.startDate)  + 1
         
-        event.renderIdx = -1 // basically reset it to be recalculated
-        event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
-        
+//        event.renderIdx = -1 // basically reset it to be recalculated
+//        event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
+//
         
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
@@ -742,6 +760,7 @@ struct DailyPlanner: View {
         } else {
             colorHex = event.color
         }
+        
         
         
         return GeometryReader {geometry in
@@ -857,6 +876,14 @@ struct DailyPlanner: View {
             .padding(.trailing, 30)
             .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
             
+        }
+    }
+    
+    func recalculateRenderIndices (_ allEvents: [N40Event]) {
+        for eachEvent in allEvents {
+            let allEventsAtThisTime = allEventsAtTime(event: eachEvent, allEvents: allEvents)
+            eachEvent.renderIdx = -1 // basically reset it to be recalculated
+            eachEvent.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
         }
     }
     
