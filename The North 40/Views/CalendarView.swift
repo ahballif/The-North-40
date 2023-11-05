@@ -719,6 +719,7 @@ struct DailyPlanner: View {
         
     }
     
+    
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
         //all events is used for wrapping around other events.
         
@@ -789,27 +790,30 @@ struct DailyPlanner: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     
-                    
-                    HStack {
-                        if (event.eventType == N40Event.TODO_TYPE) {
-                            //Button to check off the to-do
-                            Button(action: { completeToDoEvent(toDo: event) }) {
-                                Image(systemName: (event.status == 0) ? "square" : "checkmark.square")
-                                    .disabled((event.status != 0))
-                            }.buttonStyle(PlainButtonStyle())
-                            
-                        }
-                        if event.contactMethod != 0 {
-                            Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
-                        }
-                        Text(event.startDate.formatted(.dateTime.hour().minute()))
-                        Text(event.name).bold()
-                            .lineLimit(0)
-                        Spacer()
-                    }
-                    .offset(y: (DailyPlanner.minimumEventHeight-height)/2)
-                    .padding(.horizontal, 8)
+                    //If this is an information event, don't show the title if theres another non-information event at the same time. 
+                    if !(event.eventType == N40Event.INFORMATION_TYPE && fetchedEvents.filter{ $0.startDate == event.startDate && $0.eventType != N40Event.INFORMATION_TYPE}.count > 0) {
                         
+                        HStack {
+                            if (event.eventType == N40Event.TODO_TYPE) {
+                                //Button to check off the to-do
+                                Button(action: { completeToDoEvent(toDo: event) }) {
+                                    Image(systemName: (event.status == 0) ? "square" : "checkmark.square")
+                                        .disabled((event.status != 0))
+                                }.buttonStyle(PlainButtonStyle())
+                                
+                            }
+                            if event.contactMethod != 0 {
+                                Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
+                            }
+                            Text(event.startDate.formatted(.dateTime.hour().minute()))
+                            Text(event.name).bold()
+                                .lineLimit(0)
+                            Spacer()
+                        }
+                        .offset(y: (DailyPlanner.minimumEventHeight-height)/2)
+                        .padding(.horizontal, 8)
+                        
+                    }
                 
                     HStack {
                         Spacer()

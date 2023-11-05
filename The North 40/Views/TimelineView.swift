@@ -113,6 +113,9 @@ private struct eventDisplayBoxView: View {
                                 if myEvent.summary != "" {
                                     Text(myEvent.summary)
                                         .lineLimit(2)
+                                } else if myEvent.information != "" {
+                                    Text(myEvent.information)
+                                        .lineLimit(2)
                                 } else {
                                     Text(myEvent.name)
                                         .lineLimit(2)
