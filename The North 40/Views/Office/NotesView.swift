@@ -173,7 +173,7 @@ struct EditNoteView: View {
             }
             
             TextEditor(text: $information)
-                .shadow(color: .gray, radius: 5)
+                //.shadow(color: .gray, radius: 5)
             
             
             

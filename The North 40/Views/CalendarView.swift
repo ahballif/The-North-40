@@ -694,10 +694,8 @@ struct DailyPlanner: View {
         
         for eachEvent in allEvents {
             
-            let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
-            let testDuration = Int(eachEvent.duration) > Int(minDuration) ? Int(eachEvent.duration) : Int(minDuration)
             
-            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: testDuration, to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
+            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: getCellHeight(eachEvent), to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
             let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
             
             
@@ -719,6 +717,24 @@ struct DailyPlanner: View {
         
     }
     
+    func getCellHeight(_ event: N40Event) -> Int {
+        //Returns the true cell height in minutes
+        //ex. if duration == 0, the cell still has some minimum width.
+        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
+        let testDuration = Int(event.duration) > Int(minDuration) ? Int(event.duration) : Int(minDuration)
+        return testDuration
+    }
+    
+    func getHighestRenderTotal(overlappingEvents: [N40Event]) -> Int {
+        //Returns the highest total number of columns that any overlapping event counts
+        var highestTotal = 1
+        for eachEvent in overlappingEvents {
+            if eachEvent.renderTotal ?? 0 > highestTotal {
+                highestTotal = eachEvent.renderTotal ?? 0
+            }
+        }
+        return highestTotal
+    }
     
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
         //all events is used for wrapping around other events.
@@ -733,12 +749,15 @@ struct DailyPlanner: View {
         let minute = calendar.component(.minute, from: event.startDate)
         let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
         
-        //let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
-        let numberOfColumns = getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: Int(event.duration), to: event.startDate) ?? event.startDate)  + 1
+        let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
         
-//        event.renderIdx = -1 // basically reset it to be recalculated
-//        event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
-//
+        event.renderIdx = -1 // basically reset it to be recalculated
+        event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
+
+        
+        event.renderTotal = getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getCellHeight(event), to: event.startDate) ?? event.startDate)  + 1
+        event.renderTotal = getHighestRenderTotal(overlappingEvents: allEventsAtThisTime)
+        
         
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
@@ -805,6 +824,7 @@ struct DailyPlanner: View {
                             if event.contactMethod != 0 {
                                 Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
                             }
+                            //Text("\((event.renderIdx ?? -1 )+1)/\(event.renderTotal ?? 0)") //just for testing render
                             Text(event.startDate.formatted(.dateTime.hour().minute()))
                             Text(event.name).bold()
                                 .lineLimit(0)
@@ -870,10 +890,10 @@ struct DailyPlanner: View {
             .font(.caption)
             .padding(.horizontal, 4)
             .frame(height: height, alignment: .top)
-            .frame(width: (geometry.size.width-40)/CGFloat(numberOfColumns), alignment: .leading)
+            .frame(width: (geometry.size.width-40)/CGFloat(event.renderTotal ?? 1), alignment: .leading)
             //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
-            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(event.renderTotal ?? 1)), y: offset + hourHeight/2)
             
         }
     }

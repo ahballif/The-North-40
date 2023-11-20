@@ -472,6 +472,10 @@ struct EditEventView: View {
                             }.disabled(!isScheduled)
                         } else {
                             Button("Round Time") {
+                                //first make seconds 0
+                                chosenStartDate = Calendar.current.date(bySetting: .second, value: 0, of: chosenStartDate) ?? chosenStartDate
+                                
+                                //then find how much to change the minutes
                                 let minutes: Int = Calendar.current.component(.minute, from: chosenStartDate)
                                 let minuteInterval = Int(25.0/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
                                 

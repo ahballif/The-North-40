@@ -27,6 +27,9 @@ struct Exporter {
         outputString += "socialMedia1: \(person.socialMedia1.trimmed())\n"
         outputString += "socialMedia2: \(person.socialMedia2.trimmed())\n"
         outputString += "title: \(person.title.trimmed().trimmed())\n"
+//        if person.photo != nil {
+//            outputString += "photo: \(String(data: person.photo!, encoding: .utf16) ?? "no-photo")\n"
+//        }
         
         //No relationship data because people are going to be decoded first.
         
@@ -463,7 +466,10 @@ struct Importer {
                 newPerson.socialMedia1 = lines[i+14].deletingPrefix("socialMedia1: ")
                 newPerson.socialMedia2 = lines[i+15].deletingPrefix("socialMedia2: ")
                 newPerson.title = lines[i+16].deletingPrefix("title: ")
-                
+//                if lines[i+17].contains("photo: ") && lines[i+17].deletingPrefix("photo: ") != "no-photo" {
+//                    newPerson.photo = lines[i+17].deletingPrefix("photo: ").data(using: .utf16)
+//                    i += 1 //to account for the extra line
+//                }
                 i += 17
                 
             } else if lines[i] == "N40Goal" {
