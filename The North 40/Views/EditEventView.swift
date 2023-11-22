@@ -95,6 +95,20 @@ struct EditEventView: View {
                                     if !isScheduled && UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView") {
                                         chosenStartDate = Date()
                                         isScheduled = true
+                                        if UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos") {
+                                            //first make seconds 0
+                                            chosenStartDate = Calendar.current.date(bySetting: .second, value: 0, of: chosenStartDate) ?? chosenStartDate
+                                            
+                                            //then find how much to change the minutes
+                                            let minutes: Int = Calendar.current.component(.minute, from: chosenStartDate)
+                                            let minuteInterval = Int(25.0/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+                                            
+                                            //now round it
+                                            let roundedMinutes = Int(minutes / minuteInterval) * minuteInterval
+                                            
+                                            chosenStartDate = Calendar.current.date(byAdding: .minute, value: Int(roundedMinutes - minutes), to: chosenStartDate) ?? chosenStartDate
+                                            
+                                        }
                                     }
                                     
                                 } else {
@@ -666,12 +680,12 @@ struct EditEventView: View {
         }
         if UserDefaults.standard.bool(forKey: "randomEventColor") {
             if editEvent != nil {
-                selectedColor = Color(hex: editEvent?.color ?? "#FF7051") ?? Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5)
+                selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5)
             } else {
                 selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
             }
         } else {
-            selectedColor = Color(hex: editEvent?.color ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+            selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
         }
         
         

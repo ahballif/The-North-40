@@ -33,7 +33,9 @@ struct The_North_40App: App {
             "firstOpen": true,
             "reportablesOnTodoList": false,
             "showTodayTodosFront": true,
-            "showAllDayTodos":true
+            "showAllDayTodos":true,
+            "roundScheduleCompletedTodosschedu":false,
+            "defaultColor":"#FF7051"
         ])
         
         

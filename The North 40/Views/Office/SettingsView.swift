@@ -33,10 +33,13 @@ struct SettingsView: View {
     @State private var setTimeOnTodoCompletion_EditEventView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView")
     @State private var setTimeOnTodoCompletion_TimelineView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_TimelineView")
     @State private var setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
+    @State private var roundScheduleCompletedTodos = UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos")
     
     @State private var savingToFile = false
     @State private var importingFile = false
     @State private var importConfirm = false
+    
+    @State private var defaultColor: Color = (Color(hex: UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0)))
     
     var body: some View {
         VStack {
@@ -159,6 +162,17 @@ struct SettingsView: View {
                             }
                             .labelsHidden()
                     }
+                    if !randomEventColor {
+                        HStack{
+                            Text("Default Event Color: ")
+                            Spacer()
+                            ColorPicker("ColorPicker", selection: $defaultColor, supportsOpacity: false)
+                                .labelsHidden()
+                                .onChange(of: defaultColor) {_ in
+                                    UserDefaults.standard.set(defaultColor.toHex() ?? "#FF7051", forKey: "defaultColor")
+                                }
+                        }
+                    }
                     
                     HStack {
                         Text("Guess event color: ")
@@ -218,6 +232,15 @@ struct SettingsView: View {
                             .labelsHidden()
                             .onChange(of: setTimeOnTodoCompletion_TimelineView) {_ in
                                 UserDefaults.standard.set(setTimeOnTodoCompletion_TimelineView, forKey: "scheduleCompletedTodos_TimelineView")
+                            }
+                    }
+                    HStack {
+                        Text("Round Time On Complete: ")
+                        Spacer()
+                        Toggle("scheduleOnComplete", isOn: $roundScheduleCompletedTodos)
+                            .labelsHidden()
+                            .onChange(of: roundScheduleCompletedTodos) {_ in
+                                UserDefaults.standard.set(roundScheduleCompletedTodos, forKey: "roundScheduleCompletedTodos")
                             }
                     }
                 }

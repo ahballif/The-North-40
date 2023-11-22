@@ -24,6 +24,7 @@ struct CalendarView: View {
     @State private var showingInfoEvents = true
     @State private var showingBackgroundEvents = true
     
+    @State private var showingSearchSheet = false
     
     var body: some View {
         NavigationView {
@@ -66,6 +67,12 @@ struct CalendarView: View {
                             }
                         }
                         Spacer()
+                        Button {
+                            showingSearchSheet.toggle()
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                        }.sheet(isPresented: $showingSearchSheet) {SearchSheet()}
+                        
                         Button {
                             showingCalendar.toggle()
                         } label: {
@@ -139,12 +146,6 @@ struct CalendarView: View {
                 
             })
         
-    }
-}
-
-struct CalendarView_Previews: PreviewProvider {
-    static var previews: some View {
-        CalendarView()
     }
 }
 
@@ -532,8 +533,7 @@ struct DailyPlanner: View {
             }
             //.scrollPosition(initialAnchor: .center) // Doesn't work yet with current version of swift.
             
-        }
-        
+        }.onAppear(perform: resetAllRenderTotals)
     }
     
     
@@ -736,6 +736,13 @@ struct DailyPlanner: View {
         return highestTotal
     }
     
+    func resetAllRenderTotals() {
+        //resets all render totals
+        for eachEvent in fetchedEvents.reversed() {
+            eachEvent.renderTotal = 1
+        }
+    }
+    
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
         //all events is used for wrapping around other events.
         
@@ -934,6 +941,20 @@ struct DailyPlanner: View {
             if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
                 toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                 toDo.isScheduled = true
+                if UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos") {
+                    //first make seconds 0
+                    toDo.startDate = Calendar.current.date(bySetting: .second, value: 0, of: toDo.startDate) ?? toDo.startDate
+                    
+                    //then find how much to change the minutes
+                    let minutes: Int = Calendar.current.component(.minute, from: toDo.startDate)
+                    let minuteInterval = Int(25.0/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+                    
+                    //now round it
+                    let roundedMinutes = Int(minutes / minuteInterval) * minuteInterval
+                    
+                    toDo.startDate = Calendar.current.date(byAdding: .minute, value: Int(roundedMinutes - minutes), to: toDo.startDate) ?? toDo.startDate
+                    
+                }
             }
             
         } else {
@@ -979,6 +1000,188 @@ struct DailyPlanner: View {
     
 }
 
+struct SearchSheet: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    
+    
+    @State private var searchText: String = ""
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: false)], animation: .default)
+    private var allEvents: FetchedResults<N40Event>
+    
+    @State private var showing = 25
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                HStack {
+                    Text("Search from All Events").font(.title2)
+                        .padding()
+                    Spacer()
+                    Button("Close") {
+                        dismiss()
+                    }.padding()
+                }
+                ScrollView{
+                    VStack{
+                        let events = allEvents.filter{ $0.name.lowercased().contains(searchText.lowercased()) && searchText != ""}
+                        ForEach(showing < events.count ? events[0..<showing] : events[0..<events.count]) {eachEvent in
+                            eventCell(eachEvent)
+                        }
+                        if showing < events.count {
+                            Button {
+                                showing += 25
+                            } label: {
+                                Text("Show More")
+                            }
+                        }
+                    }
+                }
+                .searchable(text: $searchText)
+                Spacer()
+            }
+            
+        }
+    }
+    
+    func eventCell(_ event: N40Event) -> some View {
+        
+        return NavigationLink(destination: EditEventView(editEvent: event), label: {
+            
+            ZStack {
+                if event.eventType == N40Event.INFORMATION_TYPE {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray)
+                        .opacity(0.0001)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .opacity(0.5)
+                        )
+                } else if event.eventType == N40Event.BACKUP_TYPE {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.gray)
+                        .opacity(0.25)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .opacity(0.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                        .opacity(0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                
+                VStack {
+                    HStack {
+                        if (event.eventType == N40Event.TODO_TYPE) {
+                            //It's not a button here, just a picture
+                            Image(systemName: (event.status == 0) ? "square" : "checkmark.square")
+                            
+                        }
+                        if event.contactMethod != 0 {
+                            Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
+                        }
+                        Text(event.startDate.formatted(.dateTime.hour().minute()))
+                        Text(event.name).bold()
+                            .lineLimit(0)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 8)
+                    Spacer()
+                }
+                
+                HStack {
+                    Spacer()
+                    if (event.eventType == N40Event.REPORTABLE_TYPE) {
+                        if event.startDate > Date() {
+                            Image(systemName: "circle.dotted")
+                                .resizable()
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.UNREPORTED {
+                            Image(systemName: "questionmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.orange)
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.SKIPPED {
+                            Image(systemName: "slash.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.red)
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.ATTEMPTED {
+                            Image(systemName: "xmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.red)
+                                .frame(width: 20, height:20)
+                        } else if event.status == N40Event.HAPPENED {
+                            Image(systemName: "checkmark.circle.fill")
+                                .resizable()
+                                .foregroundColor(Color.green)
+                                .frame(width: 20, height:20)
+                        }
+                    } else if (event.eventType == N40Event.INFORMATION_TYPE) {
+                        Image(systemName: "dot.radiowaves.left.and.right")
+                            .resizable()
+                            .frame(width: 20, height:20)
+                    }
+                    
+                    if (event.recurringTag != "") {
+                        ZStack {
+                            Image(systemName: "repeat")
+                            if (isRecurringEventLast(event: event)) {
+                                Image(systemName: "line.diagonal")
+                                    .scaleEffect(x: -1.2, y: 1.2)
+                            }
+                        }
+                    }
+                    
+                    
+                }.padding(.horizontal, 8)
+                
+            }
+        })
+        .buttonStyle(.plain)
+        .font(.caption)
+        .padding(.horizontal, 4)
+        .padding(.leading, 30)
+        
+        
+    }
+    
+    func isRecurringEventLast (event: N40Event) -> Bool {
+        var isLast = false
+        
+        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+        
+        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (event.startDate as CVarArg)) //will include this event
+        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (event.recurringTag))
+        
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+        fetchRequest.predicate = compoundPredicate
+        
+        do {
+            // Peform Fetch Request
+            let fetchedEvents = try viewContext.fetch(fetchRequest)
+            
+            if fetchedEvents.count == 1 {
+                isLast = true
+            }
+            
+        } catch {
+            print("couldn't fetch recurring events")
+        }
+        
+        return isLast
+        
+    }
+    
+}
 
 
 extension Date {

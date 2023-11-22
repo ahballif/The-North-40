@@ -62,8 +62,8 @@
             filePath = "The North 40/Views/CalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "827"
-            endingLineNumber = "827"
+            startingLineNumber = "834"
+            endingLineNumber = "834"
             landmarkName = "eventCell(_:allEvents:)"
             landmarkType = "7">
             <Locations>

@@ -536,6 +536,20 @@ fileprivate struct ToDoListItem: View {
                             if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView") {
                                 toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                                 toDo.isScheduled = true
+                                if UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos") {
+                                    //first make seconds 0
+                                    toDo.startDate = Calendar.current.date(bySetting: .second, value: 0, of: toDo.startDate) ?? toDo.startDate
+                                    
+                                    //then find how much to change the minutes
+                                    let minutes: Int = Calendar.current.component(.minute, from: toDo.startDate)
+                                    let minuteInterval = Int(25.0/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+                                    
+                                    //now round it
+                                    let roundedMinutes = Int(minutes / minuteInterval) * minuteInterval
+                                    
+                                    toDo.startDate = Calendar.current.date(byAdding: .minute, value: Int(roundedMinutes - minutes), to: toDo.startDate) ?? toDo.startDate
+                                    
+                                }
                             }
                             
                             do {
