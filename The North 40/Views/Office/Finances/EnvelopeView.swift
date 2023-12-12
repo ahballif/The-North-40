@@ -14,7 +14,7 @@ struct EnvelopeView: View {
     public var updater = RefreshView()
     
     
-    @State public var selectedEnvelope: N40Envelope = N40Envelope()
+    @State public var selectedEnvelope: N40Envelope? = N40Envelope()
     
     @State private var showingConfirmDelete = false
     
@@ -40,16 +40,20 @@ struct EnvelopeView: View {
                 }
                 
                 HStack {
-                    Text(String(format: "Current Balance: $%.2f", selectedEnvelope.currentBalance))
+                    Text(String(format: "Current Balance: $%.2f", selectedEnvelope?.currentBalance ?? 0.0))
                     Spacer()
                 }
                 
                 HStack {
-                    Text("Last calculated on: \(selectedEnvelope.lastCalculation.formatToShortDate())")
-                        .font(.footnote)
+                    if selectedEnvelope != nil {
+                        Text("Last calculated on: \(selectedEnvelope!.lastCalculation.formatToShortDate())")
+                            .font(.footnote)
+                    }
                     Spacer()
                     Button("Recalculate") {
-                        selectedEnvelope.calculateBalance()
+                        if selectedEnvelope != nil {
+                            selectedEnvelope!.calculateBalance()
+                        }
                         updater.updater.toggle()
                         do {
                             try viewContext.save()
@@ -62,7 +66,7 @@ struct EnvelopeView: View {
                 }
                 
                 ScrollView {
-                    ForEach(selectedEnvelope.getTransactions, id: \.self) {transaction in
+                    ForEach(selectedEnvelope?.getTransactions ?? [], id: \.self) {transaction in
                         NavigationLink(destination: EditTransactionView(editTransaction: transaction)) {
                             VStack {
                                 HStack {
@@ -113,7 +117,7 @@ struct EnvelopeView: View {
         .onDisappear(perform: saveEnvelope)
         .onAppear {
             // populate fields here
-            name = selectedEnvelope.name
+            name = selectedEnvelope?.name ?? "no envelope selected"
         }
         .toolbar {
             ToolbarItem {
@@ -124,16 +128,20 @@ struct EnvelopeView: View {
                 }.confirmationDialog("Delete Envelope", isPresented: $showingConfirmDelete) {
                     Button("Delete Envelope", role: .destructive) {
                         //delete the envelope and dismiss
-                        viewContext.delete(selectedEnvelope)
                         
-                        do {
-                            try viewContext.save()
-                        }
-                        catch {
-                            // Handle Error
-                            print("Error info: \(error)")
-                        }
                         
+                        if selectedEnvelope != nil {
+                            viewContext.delete(selectedEnvelope!)
+                            
+                            do {
+                                try viewContext.save()
+                            }
+                            catch {
+                                // Handle Error
+                                print("Error info: \(error)")
+                            }
+                        }
+                        selectedEnvelope = nil
                         dismiss()
                     }
                 } message: {
@@ -145,16 +153,18 @@ struct EnvelopeView: View {
     
     
     func saveEnvelope () {
-        
-        selectedEnvelope.name = name
-        
-        do {
-            try viewContext.save()
+        if selectedEnvelope != nil {
+            selectedEnvelope!.name = name
+            
+            do {
+                try viewContext.save()
+            }
+            catch {
+                // Handle Error
+                print("Error info: \(error)")
+            }
         }
-        catch {
-            // Handle Error
-            print("Error info: \(error)")
-        }
+        
         
     }
     

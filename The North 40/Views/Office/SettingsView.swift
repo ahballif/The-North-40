@@ -328,6 +328,33 @@ struct SettingsView: View {
                         Text("Export your data base to a file for backup. ").font(.caption)
                     }
                     HStack {
+                        Button("Export all person photos") {
+                            let fetchRequest: NSFetchRequest<N40Person> = N40Person.fetchRequest()
+                            do {
+                                // Peform Fetch Request
+                                let fetchedPeople = try viewContext.fetch(fetchRequest)
+                                for person: N40Person in fetchedPeople {
+                                    if person.photo != nil {
+                                        if let image = UIImage(data: person.photo!) {
+                                            if let data = image.pngData() {
+                                                
+                                                if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                                                    
+                                                    let filename = dir.appendingPathComponent("\(person.firstName)\(person.lastName.uppercased()).png")
+                                                    try? data.write(to: filename)
+                                                    
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch let error as NSError {
+                                print("Couldn't fetch transactions. \(error), \(error.userInfo)")
+                            }
+                        }
+                        Spacer()
+                    }.padding(.vertical)
+                    HStack {
                         Button("Import Database File") {
                             importConfirm.toggle()
                         }.confirmationDialog("Overwrite database", isPresented: $importConfirm) {

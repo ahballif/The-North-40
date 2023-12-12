@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import SwiftUI
 
 struct Exporter {
     private static func encodeN40Person(person: N40Person) -> String {
@@ -28,7 +29,7 @@ struct Exporter {
         outputString += "socialMedia2: \(person.socialMedia2.trimmed())\n"
         outputString += "title: \(person.title.trimmed().trimmed())\n"
 //        if person.photo != nil {
-//            outputString += "photo: \(String(data: person.photo!, encoding: .utf16) ?? "no-photo")\n"
+//            outputString += "photo: \(UIImage(data: person.photo!)!.jpegData(compressionQuality: 1)?.base64EncodedString() ?? "no-photo")\n"
 //        }
         
         //No relationship data because people are going to be decoded first.
@@ -252,15 +253,17 @@ struct Exporter {
     
     
     
+    
+    
     public static func encodeDatabase(viewContext: NSManagedObjectContext) -> String {
         var outputText = ""
         
-        outputText += encodePeople(viewContext: viewContext) + "\n"
-        outputText += encodeGoals(viewContext: viewContext) + "\n"
-        outputText += encodeEvents(viewContext: viewContext) + "\n"
-        outputText += encodeEnvelopes(viewContext: viewContext) + "\n"
-        outputText += encodeGroups(viewContext: viewContext) + "\n"
-        outputText += encodeNotes(viewContext: viewContext) + "\n"
+        outputText += encodePeople(viewContext: viewContext) + "\n\n\n"
+        outputText += encodeGoals(viewContext: viewContext) + "\n\n\n"
+        outputText += encodeEvents(viewContext: viewContext) + "\n\n\n"
+        outputText += encodeEnvelopes(viewContext: viewContext) + "\n\n\n"
+        outputText += encodeGroups(viewContext: viewContext) + "\n\n\n"
+        outputText += encodeNotes(viewContext: viewContext) + "\n\n\n"
         outputText += encodeTransactions(viewContext: viewContext)
         
         return outputText
@@ -467,7 +470,7 @@ struct Importer {
                 newPerson.socialMedia2 = lines[i+15].deletingPrefix("socialMedia2: ")
                 newPerson.title = lines[i+16].deletingPrefix("title: ")
 //                if lines[i+17].contains("photo: ") && lines[i+17].deletingPrefix("photo: ") != "no-photo" {
-//                    newPerson.photo = lines[i+17].deletingPrefix("photo: ").data(using: .utf16)
+//                    newPerson.photo = Data(base64Encoded: lines[i+17].deletingPrefix("photo: "), options: .ignoreUnknownCharacters)
 //                    i += 1 //to account for the extra line
 //                }
                 i += 17
@@ -677,3 +680,7 @@ fileprivate extension String {
         return self.replacingOccurrences(of: "<newline>", with: "\n")
     }
 }
+
+
+
+

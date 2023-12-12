@@ -242,7 +242,7 @@ struct GoalBoard: View {
                             } label: {
                                 Image(systemName: (collapsed ? "chevron.forward" : "chevron.down"))
                             }.buttonStyle(PlainButtonStyle())
-                            
+                            Text("\(goal.priorityIndex)")
                             Text(goal.name)
                             Spacer()
                         }.padding()
@@ -426,6 +426,6 @@ struct CompletedGoalsList: View {
                 }
             }.listStyle(.plain)
         }.padding()
-            .onDisappear{updater.updater.toggle()}
+            //.onDisappear{updater.updater.toggle()}
     }
 }
