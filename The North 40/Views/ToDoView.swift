@@ -123,7 +123,7 @@ struct ToDoView: View {
                 }
             }
                 
-        }
+        }.navigationViewStyle(StackNavigationViewStyle())
         
     }
     

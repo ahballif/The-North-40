@@ -26,8 +26,9 @@ struct CalendarView: View {
     
     @State private var showingSearchSheet = false
     
+    
     var body: some View {
-        NavigationView {
+        //NavigationView {
             
             
             VStack {
@@ -106,7 +107,7 @@ struct CalendarView: View {
                 if showingCalendar {
                     ZStack {
                         DailyPlanner(filter: selectedDay, showingInfoEvents: $showingInfoEvents, showingBackgroundEvents: $showingBackgroundEvents)
-                            .environment(\.managedObjectContext, viewContext)
+                            
                         
                         
                         
@@ -126,7 +127,7 @@ struct CalendarView: View {
                     Spacer()
                 }
                 
-            }
+            //}
             
         }.gesture(DragGesture(minimumDistance: 25, coordinateSpace: .global)
             .onEnded { value in
@@ -164,38 +165,65 @@ struct AllDayList: View {
     
     private let allEventHeight = 25.0
     
+    @State private var showingDetailSheet = false
+    private enum DetailOptions {
+        case event, goal, birthdayBoy
+    }
+    @State private var detailShowing = DetailOptions.event
+    @State private var selectedEvent: N40Event? = nil
+    @State private var selectedGoal: N40Goal? = nil
+    @State private var selectedBirthdayBoy: N40Person? = nil
     
     var body: some View {
-        if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
-            ScrollView {
-                ForEach(fetchedAllDays) { eachEvent in
-                    if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") { 
-                        allDayEvent(eachEvent)
+        VStack {
+            if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
+                ScrollView {
+                    ForEach(fetchedAllDays) { eachEvent in
+                        if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
+                            allDayEvent(eachEvent)
+                        }
+                    }
+                    ForEach(fetchedGoalsDueToday) { eachGoal in
+                        dueGoal(eachGoal)
+                    }
+                    ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
+                        birthdayBoyCell(eachBirthdayBoy)
+                    }
+                }.frame(height: 3*allEventHeight)
+            } else {
+                VStack {
+                    ForEach(fetchedAllDays) { eachEvent in
+                        if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
+                            allDayEvent(eachEvent)
+                        }
+                    }
+                    ForEach(fetchedGoalsDueToday) { eachGoal in
+                        dueGoal(eachGoal)
+                    }
+                    ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
+                        birthdayBoyCell(eachBirthdayBoy)
                     }
                 }
-                ForEach(fetchedGoalsDueToday) { eachGoal in
-                    dueGoal(eachGoal)
-                }
-                ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
-                    birthdayBoyCell(eachBirthdayBoy)
-                }
-            }.frame(height: 3*allEventHeight)
-        } else {
-            VStack {
-                ForEach(fetchedAllDays) { eachEvent in
-                    if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
-                        allDayEvent(eachEvent)
+            }
+        }.sheet(isPresented: $showingDetailSheet) { [detailShowing] in
+            NavigationView {
+                if detailShowing == DetailOptions.event {
+                    EditEventView(editEvent: selectedEvent)
+                } else if detailShowing == DetailOptions.goal {
+                    if selectedGoal != nil {
+                        GoalDetailView(selectedGoal: selectedGoal!)
+                    } else {
+                        Text("No Goal Selected")
                     }
-                }
-                ForEach(fetchedGoalsDueToday) { eachGoal in
-                    dueGoal(eachGoal)
-                }
-                ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
-                    birthdayBoyCell(eachBirthdayBoy)
+                } else {
+                    if selectedBirthdayBoy != nil {
+                        PersonDetailView(selectedPerson: selectedBirthdayBoy!)
+                    } else {
+                        Text("No Birthday Boy or Girl Selected")
+                    }
                 }
             }
         }
-        
     }
     
     init (filter: Date) {
@@ -211,9 +239,8 @@ struct AllDayList: View {
         let dueDatePredicateA = NSPredicate(format: "deadline >= %@", filter.startOfDay as NSDate)
         let dueDatePredicateB = NSPredicate(format: "deadline <= %@", filter.endOfDay as NSDate)
         let hasDeadlinePredicate = NSPredicate(format: "hasDeadline == YES")
-        let isNotCompletedPredicate = NSPredicate(format: "isCompleted == NO")
         
-        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate, isNotCompletedPredicate]))
+        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate]))
         
         let birthdayMonthPredicate = NSPredicate(format: "birthdayMonth == %i", Int16(filter.get(.month)))
         let birthdayDayPredicate = NSPredicate(format: "birthdayDay == %i", Int16(filter.get(.day)))
@@ -245,7 +272,7 @@ struct AllDayList: View {
             colorHex = event.color
         }
 
-        return NavigationLink(destination: EditEventView(editEvent: event), label: {
+        return VStack {
                 
                 ZStack {
                     
@@ -289,11 +316,15 @@ struct AllDayList: View {
                     }
                 }
                 
-            })
+            }
             .buttonStyle(.plain)
             .font(.caption)
             .frame(height: allEventHeight)
-            
+            .onTapGesture {
+                detailShowing = DetailOptions.event
+                selectedEvent = event
+                showingDetailSheet = true
+            }
             
         
     }
@@ -302,7 +333,7 @@ struct AllDayList: View {
         //all events is used for wrapping around other events.
         
 
-        return NavigationLink(destination: GoalDetailView(selectedGoal: goal), label: {
+        return VStack {
                 
                 ZStack {
                     
@@ -322,19 +353,21 @@ struct AllDayList: View {
                         
                 }
                 
-            })
+            }
             .buttonStyle(.plain)
             .font(.caption)
             .frame(height: allEventHeight)
-            
-            
-        
+            .onTapGesture {
+                detailShowing = DetailOptions.goal
+                selectedGoal = goal
+                showingDetailSheet = true
+            }
     }
     
     func birthdayBoyCell(_ person: N40Person) -> some View {
         
 
-        return NavigationLink(destination: PersonDetailView(selectedPerson: person), label: {
+        return VStack {
                 
                 ZStack {
                     
@@ -354,11 +387,15 @@ struct AllDayList: View {
                         
                 }
                 
-            })
+            }
             .buttonStyle(.plain)
             .font(.caption)
             .frame(height: allEventHeight)
-            
+            .onTapGesture {
+                detailShowing = DetailOptions.birthdayBoy
+                selectedBirthdayBoy = person
+                showingDetailSheet = true
+            }
             
     }
     
@@ -429,6 +466,7 @@ struct DailyPlanner: View {
     @FetchRequest var fetchedEvents: FetchedResults<N40Event>
     
     @State private var showingEditEventSheet = false
+    @State private var selectedEditEvent: N40Event? = nil
     @State private var clickedOnTime = Date()
     
     
@@ -442,11 +480,14 @@ struct DailyPlanner: View {
     
     @GestureState var press = false
     
+    @State private var scrollToNowToggle = false
+    
     var body: some View {
         
         //The main timeline
         ScrollViewReader {value in
             ScrollView {
+                
                 ZStack(alignment: .topLeading) {
                     
                     //Hour Lines
@@ -478,14 +519,14 @@ struct DailyPlanner: View {
                                     let impactMed = UIImpactFeedbackGenerator(style: .medium)
                                     impactMed.impactOccurred()
                                     
+                                    
                                     clickedOnTime = getSelectedTime(idx: idx)
+                                    selectedEditEvent = nil
                                     showingEditEventSheet.toggle()
                                 }
                                 .frame(height: DailyPlanner.minimumEventHeight)
                         }
                         
-                    }.sheet(isPresented: $showingEditEventSheet) { [clickedOnTime] in
-                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
                     }
                     let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
 
@@ -520,55 +561,26 @@ struct DailyPlanner: View {
                     
                 }
                 //.gesture(magnification)
-                
                 .onAppear {
-                    hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
-                    let nowMinute = Calendar.current.component(.minute, from: Date())
-                    let selectedMinute = Calendar.current.component(.minute, from: filteredDay)
-                    if nowMinute == selectedMinute {
-                        //value.scrollTo("now")
-                    }
+                    value.scrollTo(Int(Date().get(.hour)))
                 }
                 
+                
             }
-            //.scrollPosition(initialAnchor: .center) // Doesn't work yet with current version of swift.
             
         }.onAppear(perform: resetAllRenderTotals)
-    }
-    
-    
-    @GestureState private var zoomFactor: CGFloat = 1.0
-    @State var oldZoomValue = 1.0
-    var magnification: some Gesture {
-        return MagnificationGesture()
-            .updating($zoomFactor) { value, scale, transaction in
-                // updating scale with returned value from magnification gesture
-                withAnimation {
-                    scale = value
+        
+            .sheet(isPresented: $showingEditEventSheet) { [clickedOnTime, selectedEditEvent] in
+                NavigationView {
+                    if selectedEditEvent == nil {
+                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                    } else {
+                        //An event was clicked
+                        EditEventView(editEvent: selectedEditEvent)
+                    }
                 }
             }
-            .onChanged { value in
-
-                withAnimation {
-                    
-                    let newModifier = (value-oldZoomValue) * 100.0
-                    
-                    hourHeight += newModifier
-                    
-                    if hourHeight > (DailyPlanner.minimumEventHeight*12) {
-                        hourHeight = (DailyPlanner.minimumEventHeight*12) //No smaller than every 5 minute zoom.
-                    }
-                    if hourHeight < (DailyPlanner.minimumEventHeight*2) {
-                        hourHeight = (DailyPlanner.minimumEventHeight*2) // no bigger than every 30 minute zoom.
-                    }
-                    
-                    oldZoomValue = value
-                }
-            }
-            .onEnded { value in
-                // do nothing
-                
-            }
+            
     }
     
     init (filter: Date, showingInfoEvents: Binding<Bool>? = nil, showingBackgroundEvents: Binding<Bool>? = nil) {
@@ -606,6 +618,9 @@ struct DailyPlanner: View {
         return someDateTime
     }
     
+    public func scrollToNow() {
+        self.scrollToNowToggle.toggle()
+    }
     
     func allEventsAtTime(event: N40Event, allEvents: [N40Event]) -> [N40Event] {
         //returns an array of events that are in that location
@@ -786,8 +801,8 @@ struct DailyPlanner: View {
         
         
         return GeometryReader {geometry in
-            NavigationLink(destination: EditEventView(editEvent: event), label: {
-                
+            //NavigationLink(destination: EditEventView(editEvent: event), label: {
+            VStack{
                 ZStack {
                     if event.eventType == N40Event.INFORMATION_TYPE {
                         RoundedRectangle(cornerRadius: 8)
@@ -892,7 +907,7 @@ struct DailyPlanner: View {
                     
                 }
                 
-            })
+            }
             .buttonStyle(.plain)
             .font(.caption)
             .padding(.horizontal, 4)
@@ -901,7 +916,10 @@ struct DailyPlanner: View {
             //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
             .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(event.renderTotal ?? 1)), y: offset + hourHeight/2)
-            
+            .onTapGesture {
+                selectedEditEvent = event
+                showingEditEventSheet.toggle()
+            }
         }
     }
     

@@ -19,6 +19,11 @@ struct GoalListView: View {
     
     @State private var isTiered = true
     
+    @State public var isNavigationViewStacked: Bool
+    
+    init (isNavigationViewStacked: Bool = false) {
+        _isNavigationViewStacked = State(initialValue: isNavigationViewStacked)
+    }
     
     var body: some View {
         
@@ -109,6 +114,9 @@ struct GoalListView: View {
                 
         }.onReceive(listUpdater.$updater) {_ in
             loadSetOfGoals()
+        }
+        .if(isNavigationViewStacked) { view in
+            view.navigationViewStyle(StackNavigationViewStyle())
         }
         
         
@@ -379,11 +387,7 @@ struct GoalBoard: View {
 }
 
 
-struct GoalListView_Previews: PreviewProvider {
-    static var previews: some View {
-        GoalListView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-    }
-}
+
 
 
 fileprivate extension Date {
@@ -427,5 +431,21 @@ struct CompletedGoalsList: View {
             }.listStyle(.plain)
         }.padding()
             //.onDisappear{updater.updater.toggle()}
+    }
+}
+
+//https://www.avanderlee.com/swiftui/conditional-view-modifier/
+fileprivate extension View {
+    /// Applies the given transform if the given condition evaluates to `true`.
+    /// - Parameters:
+    ///   - condition: The condition to evaluate.
+    ///   - transform: The transform to apply to the source `View`.
+    /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
+    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
     }
 }

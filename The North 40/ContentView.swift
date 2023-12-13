@@ -20,33 +20,56 @@ struct ContentView: View {
     var body: some View {
         
         TabView {
-            
-            ToDoView()
-                .environment(\.managedObjectContext, viewContext)
-                .tabItem {
-                    Label("To Do's", systemImage: "checklist")
-                }
-            CalendarView()
-                .environment(\.managedObjectContext, viewContext)
-                .tabItem {
-                    Label("Schedule", systemImage: "calendar")
-                }
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                DashboardView()
+                    .environment(\.managedObjectContext, viewContext)
+                    .tabItem {
+                        Label("Dashboard", systemImage: "gauge.medium")
+                    }
+                    .toolbarBackground(.visible, for: .tabBar)
+            }
+            if UIDevice.current.userInterfaceIdiom != .pad {
+                ToDoView()
+                    .environment(\.managedObjectContext, viewContext)
+                    .tabItem {
+                        Label("To Do's", systemImage: "checklist")
+                    }
+                    .toolbarBackground(.visible, for: .tabBar)
+            }
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                WeekCalendarView()
+                    .environment(\.managedObjectContext, viewContext)
+                    .tabItem {
+                        Label("Schedule", systemImage: "calendar")
+                    }
+                    .toolbarBackground(.visible, for: .tabBar)
+            } else {
+                CalendarView()
+                    .environment(\.managedObjectContext, viewContext)
+                    .tabItem {
+                        Label("Schedule", systemImage: "calendar")
+                    }
+                    .toolbarBackground(.visible, for: .tabBar)
+            }
             PersonListView()
                 .environment(\.managedObjectContext, viewContext)
                 .tabItem {
                     Label("People", systemImage: "person.fill")
                 }
+                .toolbarBackground(.visible, for: .tabBar)
             GoalListView()
                 .environment(\.managedObjectContext, viewContext)
                 .tabItem{
                     Label("Goals", systemImage: "pencil.and.ruler.fill")
                 }
+                .toolbarBackground(.visible, for: .tabBar)
             OfficeView()
                 .environment(\.managedObjectContext, viewContext)
                 .tabItem{
                     Label("Office", systemImage: "books.vertical")
                 }
                 .badge(fetchedUnreporteds.count)
+                .toolbarBackground(.visible, for: .tabBar)
         }
     }
 }
@@ -57,30 +80,6 @@ private let itemFormatter: DateFormatter = {
     formatter.timeStyle = .medium
     return formatter
 }()
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        
-        let viewContext = PersistenceController.shared.container.viewContext
-        
-//        let newEvent = N40Event(entity: N40Event.entity(), insertInto: viewContext)
-//
-//        newEvent.name = "Go to the Store"
-//        newEvent.startDate = Date()
-//        newEvent.eventType = 3
-//
-//        do {
-//            try viewContext.save()
-//        }catch {
-//
-//        }
-//
-        
-        
-        
-        return ContentView().environment(\.managedObjectContext, viewContext)
-    }
-}
 
 
 

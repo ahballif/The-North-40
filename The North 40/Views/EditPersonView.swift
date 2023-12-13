@@ -86,7 +86,7 @@ struct EditPersonView: View {
                                     if let data = try? await photoItem?.loadTransferable(type: Data.self) {
                                         
                                         if let uiImage = UIImage(data: data) {
-                                            var newImage = uiImage
+                                            let newImage = uiImage
                                             //newImage = cropImageToSquare(image: newImage) ?? newImage
                                             //newImage = resizeImage(image: newImage, targetSize: CGSize(width: photoWidth, height: photoWidth)) ?? newImage
                                             photoData = newImage.pngData()
@@ -272,7 +272,7 @@ struct EditPersonView: View {
             //get the image
             if contact!.imageDataAvailable {
                 if let uiImage = UIImage(data: contact!.imageData!) {
-                    var newImage = uiImage
+                    let newImage = uiImage
                     //newImage = cropImageToSquare(image: newImage) ?? newImage
                     //newImage = resizeImage(image: newImage, targetSize: CGSize(width: 250, height: 250)) ?? newImage
                     photoData = newImage.pngData()

@@ -123,7 +123,7 @@ struct PersonListView: View {
             .navigationTitle(Text("People"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText)
-        }
+        }.navigationViewStyle(StackNavigationViewStyle())
         
     }
     

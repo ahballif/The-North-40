@@ -53,7 +53,9 @@
 		07815AFE2AD3A5FD00606B5C /* GoalTipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07815AFD2AD3A5FD00606B5C /* GoalTipsView.swift */; };
 		079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F068D2A8ED14A009A01F5 /* ToDoView.swift */; };
 		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
+		07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9EAE42B2A21E800221C3E /* DashboardView.swift */; };
 		07C5601D2ADB1DA600F2EC88 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */; };
+		07FBD1FC2B28DAC70003B04C /* WeekCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -128,7 +130,9 @@
 		0792D8CC2ACE5E3A0022D073 /* The North 40.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "The North 40.entitlements"; sourceTree = "<group>"; };
 		079F068D2A8ED14A009A01F5 /* ToDoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView.swift; sourceTree = "<group>"; };
 		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
+		07A9EAE42B2A21E800221C3E /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactPicker.swift; path = "The North 40/ContactPicker.swift"; sourceTree = SOURCE_ROOT; };
+		07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekCalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -285,6 +289,8 @@
 				079F068D2A8ED14A009A01F5 /* ToDoView.swift */,
 				07180AFE2AAD56BE008DC9E0 /* AgendaView.swift */,
 				0768C7812A89B4E900E29EBD /* CalendarView.swift */,
+				07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */,
+				07A9EAE42B2A21E800221C3E /* DashboardView.swift */,
 				0711DED92A9A3E8A006C0005 /* TimelineView.swift */,
 				0768C77D2A89B2DE00E29EBD /* PersonListView.swift */,
 				07241D262A9596B2009DE0E0 /* PersonDetailView.swift */,
@@ -442,6 +448,7 @@
 				07815AFE2AD3A5FD00606B5C /* GoalTipsView.swift in Sources */,
 				0711DF032AA39D77006C0005 /* EditTransactionView.swift in Sources */,
 				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
+				07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */,
 				0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */,
 				0768C7712A87188C00E29EBD /* N40Person+CoreDataProperties.swift in Sources */,
 				0711DEE32A9D371C006C0005 /* N40Note+CoreDataClass.swift in Sources */,
@@ -454,6 +461,7 @@
 				07180B032AC874B7008DC9E0 /* ExportImportData.swift in Sources */,
 				0768C7842A89B63500E29EBD /* EditPersonView.swift in Sources */,
 				0711DEFD2AA392BF006C0005 /* N40Transaction+CoreDataProperties.swift in Sources */,
+				07FBD1FC2B28DAC70003B04C /* WeekCalendarView.swift in Sources */,
 				0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */,
 				07180AFF2AAD56BE008DC9E0 /* AgendaView.swift in Sources */,
 				0711DF012AA3963E006C0005 /* EnvelopeView.swift in Sources */,
