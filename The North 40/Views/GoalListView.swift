@@ -435,7 +435,7 @@ struct CompletedGoalsList: View {
 }
 
 //https://www.avanderlee.com/swiftui/conditional-view-modifier/
-fileprivate extension View {
+extension View {
     /// Applies the given transform if the given condition evaluates to `true`.
     /// - Parameters:
     ///   - condition: The condition to evaluate.

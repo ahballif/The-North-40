@@ -94,6 +94,33 @@ extension N40Event {
         }
         return answer
     }
+    public func isRecurringEventLast (viewContext: NSManagedObjectContext) -> Bool {
+        var isLast = false
+        
+        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+        
+        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (self.startDate as CVarArg)) //will include this event
+        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (self.recurringTag))
+        
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+        fetchRequest.predicate = compoundPredicate
+        
+        do {
+            // Peform Fetch Request
+            let fetchedEvents = try viewContext.fetch(fetchRequest)
+            
+            if fetchedEvents.count == 1 {
+                isLast = true
+            }
+            
+        } catch {
+            print("couldn't fetch recurring events")
+        }
+        
+        return isLast
+        
+    }
     
 
 }

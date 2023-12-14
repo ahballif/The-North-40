@@ -65,6 +65,12 @@ extension N40Goal {
         }
     }
     
+    public var getAttachedNotes: [N40Note] {
+        //returns an array of the notes attached
+        let set = attachedNotes as? Set<N40Note> ?? []
+        return set.sorted {$0.date < $1.date}
+    }
+    
     public var getEndGoals: [N40Goal] {
         //returns and array of the goals attached as parents
         let set = endGoals as? Set<N40Goal> ?? []

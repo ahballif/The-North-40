@@ -78,6 +78,8 @@ struct WeekCalendarView: View {
             HStack {
                 Text("\(selectedDay.dayOfWeek()) - \((Calendar.current.date(byAdding: .day, value: numberOfDays-1, to: selectedDay) ?? selectedDay).dayOfWeek())")
                 
+                Spacer()
+                
                 DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
                     .labelsHidden()
                 
@@ -88,12 +90,22 @@ struct WeekCalendarView: View {
                     Image(systemName: "chevron.left.2")
                 }
                 Button {
+                    selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                Button {
+                    selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
+                Button {
                     selectedDay = Calendar.current.date(byAdding: .day, value: 7, to: selectedDay) ?? selectedDay
                 } label: {
                     Image(systemName: "chevron.right.2")
                 }
                 
-                Spacer()
+                
                 
                 Button("Today") {
                     selectedDay = Date()
@@ -603,7 +615,7 @@ struct WeeklyPlanner: View {
                         if (event.recurringTag != "") {
                             ZStack {
                                 Image(systemName: "repeat")
-                                if (isRecurringEventLast(event: event)) {
+                                if (event.isRecurringEventLast(viewContext: viewContext)) {
                                     Image(systemName: "line.diagonal")
                                         .scaleEffect(x: -1.2, y: 1.2)
                                 }
@@ -693,34 +705,6 @@ struct WeeklyPlanner: View {
         } catch {
             // handle error
         }
-    }
-    
-    func isRecurringEventLast (event: N40Event) -> Bool {
-        var isLast = false
-        
-        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
-        
-        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
-        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (event.startDate as CVarArg)) //will include this event
-        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (event.recurringTag))
-        
-        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
-        fetchRequest.predicate = compoundPredicate
-        
-        do {
-            // Peform Fetch Request
-            let fetchedEvents = try viewContext.fetch(fetchRequest)
-            
-            if fetchedEvents.count == 1 {
-                isLast = true
-            }
-            
-        } catch {
-            print("couldn't fetch recurring events")
-        }
-        
-        return isLast
-        
     }
     
     
@@ -893,10 +877,34 @@ struct AllDayListWeek: View {
         return VStack{
                 ZStack {
                     
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
-                        .opacity(0.5)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    //Change background rectangle based on event type
+                    if event.eventType == N40Event.INFORMATION_TYPE {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.gray)
+                            .opacity(0.0001)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                    .opacity(0.5)
+                            )
+                    } else if event.eventType == N40Event.BACKUP_TYPE {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.gray)
+                            .opacity(0.25)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                    .opacity(0.5)
+                            )
+                    } else {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
+                            .opacity(0.5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                
 
                     
                     HStack {
@@ -917,20 +925,56 @@ struct AllDayListWeek: View {
                 
                     
                     
-                    
-                    if (event.recurringTag != "") {
-                        HStack {
-                            Spacer()
+                    //reportable icon
+                    HStack {
+                        Spacer()
+                        if (event.eventType == N40Event.REPORTABLE_TYPE) {
+                            if event.startDate > Date() {
+                                Image(systemName: "circle.dotted")
+                                    .resizable()
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.UNREPORTED {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.orange)
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.SKIPPED {
+                                Image(systemName: "slash.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.red)
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.ATTEMPTED {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.red)
+                                    .frame(width: 20, height:20)
+                            } else if event.status == N40Event.HAPPENED {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(Color.green)
+                                    .frame(width: 20, height:20)
+                            }
+                        } else if (event.eventType == N40Event.INFORMATION_TYPE) {
+                            Image(systemName: "dot.radiowaves.left.and.right")
+                                .resizable()
+                                .frame(width: 20, height:20)
+                        }
+                        
+                        
+                        //recurring event icon
+                        if (event.recurringTag != "") {
                             ZStack {
                                 Image(systemName: "repeat")
-                                if (isRecurringEventLast(event: event)) {
+                                if (event.isRecurringEventLast(viewContext: viewContext)) {
                                     Image(systemName: "line.diagonal")
                                         .scaleEffect(x: -1.2, y: 1.2)
                                 }
                             }
-                                
-                        }.padding(.horizontal, 8)
-                    }
+                        }
+                        
+                            
+                    }.padding(.horizontal, 8)
+
                 }
                 
             }
@@ -1046,34 +1090,6 @@ struct AllDayListWeek: View {
                 // handle error
             }
         }
-    }
-    
-    func isRecurringEventLast (event: N40Event) -> Bool {
-        var isLast = false
-        
-        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
-        
-        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
-        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (event.startDate as CVarArg)) //will include this event
-        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (event.recurringTag))
-        
-        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
-        fetchRequest.predicate = compoundPredicate
-        
-        do {
-            // Peform Fetch Request
-            let fetchedEvents = try viewContext.fetch(fetchRequest)
-            
-            if fetchedEvents.count == 1 {
-                isLast = true
-            }
-            
-        } catch {
-            print("couldn't fetch recurring events")
-        }
-        
-        return isLast
-        
     }
     
     

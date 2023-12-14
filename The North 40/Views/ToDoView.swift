@@ -180,6 +180,9 @@ struct SortedToDoList: View {
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"))
     private var allUnfinishedGoals: FetchedResults<N40Goal>
     
+//    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED), NSPredicate(format: "startDate < %@", Date().endOfDay as NSDate)]))
+//    private var todos_today_for_update: FetchedResults<N40Event>
+    
     public var sortBy: Int = 0 //else sort by people
     public static let SORT_BY_GOALS = 0
     public static let SORT_BY_PEOPLE = 1
@@ -390,6 +393,8 @@ struct SortedToDoList: View {
         }.onReceive(updater.$updater) {_ in
             loadSetOfToDos()
         }
+        
+        
         
     }
     

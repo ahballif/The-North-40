@@ -62,8 +62,8 @@
             filePath = "The North 40/Views/CalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "849"
-            endingLineNumber = "849"
+            startingLineNumber = "881"
+            endingLineNumber = "881"
             landmarkName = "eventCell(_:allEvents:)"
             landmarkType = "7">
             <Locations>
@@ -484,8 +484,8 @@
             filePath = "The North 40/Views/CalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "523"
-            endingLineNumber = "523"
+            startingLineNumber = "555"
+            endingLineNumber = "555"
             landmarkName = "body"
             landmarkType = "24">
             <Locations>
@@ -547,8 +547,8 @@
             filePath = "The North 40/Views/WeekCalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "798"
-            endingLineNumber = "798"
+            startingLineNumber = "782"
+            endingLineNumber = "782"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -563,8 +563,8 @@
             filePath = "The North 40/Views/WeekCalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "785"
-            endingLineNumber = "785"
+            startingLineNumber = "769"
+            endingLineNumber = "769"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -579,8 +579,8 @@
             filePath = "The North 40/Views/WeekCalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "760"
-            endingLineNumber = "760"
+            startingLineNumber = "744"
+            endingLineNumber = "744"
             landmarkName = "body"
             landmarkType = "24">
             <Locations>
