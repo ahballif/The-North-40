@@ -560,9 +560,11 @@ struct DailyPlanner: View {
                         }
                         
                     }
+                    
+                        
                     let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
-
-                    recalculateRenderIndices(radarEvents)
+                    
+                    EventRenderCalculator.precalculateEventColumns(radarEvents)
                     
                     if showingRadarEvents {
                         ForEach(radarEvents) { event in
@@ -572,7 +574,7 @@ struct DailyPlanner: View {
                     
                     let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE && (showingBackgroundEvents || $0.eventType != N40Event.BACKUP_TYPE)})
                     
-                    recalculateRenderIndices(otherEvents)
+                    EventRenderCalculator.precalculateEventColumns(otherEvents)
                     
                     ForEach(otherEvents) { event in
                         eventCell(event, allEvents: otherEvents)
@@ -600,7 +602,7 @@ struct DailyPlanner: View {
                 
             }
             
-        }.onAppear(perform: resetAllRenderTotals)
+        }
         
             .sheet(isPresented: $showingEditEventSheet) { [clickedOnTime, selectedEditEvent] in
                 NavigationView {
@@ -654,141 +656,9 @@ struct DailyPlanner: View {
         self.scrollToNowToggle.toggle()
     }
     
-    func allEventsAtTime(event: N40Event, allEvents: [N40Event]) -> [N40Event] {
-        //returns an array of events that are in that location
-        var eventsAtTime: [N40Event] = []
-        
-        allEvents.forEach {eachEvent in
-            if doEventsOverlap(event1: event, event2: eachEvent) {
-                eventsAtTime.append(eachEvent)
-            }
-        }
-        
-        return eventsAtTime
-    }
     
-    func doEventsOverlap (event1: N40Event, event2: N40Event) -> Bool {
-        var answer = false
-        
-        
-        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
-        let testDuration = Int(event1.duration) > Int(minDuration) ? Int(event1.duration) : Int(minDuration)
-        
-        
-        let startOfInterval = event1.startDate.zeroSeconds
-        var endOfInterval = Calendar.current.date(byAdding: .minute, value: testDuration, to: event1.startDate.zeroSeconds) ?? startOfInterval
-        
-        if endOfInterval.timeIntervalSince(startOfInterval) > 0 {
-            endOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: endOfInterval) ?? endOfInterval
-        } //subtract a second from the end of the interval to make it less confusing.
-        
-        
-        let eventTestDuration = Int(event2.duration) > Int(minDuration) ? Int(event2.duration) : Int(minDuration)
-        
-        let eventStartOfInterval = event2.startDate.zeroSeconds
-        var eventEndOfInterval = Calendar.current.date(byAdding: .minute, value: eventTestDuration, to: eventStartOfInterval) ?? eventStartOfInterval
-        
-        if eventEndOfInterval.timeIntervalSince(eventStartOfInterval) > 0 {
-            eventEndOfInterval = Calendar.current.date(byAdding: .second, value: -1, to: eventEndOfInterval) ?? endOfInterval
-        } //subtract a second from the end of the interval to make it less confusing.
-        
-        
-        //  considering the ranges are: [x1:x2] and [y1:y2]
-        // x1 <= y2 && y1 <= x2
-        if ( startOfInterval <= eventEndOfInterval && eventStartOfInterval <= endOfInterval) {
-            answer = true
-        }
-        
-        return answer
-        
-    }
 
     
-    func numberOfEventsAtTime(event: N40Event, allEvents: [N40Event]) -> Int {
-        let allEventsAtTime = allEventsAtTime(event: event, allEvents: allEvents)
-        return allEventsAtTime.count
-    }
-    
-    func getLowestUntakenEventIndex (overlappingEvents: [N40Event]) -> Int {
-        
-        var takenIndices: [Int] = []
-        
-        //We need to iterate in accending order, so first just get all the indices
-        overlappingEvents.forEach {eachEvent in
-            takenIndices.append(eachEvent.renderIdx ?? -1)
-        }
-        takenIndices.sort()
-        
-        var lowestUntakeIdx = 0
-        
-        //now we can iterate through them
-        takenIndices.forEach {idx in
-            if idx == lowestUntakeIdx {
-                lowestUntakeIdx += 1
-            }
-        }
-        
-        return lowestUntakeIdx
-        
-    }
-    
-    func getHighestEventIndex (allEvents: [N40Event], from: Date, to: Date) -> Int {
-        
-        var relevantEvents: [N40Event] = []
-        
-        let refTo = Calendar.current.date(bySetting: .second, value: 0, of: to) ?? to
-        let refFrom = Calendar.current.date(bySetting: .second, value: 0, of: from) ?? from
-        
-        for eachEvent in allEvents {
-            
-            
-            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: getCellHeight(eachEvent), to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
-            let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
-            
-            
-            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate <= refTo) || (startDate < refFrom && endDate > refTo) || (startDate >= refFrom && endDate <= refTo) {
-                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after
-                relevantEvents.append(eachEvent)
-            }
-        }
-        
-        var greatestEventIndex = 0
-        //now find the greatestEventIndex
-        for eachRelevantEvent in relevantEvents {
-            if eachRelevantEvent.renderIdx ?? 0 > greatestEventIndex {
-                greatestEventIndex = eachRelevantEvent.renderIdx ?? greatestEventIndex
-            }
-        }
-        
-        return greatestEventIndex
-        
-    }
-    
-    func getCellHeight(_ event: N40Event) -> Int {
-        //Returns the true cell height in minutes
-        //ex. if duration == 0, the cell still has some minimum width.
-        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
-        let testDuration = Int(event.duration) > Int(minDuration) ? Int(event.duration) : Int(minDuration)
-        return testDuration
-    }
-    
-    func getHighestRenderTotal(overlappingEvents: [N40Event]) -> Int {
-        //Returns the highest total number of columns that any overlapping event counts
-        var highestTotal = 1
-        for eachEvent in overlappingEvents {
-            if eachEvent.renderTotal ?? 0 > highestTotal {
-                highestTotal = eachEvent.renderTotal ?? 0
-            }
-        }
-        return highestTotal
-    }
-    
-    func resetAllRenderTotals() {
-        //resets all render totals
-        for eachEvent in fetchedEvents.reversed() {
-            eachEvent.renderTotal = 1
-        }
-    }
     
     func eventCell(_ event: N40Event, allEvents: [N40Event]) -> some View {
         //all events is used for wrapping around other events.
@@ -803,16 +673,7 @@ struct DailyPlanner: View {
         let minute = calendar.component(.minute, from: event.startDate)
         let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
         
-        let allEventsAtThisTime = allEventsAtTime(event: event, allEvents: allEvents)
-        
-        event.renderIdx = -1 // basically reset it to be recalculated
-        event.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
 
-        
-        event.renderTotal = getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getCellHeight(event), to: event.startDate) ?? event.startDate)  + 1
-        event.renderTotal = getHighestRenderTotal(overlappingEvents: allEventsAtThisTime)
-        
-        
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
         
@@ -830,7 +691,7 @@ struct DailyPlanner: View {
             colorHex = event.color
         }
         
-        
+        let numberOfColumns = event.getHighestEventIdx + 1
         
         return GeometryReader {geometry in
             //NavigationLink(destination: EditEventView(editEvent: event), label: {
@@ -944,10 +805,10 @@ struct DailyPlanner: View {
             .font(.caption)
             .padding(.horizontal, 4)
             .frame(height: height, alignment: .top)
-            .frame(width: (geometry.size.width-40)/CGFloat(event.renderTotal ?? 1), alignment: .leading)
+            .frame(width: (geometry.size.width-40)/CGFloat(numberOfColumns), alignment: .leading)
             //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
-            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(event.renderTotal ?? 1)), y: offset + hourHeight/2)
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
             .onTapGesture {
                 selectedEditEvent = event
                 showingEditEventSheet.toggle()
@@ -955,20 +816,9 @@ struct DailyPlanner: View {
         }
     }
     
-    func recalculateRenderIndices (_ allEvents: [N40Event]) -> some View {
-        for eachEvent in allEvents {
-            let allEventsAtThisTime = allEventsAtTime(event: eachEvent, allEvents: allEvents)
-            eachEvent.renderIdx = -1 // basically reset it to be recalculated
-            eachEvent.renderIdx = getLowestUntakenEventIndex(overlappingEvents: allEventsAtThisTime)
-        }
-        return EmptyView()
-    }
     
-    func getTestDuration(duration: Int) -> Int {
-        let minDuration = (DailyPlanner.minimumEventHeight/hourHeight*60.0)
-        return Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
-        
-    }
+    
+    
     
     func getNowOffset() -> CGFloat {
         

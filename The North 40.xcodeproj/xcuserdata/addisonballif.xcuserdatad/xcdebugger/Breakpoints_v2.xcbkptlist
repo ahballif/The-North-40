@@ -62,8 +62,8 @@
             filePath = "The North 40/Views/CalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "881"
-            endingLineNumber = "881"
+            startingLineNumber = "742"
+            endingLineNumber = "742"
             landmarkName = "eventCell(_:allEvents:)"
             landmarkType = "7">
             <Locations>
@@ -547,8 +547,8 @@
             filePath = "The North 40/Views/WeekCalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "782"
-            endingLineNumber = "782"
+            startingLineNumber = "623"
+            endingLineNumber = "623"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -563,8 +563,8 @@
             filePath = "The North 40/Views/WeekCalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "769"
-            endingLineNumber = "769"
+            startingLineNumber = "610"
+            endingLineNumber = "610"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -579,8 +579,8 @@
             filePath = "The North 40/Views/WeekCalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "744"
-            endingLineNumber = "744"
+            startingLineNumber = "585"
+            endingLineNumber = "585"
             landmarkName = "body"
             landmarkType = "24">
             <Locations>
@@ -615,6 +615,22 @@
                   offsetFromSymbolStart = "204">
                </Location>
             </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E0DCFD5F-8174-41CD-8CB0-C2AD3DD2F611"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DataModel/N40Event+CoreDataClass.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "25"
+            endingLineNumber = "25"
+            landmarkName = "getHighestEventIdx"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

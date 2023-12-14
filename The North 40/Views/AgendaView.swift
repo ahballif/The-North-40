@@ -14,8 +14,10 @@ struct AgendaView: View {
     @FetchRequest var fetchedEvents: FetchedResults<N40Event>
     
     @State private var showingEditEventSheet = false
+    @State private var selectedEditEvent: N40Event? = nil
     
     private var filteredDay: Date
+    
     
     init (filter: Date) {
         let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
@@ -109,7 +111,10 @@ struct AgendaView: View {
                 HStack {
                     Spacer()
                     
-                    Button(action: {showingEditEventSheet.toggle()}) {
+                    Button(action: {
+                        selectedEditEvent = nil
+                        showingEditEventSheet.toggle()
+                    }) {
                         Image(systemName: "plus.circle.fill")
                             .resizable()
                             .scaledToFit()
@@ -117,8 +122,15 @@ struct AgendaView: View {
                             .frame(minWidth: 50, maxWidth: 50)
                             .padding(30)
                     }
-                    .sheet(isPresented: $showingEditEventSheet) {
-                        EditEventView()
+                    .sheet(isPresented: $showingEditEventSheet) { [selectedEditEvent] in
+                        NavigationView {
+                            if selectedEditEvent == nil {
+                                EditEventView(editEvent: nil)
+                            } else {
+                                //An event was clicked
+                                EditEventView(editEvent: selectedEditEvent)
+                            }
+                        }
                     }
                 }
             }
@@ -129,7 +141,24 @@ struct AgendaView: View {
     
     func eventCell(_ event: N40Event) -> some View {
         
-        return NavigationLink(destination: EditEventView(editEvent: event), label: {
+        //get color for event cell
+        var colorHex = "#FF7051" //default redish color
+        
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
+            if event.getAttachedGoals.count > 0 {
+                colorHex = event.getAttachedGoals.first!.color
+            } else {
+                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
+                } else {
+                    colorHex = event.color
+                }
+            }
+        } else {
+            colorHex = event.color
+        }
+        
+        return ZStack {
             
             ZStack {
                 if event.eventType == N40Event.INFORMATION_TYPE {
@@ -139,7 +168,7 @@ struct AgendaView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
                                 .opacity(0.5)
                         )
                 } else if event.eventType == N40Event.BACKUP_TYPE {
@@ -149,12 +178,12 @@ struct AgendaView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
+                                .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
                                 .opacity(0.5)
                         )
                 } else {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill((Color(hex: event.color) ?? DEFAULT_EVENT_COLOR))
+                        .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
                         .opacity(0.5)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -229,12 +258,15 @@ struct AgendaView: View {
                 }.padding(.horizontal, 8)
                 
             }
-        })
+        }
         .buttonStyle(.plain)
         .font(.caption)
         .padding(.horizontal, 4)
         .padding(.leading, 30)
-        
+        .onTapGesture {
+            selectedEditEvent = event
+            showingEditEventSheet.toggle()
+        }
         
     }
     
