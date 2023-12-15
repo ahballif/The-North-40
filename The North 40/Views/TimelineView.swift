@@ -41,6 +41,9 @@ struct TimelineView: View {
                         //unschedule first
                         ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
                             eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                                .padding(.horizontal)
+                                .padding(.vertical, 2)
+                            //other events get padding added inside TimelineObject, but these do not because they aren't processed as timeline objects.
                             
                         }
                         
@@ -78,10 +81,10 @@ struct TimelineView: View {
         if selectedGoal != nil {
             //add due date and sub-goals
             if selectedGoal!.hasDeadline {
-                returnedTimelineObjects.append(TimelineObject(date: selectedGoal!.deadline, type: TimelineType.dueDate, goal: selectedGoal))
+                returnedTimelineObjects.append(TimelineObject(date: selectedGoal!.deadline.endOfDay, type: TimelineType.dueDate, goal: selectedGoal))
             }
             for eachSubGoal in selectedGoal!.getSubGoals {
-                returnedTimelineObjects.append(TimelineObject(date: eachSubGoal.deadline, type: TimelineType.subGoalDueDate, goal: eachSubGoal))
+                returnedTimelineObjects.append(TimelineObject(date: eachSubGoal.deadline.endOfDay, type: TimelineType.subGoalDueDate, goal: eachSubGoal))
             }
             
             
@@ -474,8 +477,7 @@ private struct eventDisplayBoxView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: cellHeight)
-            .padding(.horizontal)
-            .padding(.vertical, 2)
+            .padding(.horizontal) //just to make all events smaller than other timeline objects. 
         }
         .buttonStyle(.plain)
         .font(.caption)

@@ -97,6 +97,17 @@ struct CalendarView: View {
                     
                     Spacer()
                     
+                    Button {
+                        selectedDay = Calendar.current.date(byAdding: .day, value: -1, to: selectedDay) ?? selectedDay
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    Button {
+                        selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
+                    } label: {
+                        Image(systemName: "chevron.right")
+                    }
+                    
                     Button("Today") {
                         selectedDay = Date()
                         
@@ -205,7 +216,7 @@ struct AllDayList: View {
                     }
                 }
             }
-        }.sheet(isPresented: $showingDetailSheet) { [detailShowing] in
+        }.sheet(isPresented: $showingDetailSheet) { [detailShowing, selectedEvent, selectedBirthdayBoy, selectedGoal] in
             NavigationView {
                 if detailShowing == DetailOptions.event {
                     EditEventView(editEvent: selectedEvent)
@@ -222,7 +233,7 @@ struct AllDayList: View {
                         Text("No Birthday Boy or Girl Selected")
                     }
                 }
-            }
+            }.navigationViewStyle(StackNavigationViewStyle())
         }
     }
     
@@ -871,6 +882,27 @@ struct DailyPlanner: View {
     
     
     
+//    //Read from iCal
+    //(Doesn't work in current version of XCode)
+//    func getEventsFromUserCalendar() {
+//        // Create an event store
+//        let store = EKEventStore()
+//
+//        // Request full access
+//        guard try await store.requestFullAccessToEvents() else { return }
+//
+//        // Create a predicate
+//        guard let interval = Calendar.current.dateInterval(of: .month, for: Date()) else { return }
+//        let predicate = store.predicateForEvents(withStart: interval.start,
+//                                                 end: interval.end,
+//                                                 calendars: nil)
+//
+//        // Fetch the events
+//        let events = store.events(matching: predicate)
+//
+//        let sortedEvents = events.sorted { $0.compareStartDate(with: $1) == .orderedAscending }
+//    }
+//
     
 }
 

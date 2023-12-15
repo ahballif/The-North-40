@@ -299,6 +299,7 @@ struct GoalInfoView: View {
         selectedGoal.isCompleted = isCompleted
         if isCompleted {
             selectedGoal.dateCompleted = Date()
+            selectedGoal.deadline = Date()
         }
         
         do {

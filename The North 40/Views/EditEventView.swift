@@ -1359,7 +1359,7 @@ fileprivate struct SelectOnScheduleView: View {
                     }
                 }
             }.padding()
-            
+            AllDayList(filter: filteredDay)
             scheduleViewCanvas(filter: filteredDay, editEventView: editEventView)
         }.gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
             .onEnded { value in
@@ -1447,11 +1447,18 @@ fileprivate struct scheduleViewCanvas: View {
                     }
                     
                     let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
+                    
+                    EventRenderCalculator.precalculateEventColumns(radarEvents)
+                    
                     ForEach(radarEvents) { event in
                         eventCell(event, allEvents: radarEvents)
                     }
                     
-                    let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE })
+                    
+                    let otherEvents = fetchedEvents.reversed().filter({ $0.eventType != N40Event.INFORMATION_TYPE})
+                    
+                    EventRenderCalculator.precalculateEventColumns(otherEvents)
+                    
                     ForEach(otherEvents) { event in
                         eventCell(event, allEvents: otherEvents)
                     }

@@ -622,7 +622,7 @@ struct AllDayListWeek: View {
             .onAppear{
                 print(fetchedGoalsDueToday)
             }
-            .sheet(isPresented: $showingDetailSheet) { [detailShowing] in
+            .sheet(isPresented: $showingDetailSheet) { [detailShowing, selectedEvent, selectedBirthdayBoy, selectedGoal] in
                 NavigationView {
                     if detailShowing == DetailOptions.event {
                         EditEventView(editEvent: selectedEvent)
@@ -825,6 +825,8 @@ struct AllDayListWeek: View {
             .onTapGesture {
                 detailShowing = DetailOptions.event
                 selectedEvent = event
+                selectedGoal = nil
+                selectedBirthdayBoy = nil
                 showingDetailSheet = true
             }
             
@@ -861,7 +863,9 @@ struct AllDayListWeek: View {
             .frame(height: allEventHeight)
             .onTapGesture {
                 detailShowing = DetailOptions.goal
+                selectedEvent = nil
                 selectedGoal = goal
+                selectedBirthdayBoy = nil
                 showingDetailSheet = true
             }
             
@@ -897,6 +901,8 @@ struct AllDayListWeek: View {
             .frame(height: allEventHeight)
             .onTapGesture {
                 detailShowing = DetailOptions.birthdayBoy
+                selectedEvent = nil
+                selectedGoal = nil
                 selectedBirthdayBoy = person
                 showingDetailSheet = true
             }
