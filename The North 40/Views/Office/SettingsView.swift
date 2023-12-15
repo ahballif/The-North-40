@@ -35,6 +35,8 @@ struct SettingsView: View {
     @State private var setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
     @State private var roundScheduleCompletedTodos = UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos")
     
+    @State private var showHolidays = UserDefaults.standard.bool(forKey: "showHolidays")
+    
     @State private var savingToFile = false
     @State private var importingFile = false
     @State private var importConfirm = false
@@ -106,6 +108,15 @@ struct SettingsView: View {
                             .labelsHidden()
                             .onChange(of: showAllDayTodos) {_ in
                                 UserDefaults.standard.set(showAllDayTodos, forKey: "showAllDayTodos")
+                            }
+                    }
+                    HStack {
+                        Text("Show Holidays: ")
+                        Spacer()
+                        Toggle("showHolidays", isOn: $showHolidays)
+                            .labelsHidden()
+                            .onChange(of: showHolidays) {_ in
+                                UserDefaults.standard.set(showHolidays, forKey: "showHolidays")
                             }
                     }
                 }

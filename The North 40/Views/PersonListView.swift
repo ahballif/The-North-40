@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct PersonListView: View {
     private var updater: RefreshView = RefreshView()
     @Environment(\.managedObjectContext) private var viewContext
@@ -50,7 +51,13 @@ struct PersonListView: View {
                     if sortingAlphabetical {
                         
                         List{
-                            let noLetterLastNames = allPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                            let noLetterLastNames = allPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                                if $0.lastName != $1.lastName { // first, compare by last names
+                                    return $0.lastName < $1.lastName
+                                } else { // All other fields are tied, break ties by last name
+                                    return $0.firstName < $1.firstName
+                                }
+                            }
                             if noLetterLastNames.count > 0 {
                                 Section(header: Text("*")) {
                                     ForEach(noLetterLastNames, id: \.self) { person in
@@ -59,7 +66,13 @@ struct PersonListView: View {
                                 }
                             }
                             ForEach(alphabet, id: \.self) { letter in
-                                let letterSet = allPeople.filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                                let letterSet = allPeople.filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                                    if $0.lastName != $1.lastName { // first, compare by last names
+                                        return $0.lastName < $1.lastName
+                                    } else { // All other fields are tied, break ties by last name
+                                        return $0.firstName < $1.firstName
+                                    }
+                                }
                                 if (letterSet.count > 0) {
                                     Section(header: Text(letter)) {
                                         ForEach(letterSet, id: \.self) { person in
@@ -75,7 +88,13 @@ struct PersonListView: View {
                         
                         List {
                             ForEach(allGroups) {group in
-                                let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                                let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                                    if $0.lastName != $1.lastName { // first, compare by last names
+                                        return $0.lastName < $1.lastName
+                                    } else { // All other fields are tied, break ties by last name
+                                        return $0.firstName < $1.firstName
+                                    }
+                                }
                                 if groupSet.count > 0 {
                                     Section(header: Text(group.name)) {
                                         ForEach(groupSet) {person in
@@ -84,7 +103,14 @@ struct PersonListView: View {
                                     }
                                 }
                             }
-                            let ungroupedSet = unassignedToGroupPeople.reversed().filter { $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {$0.lastName < $1.lastName}
+                            //ungrouped people
+                            let ungroupedSet = unassignedToGroupPeople.reversed().filter { $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                                if $0.lastName != $1.lastName { // first, compare by last names
+                                    return $0.lastName < $1.lastName
+                                } else { // All other fields are tied, break ties by last name
+                                    return $0.firstName < $1.firstName
+                                }
+                            }
                             if ungroupedSet.count > 0 {
                                 Section(header: Text("Ungrouped People")) {
                                     ForEach(ungroupedSet) {person in
@@ -181,3 +207,5 @@ struct PersonListView: View {
     }
     
 }
+
+

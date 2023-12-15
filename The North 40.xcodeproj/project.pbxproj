@@ -54,6 +54,7 @@
 		079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F068D2A8ED14A009A01F5 /* ToDoView.swift */; };
 		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
 		07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9EAE42B2A21E800221C3E /* DashboardView.swift */; };
+		07A9EAE92B2D05EE00221C3E /* holidays.csv in Resources */ = {isa = PBXBuildFile; fileRef = 07A9EAE82B2D05EE00221C3E /* holidays.csv */; };
 		07C5601D2ADB1DA600F2EC88 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */; };
 		07FBD1FC2B28DAC70003B04C /* WeekCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */; };
 /* End PBXBuildFile section */
@@ -131,6 +132,7 @@
 		079F068D2A8ED14A009A01F5 /* ToDoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView.swift; sourceTree = "<group>"; };
 		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
 		07A9EAE42B2A21E800221C3E /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		07A9EAE82B2D05EE00221C3E /* holidays.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = holidays.csv; sourceTree = "<group>"; };
 		07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactPicker.swift; path = "The North 40/ContactPicker.swift"; sourceTree = SOURCE_ROOT; };
 		07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekCalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -208,6 +210,7 @@
 		0768C6F72A81E15600E29EBD /* The North 40 */ = {
 			isa = PBXGroup;
 			children = (
+				07A9EAE82B2D05EE00221C3E /* holidays.csv */,
 				0792D8CC2ACE5E3A0022D073 /* The North 40.entitlements */,
 				07180B042AC9BD36008DC9E0 /* The-North-40-Info.plist */,
 				079F068F2A8ED215009A01F5 /* Views */,
@@ -407,6 +410,7 @@
 			files = (
 				0768C7002A81E15600E29EBD /* Preview Assets.xcassets in Resources */,
 				0768C6FD2A81E15600E29EBD /* Assets.xcassets in Resources */,
+				07A9EAE92B2D05EE00221C3E /* holidays.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -632,7 +636,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -668,7 +672,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;

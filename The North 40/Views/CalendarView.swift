@@ -172,6 +172,8 @@ struct AllDayList: View {
     
     @State private var showingEditEventSheet = false
     
+    private var holidays: [Date: String]
+    
     private var filteredDay: Date
     
     private let allEventHeight = 25.0
@@ -200,6 +202,26 @@ struct AllDayList: View {
                     ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
                         birthdayBoyCell(eachBirthdayBoy)
                     }
+                    if holidays[filteredDay.startOfDay] != nil && UserDefaults.standard.bool(forKey: "showHolidays") {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.gray)
+                                .opacity(0.0001)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(((colorScheme == .dark) ? .white : .black), lineWidth: 2)
+                                        .opacity(0.5)
+                                )
+                            
+                            HStack {
+                                Text(holidays[filteredDay.startOfDay]!).bold()
+                                Spacer()
+                            }
+                            .padding(.horizontal, 8)
+                        }.font(.caption)
+                            .frame(height: allEventHeight)
+                    }
                 }.frame(height: 3*allEventHeight)
             } else {
                 VStack {
@@ -213,6 +235,26 @@ struct AllDayList: View {
                     }
                     ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
                         birthdayBoyCell(eachBirthdayBoy)
+                    }
+                    if holidays[filteredDay.startOfDay] != nil && UserDefaults.standard.bool(forKey: "showHolidays") {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.gray)
+                                .opacity(0.0001)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(((colorScheme == .dark) ? .white : .black), lineWidth: 2)
+                                        .opacity(0.5)
+                                )
+                            
+                            HStack {
+                                Text(holidays[filteredDay.startOfDay]!).bold()
+                                Spacer()
+                            }
+                            .padding(.horizontal, 8)
+                        }.font(.caption)
+                            .frame(height: allEventHeight)
                     }
                 }
             }
@@ -234,6 +276,7 @@ struct AllDayList: View {
                     }
                 }
             }.navigationViewStyle(StackNavigationViewStyle())
+                
         }
     }
     
@@ -261,6 +304,31 @@ struct AllDayList: View {
         
         
         self.filteredDay = filter
+        
+        //populate the holidays dictionary
+        var rawHolidays = [Date: String]()
+        
+        if let fileURL = Bundle.main.url(forResource: "holidays", withExtension: "csv") {
+            // we found the file in our bundle!
+            if let fileContents = try? String(contentsOf: fileURL) {
+                // we loaded the file into a string!
+                for rawLine in fileContents.split(separator: "\n") {
+                    let line = rawLine.split(separator: ",", omittingEmptySubsequences: false)
+                    let dateString = String(line[0])
+                    
+                    // Create Date Formatter
+                    let dateFormatter = DateFormatter()
+                    // Set Date Format
+                    dateFormatter.dateFormat = "MM/dd/yyyy"
+                    
+                    // Convert String to Date
+                    let date = (dateFormatter.date(from: dateString) ?? Date.distantPast).startOfDay
+                    rawHolidays.updateValue(String(line[1]), forKey: date)
+                }
+            }
+        }
+        self.holidays = rawHolidays
+        
     }
     
     func allDayEvent(_ event: N40Event) -> some View {

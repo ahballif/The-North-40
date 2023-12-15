@@ -16,8 +16,14 @@ struct EditEventView: View {
     @State public var editEvent: N40Event?
     
     
-    private let repeatOptions = ["No Repeat", "Every Day", "Every Week", "Every Two Weeks", "Monthly (Day of Month)", "Monthly (Week of Month)"]
-    
+    private let repeatOptions = ["No Repeat", "Every Day", "On Days:", "Every Week", "Every Two Weeks", "Monthly (Day of Month)", "Monthly (Week of Month)", "Yearly"]
+    @State private var repeatMonday = true
+    @State private var repeatTuesday = true
+    @State private var repeatWednesday = true
+    @State private var repeatThursday = true
+    @State private var repeatFriday = true
+    @State private var repeatSaturday = false
+    @State private var repeatSunday = false
     
     @State private var eventTitle = ""
     @State private var location = ""
@@ -50,7 +56,7 @@ struct EditEventView: View {
     
     @State private var isAlreadyRepeating = false
     @State private var repeatOptionSelected = "No Repeat"
-    @State private var numberOfRepeats = 3 // in months
+    @State private var numberOfRepeats = 3 // in occurances unless it's in days then its months and if its on specific days its in weeks.
     @State private var isShowingEditAllConfirm: Bool = false
     
     @State private var isShowingSaveAsCopyConfirm: Bool = false
@@ -591,12 +597,113 @@ struct EditEventView: View {
                                 Spacer()
                             }
                         }
-                        if (!isAlreadyRepeating) {
+                        if (!isAlreadyRepeating && repeatOptionSelected != "No Repeat") {
                             HStack {
-                                Text("For \(numberOfRepeats) Months")
-                                Stepper("", value: $numberOfRepeats, in: 1...12)
+                                if repeatOptionSelected == "Every Day" {
+                                    Text("For \(numberOfRepeats) Months")
+                                } else if repeatOptionSelected == "On Days:" {
+                                    Text("For \(numberOfRepeats) Weeks")
+                                } else {
+                                    Text("For \(numberOfRepeats) Occurrences")
+                                }
+                                Stepper("", value: $numberOfRepeats, in: 1...52)
                                     .disabled(!isScheduled)
                                 
+                            }
+                        }
+                        if (!isAlreadyRepeating && repeatOptionSelected == "On Days:") {
+                            VStack {
+                                HStack {
+                                    Text("Monday")
+                                    Spacer()
+                                    Button {
+                                        repeatMonday.toggle()
+                                    } label: {
+                                        if repeatMonday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
+                                HStack {
+                                    Text("Tuesday")
+                                    Spacer()
+                                    Button {
+                                        repeatTuesday.toggle()
+                                    } label: {
+                                        if repeatTuesday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
+                                HStack {
+                                    Text("Wednesday")
+                                    Spacer()
+                                    Button {
+                                        repeatWednesday.toggle()
+                                    } label: {
+                                        if repeatWednesday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
+                                HStack {
+                                    Text("Thursday")
+                                    Spacer()
+                                    Button {
+                                        repeatThursday.toggle()
+                                    } label: {
+                                        if repeatThursday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
+                                HStack {
+                                    Text("Friday")
+                                    Spacer()
+                                    Button {
+                                        repeatFriday.toggle()
+                                    } label: {
+                                        if repeatFriday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
+                                HStack {
+                                    Text("Saturday")
+                                    Spacer()
+                                    Button {
+                                        repeatSaturday.toggle()
+                                    } label: {
+                                        if repeatSaturday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
+                                HStack {
+                                    Text("Sunday")
+                                    Spacer()
+                                    Button {
+                                        repeatSunday.toggle()
+                                    } label: {
+                                        if repeatSunday {
+                                            Image(systemName: "checkmark.square.fill")
+                                        } else {
+                                            Image(systemName: "square")
+                                        }
+                                    }
+                                }
                             }
                         }
                     }.padding()
@@ -794,18 +901,23 @@ struct EditEventView: View {
                     
                 } else if repeatOptionSelected == "Every Week" {
                     //Repeat Weekly
-                    for i in 1...Int(Double(numberOfRepeats)/12.0*52.0) {
-                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
+                    if numberOfRepeats > 1 {
+                        for i in 1...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
+                        }
                     }
-                    
                 } else if repeatOptionSelected == "Every Two Weeks" {
-                    for i in 1...Int(Double(numberOfRepeats)/12.0*52.0/2.0) {
-                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate)!)
+                    if numberOfRepeats > 1 {
+                        for i in 1...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate)!)
+                        }
                     }
                 } else if repeatOptionSelected == "Monthly (Day of Month)" {
                     //Repeat Monthly
-                    for i in 1...numberOfRepeats {
-                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate)!)
+                    if numberOfRepeats > 1 {
+                        for i in 1...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate)!)
+                        }
                     }
                 } else if repeatOptionSelected == "Monthly (Week of Month)" {
                     // Repeat monthly keeping the day of week
@@ -848,7 +960,61 @@ struct EditEventView: View {
                         lastCreatedDate = repeatDate
                         repeatsMade += 1
                     }
-                    
+                     
+                } else if repeatOptionSelected == "Yearly" {
+                    //Repeat Yearly
+                    if numberOfRepeats > 1 {
+                        for i in 1...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate)!)
+                        }
+                    }
+                } else if repeatOptionSelected == "On Days:" {
+                    //Repeat Daily
+                    let today = newEvent.startDate.dayOfWeek()
+                    if (today == "Monday" && repeatMonday) || (today == "Tuesday" && repeatTuesday) || (today == "Wednesday" && repeatWednesday) || (today == "Thursday" && repeatThursday) || (today == "Friday" && repeatFriday) || (today == "Saturday" && repeatSaturday) || (today == "Sunday" && repeatSunday) {
+                        //This is the case where we don't add any days.
+                        if numberOfRepeats > 1 {
+                            for i in 1...numberOfRepeats-1 {
+                                duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
+                            }
+                        }
+                    }
+                    if (today == "Monday" && repeatTuesday) || (today == "Tuesday" && repeatWednesday) || (today == "Wednesday" && repeatThursday) || (today == "Thursday" && repeatFriday) || (today == "Friday" && repeatSaturday) || (today == "Saturday" && repeatSunday) || (today == "Sunday" && repeatMonday) {
+                        //This is the case where we add 1 day
+                        for i in 0...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+1, to: newEvent.startDate)!)
+                        }
+                    }
+                    if (today == "Monday" && repeatWednesday) || (today == "Tuesday" && repeatThursday) || (today == "Wednesday" && repeatFriday) || (today == "Thursday" && repeatSaturday) || (today == "Friday" && repeatSunday) || (today == "Saturday" && repeatMonday) || (today == "Sunday" && repeatTuesday) {
+                        //This is the case where we add two days
+                        for i in 0...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+2, to: newEvent.startDate)!)
+                        }
+                    }
+                    if (today == "Monday" && repeatThursday) || (today == "Tuesday" && repeatFriday) || (today == "Wednesday" && repeatSaturday) || (today == "Thursday" && repeatSunday) || (today == "Friday" && repeatMonday) || (today == "Saturday" && repeatTuesday) || (today == "Sunday" && repeatWednesday) {
+                        //This is the case where we add three days
+                        for i in 0...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+3, to: newEvent.startDate)!)
+                        }
+                    }
+                    if (today == "Monday" && repeatFriday) || (today == "Tuesday" && repeatSaturday) || (today == "Wednesday" && repeatSunday) || (today == "Thursday" && repeatMonday) || (today == "Friday" && repeatTuesday) || (today == "Saturday" && repeatWednesday) || (today == "Sunday" && repeatThursday) {
+                        //This is the case where we add four days
+                        for i in 0...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+4, to: newEvent.startDate)!)
+                        }
+                    }
+                    if (today == "Monday" && repeatSaturday) || (today == "Tuesday" && repeatSunday) || (today == "Wednesday" && repeatMonday) || (today == "Thursday" && repeatTuesday) || (today == "Friday" && repeatWednesday) || (today == "Saturday" && repeatThursday) || (today == "Sunday" && repeatFriday) {
+                        //This is the case where we add five days
+                        for i in 0...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+5, to: newEvent.startDate)!)
+                        }
+                    }
+                    if (today == "Monday" && repeatSunday) || (today == "Tuesday" && repeatMonday) || (today == "Wednesday" && repeatTuesday) || (today == "Thursday" && repeatWednesday) || (today == "Friday" && repeatThursday) || (today == "Saturday" && repeatFriday) || (today == "Sunday" && repeatSaturday) {
+                        //This is the case where we add six days
+                        for i in 0...numberOfRepeats-1 {
+                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+6, to: newEvent.startDate)!)
+                        }
+                    }
                 }
                 
             }

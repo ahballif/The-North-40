@@ -171,7 +171,7 @@ struct EditPersonView: View {
                 
                 VStack {
                     HStack {
-                        Text("Event Description: ")
+                        Text("Person Information: ")
                         Spacer()
                     }
                     TextEditor(text: $notes)

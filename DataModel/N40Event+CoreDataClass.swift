@@ -14,15 +14,15 @@ import SwiftUI
 public class N40Event: NSManagedObject {
 
     public var renderIdx: Int? //For showing on the calendar. It will be stored here to allow other events to look at each other.
-    public var overlappingEvents: [N40Event] = [] //an array including not just events that are overlapping with this one, but also events overlapping with those events
+    public var indicesOfOthers: [Int] = [] //an array containing the render indices of all the overlapping events.
     
     public var getHighestEventIdx: Int {
         //returns 0 if there are no overlapping events
         var highest = 0
-        for eachEvent in (overlappingEvents) {
+        for index in (indicesOfOthers) {
             //assuming overlappingEvents includes this event because of how it is assigned elsewhere. 
-            if eachEvent.renderIdx ?? 0 > highest {
-                highest = eachEvent.renderIdx ?? 0
+            if index > highest {
+                highest = index
             }
         }
         return highest
@@ -33,8 +33,8 @@ public class EventRenderCalculator {
     //functions for calculating how events render on the calendar
     public static func precalculateEventColumns (_ allEvents: [N40Event]) -> EmptyView {
         //precalculates the event render indices for all events before they are iterated through one at a time.
-        assignOverlappingEventsArrays(allEvents: allEvents)
         assignLowestRenderIndices(allEvents: allEvents)
+        assignOverlappingEventsArrays(allEvents: allEvents)
         
         return EmptyView()
     }
@@ -44,25 +44,25 @@ public class EventRenderCalculator {
         
         //start by reseting them all to empty
         for eachEvent in allEvents {
-            eachEvent.overlappingEvents = [] //start with it only overlapping with itself.
+            eachEvent.indicesOfOthers = [] //start with it only overlapping with itself.
         }
                 
         //now go through each one and determine if another event is overlapping with it.
         for eachEvent in allEvents {
             for eachOtherEvent in allEvents {
                 if doEventsOverlap(event1: eachEvent, event2: eachOtherEvent) {
-                    eachEvent.overlappingEvents.append(eachOtherEvent) //incase eachOtherEvent is not contained in eachOtherEvent.overlappingEvents
-                    eachEvent.overlappingEvents += eachOtherEvent.overlappingEvents //add the ones that this eachEvent cant see
+                    eachEvent.indicesOfOthers.append(eachOtherEvent.renderIdx ?? 0) //incase eachOtherEvent is not contained in eachOtherEvent.overlappingEvents
+                    eachEvent.indicesOfOthers += eachOtherEvent.indicesOfOthers //add the ones that this eachEvent cant see
                     
-                    eachOtherEvent.overlappingEvents.append(eachEvent)
-                    eachOtherEvent.overlappingEvents += eachEvent.overlappingEvents
+                    eachOtherEvent.indicesOfOthers.append(eachEvent.renderIdx ?? 0)
+                    eachOtherEvent.indicesOfOthers += eachEvent.indicesOfOthers
                 }
             }
         }
         
         //remove duplicates
         for eachEvent in allEvents {
-            eachEvent.overlappingEvents = Array(Set(eachEvent.overlappingEvents))
+            eachEvent.indicesOfOthers = Array(Set(eachEvent.indicesOfOthers))
         }
         
         //now all events should have an array of all events that relate to them.
