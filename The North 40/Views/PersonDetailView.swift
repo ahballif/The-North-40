@@ -22,6 +22,8 @@ struct PersonDetailView: View {
     @State private var photoImage: Image?
     @State private var showingFullImageSheet = false
     
+    @State private var showingEditPersonSheet = false
+    
     var body: some View {
         
         VStack {
@@ -44,8 +46,12 @@ struct PersonDetailView: View {
                 Text(("\(selectedPerson.title) " + "\(selectedPerson.firstName) \(selectedPerson.lastName)"))
                     .font(.title)
                 Spacer()
-                NavigationLink(destination: EditPersonView(editPerson: selectedPerson)) {
-                    Label("", systemImage: "pencil")
+                Button {
+                    showingEditPersonSheet.toggle()
+                } label: {
+                    Image(systemName: "square.and.pencil.circle.fill")
+                }.sheet(isPresented: $showingEditPersonSheet) {
+                    EditPersonView(editPerson: selectedPerson)
                 }
             }
             .padding()
@@ -222,6 +228,22 @@ struct PersonInfoView: View {
                     HStack {
                         Text(selectedPerson.notes)
                         Spacer()
+                    }.padding()
+                }
+                
+                if (selectedPerson.getGroups.count > 0) {
+                    VStack {
+                        HStack {
+                            Text("Groups with this person: ").font(.title3)
+                            Spacer()
+                        }.padding(.vertical, 3)
+                        ForEach(selectedPerson.getGroups) {eachGroup in
+                            HStack {
+                                Text(eachGroup.name)
+                                Spacer()
+                            }.padding(.vertical, 3)
+                                .padding(.horizontal)
+                        }
                     }.padding()
                 }
                 

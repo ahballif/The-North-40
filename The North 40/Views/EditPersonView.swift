@@ -15,6 +15,11 @@ struct EditPersonView: View {
     
     @State var editPerson: N40Person?
     
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
+    private var fetchedGroups: FetchedResults<N40Group>
+    
+    @State private var loadedContact = false
+    
     @State private var firstName: String = ""
     @State private var lastName: String = ""
     @State private var title: String = ""
@@ -43,27 +48,29 @@ struct EditPersonView: View {
     @State private var photoData: Data?
     private let photoWidth = 512
     
+    @State private var selectedGroups: [N40Group] = []
+    
     var body: some View {
         VStack {
             
             
             
-            if (editPerson == nil) {
-                HStack{
-                    Button("Cancel") {dismiss()}
-                    Spacer()
-                    Text("Add Person")
-                    Spacer()
-                    Button("Done") {
-                        savePerson()
-                        dismiss()
-                    }
+            
+            HStack{
+                Button("Cancel") {dismiss()}
+                Spacer()
+                Text(editPerson == nil ? "Add Person" : "Edit Person")
+                Spacer()
+                Button("Done") {
+                    savePerson()
+                    dismiss()
                 }
             }
             
             
+            
             ScrollView {
-                if (editPerson == nil) {
+                if (editPerson == nil && loadedContact == false) {
                     Button("Import from Contacts") {
                         showingContactPickerSheet.toggle()
                     }.sheet(isPresented: $showingContactPickerSheet, onDismiss: {loadContact(contact: selectedContact)}) {
@@ -182,6 +189,35 @@ struct EditPersonView: View {
                     
                 }
                 
+                VStack {
+                    //Add to group buttons
+                    HStack {
+                        Text("Person Groups: ").font(.title3)
+                        Spacer()
+                    }
+                    ForEach(fetchedGroups) {personGroup in
+                        HStack {
+                            Text(personGroup.name)
+                            Spacer()
+                            Button {
+                                if selectedGroups.contains(personGroup) && selectedGroups.firstIndex(of: personGroup) != nil {
+                                    //remove the group
+                                    selectedGroups.remove(at: selectedGroups.firstIndex(of: personGroup)!)
+                                } else {
+                                    //add the group
+                                    selectedGroups.append(personGroup)
+                                }
+                            } label: {
+                                if selectedGroups.contains(personGroup) {
+                                    Image(systemName: "checkmark.square.fill")
+                                } else {
+                                    Image(systemName: "square")
+                                }
+                            }
+                        }.padding(3)
+                    }
+                }.padding()
+                
                 
                 
                 if (editPerson != nil) {
@@ -281,6 +317,8 @@ struct EditPersonView: View {
                     print("Could not import contact photo")
                 }
             }
+            
+            loadedContact = true
         }
     }
     
@@ -311,6 +349,10 @@ struct EditPersonView: View {
             newPerson.socialMedia2 = socialMedia2
             
             newPerson.photo = photoData
+            
+            for eachGroup in selectedGroups {
+                eachGroup.addToPeople(newPerson)
+            }
             
             // To save the new entity to the persistent store, call
             // save on the context
@@ -356,14 +398,12 @@ struct EditPersonView: View {
                 }
             }
         }
+        
+        selectedGroups = editPerson?.getGroups ?? []
+        
     }
 }
 
-struct AddPersonView_Previews: PreviewProvider {
-    static var previews: some View {
-        EditPersonView()
-    }
-}
 
 // ----------- for formatting phone numbers
 public func formatPhoneNumber(inputString: String) -> String {

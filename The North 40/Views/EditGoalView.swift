@@ -277,7 +277,9 @@ struct EditGoalView: View {
     
     public func attachPerson(addPerson: N40Person) {
         //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
-        attachedPeople.append(addPerson)
+        if (!attachedPeople.contains(addPerson)) {
+            attachedPeople.append(addPerson)
+        }
     }
     
     public func removePerson(removedPerson: N40Person) {
@@ -389,6 +391,14 @@ fileprivate struct SelectPeopleView: View {
                             let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
                             if groupSet.count > 0 {
                                 Section(header: Text(group.name)) {
+                                    //first a button to attach the whole group
+                                    Button("Attach Entire Group") {
+                                        for eachPerson in groupSet {
+                                            editGoalView.attachPerson(addPerson: eachPerson)
+                                        }
+                                        dismiss()
+                                    }.foregroundColor(.blue)
+                                    
                                     ForEach(groupSet) {person in
                                         if !selectedPeopleList.contains(person) {
                                             personListItem(person: person)

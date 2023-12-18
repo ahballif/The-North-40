@@ -250,7 +250,7 @@ struct GoalBoard: View {
                             } label: {
                                 Image(systemName: (collapsed ? "chevron.forward" : "chevron.down"))
                             }.buttonStyle(PlainButtonStyle())
-                            Text("\(goal.priorityIndex)")
+                            //Text("\(goal.priorityIndex)")
                             Text(goal.name)
                             Spacer()
                         }.padding()

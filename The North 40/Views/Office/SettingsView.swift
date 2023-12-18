@@ -42,6 +42,7 @@ struct SettingsView: View {
     @State private var importConfirm = false
     
     @State private var defaultColor: Color = (Color(hex: UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0)))
+    @State private var defaultEventDuration: Int = UserDefaults.standard.integer(forKey: "defaultEventDuration")
     
     var body: some View {
         VStack {
@@ -65,22 +66,7 @@ struct SettingsView: View {
                         .labelsHidden()
                 }
                 
-                VStack {
-                    HStack {
-                        Text("Default Event Type: ")
-                        Spacer()
-                    }
-                    HStack {
-                        Spacer()
-                        Picker("Event Type: ", selection: $eventType) {
-                            ForEach(N40Event.EVENT_TYPE_OPTIONS, id: \.self) {
-                                Label($0[0], systemImage: $0[1])
-                            }
-                        }.onChange(of: eventType) {_ in
-                            UserDefaults.standard.set(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1, forKey: "defaultCalendarEventType")
-                        }
-                    }
-                }
+                
                 
                 VStack {
                     HStack {
@@ -146,7 +132,24 @@ struct SettingsView: View {
                 
                 VStack {
                     
-                    Text("Event Settings").font(.title3).padding()
+                    Text("Event Settings").font(.title3).padding(.vertical)
+                    
+                    VStack {
+                        HStack {
+                            Text("Default Event Type: ")
+                            Spacer()
+                        }
+                        HStack {
+                            Spacer()
+                            Picker("Event Type: ", selection: $eventType) {
+                                ForEach(N40Event.EVENT_TYPE_OPTIONS, id: \.self) {
+                                    Label($0[0], systemImage: $0[1])
+                                }
+                            }.onChange(of: eventType) {_ in
+                                UserDefaults.standard.set(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1, forKey: "defaultCalendarEventType")
+                            }
+                        }
+                    }
                     
                     HStack {
                         Text("Default Contact Method: ")
@@ -161,6 +164,21 @@ struct SettingsView: View {
                         }.onChange(of: contactMethod) {_ in
                             UserDefaults.standard.set(N40Event.CONTACT_OPTIONS.firstIndex(of: contactMethod) ?? 0, forKey: "defaultContactMethod")
                         }
+                    }
+                    
+                    HStack {
+                        Text("Default Duration: ")
+                        Spacer()
+                        Text("\(defaultEventDuration)")
+                        Stepper("defaultEventDuration", onIncrement: {
+                            UserDefaults.standard.set(UserDefaults.standard.integer(forKey: "defaultEventDuration") + 5, forKey: "defaultEventDuration")
+                            defaultEventDuration = UserDefaults.standard.integer(forKey: "defaultEventDuration")
+                        }, onDecrement: {
+                            if UserDefaults.standard.integer(forKey: "defaultEventDuration") >= 5 {
+                                UserDefaults.standard.set(UserDefaults.standard.integer(forKey: "defaultEventDuration") - 5, forKey: "defaultEventDuration")
+                                defaultEventDuration = UserDefaults.standard.integer(forKey: "defaultEventDuration")
+                            }
+                        }).labelsHidden()
                     }
                 }
                 VStack {
@@ -185,6 +203,8 @@ struct SettingsView: View {
                         }
                     }
                     
+                    
+                    
                     HStack {
                         Text("Guess event color: ")
                         Spacer()
@@ -194,10 +214,11 @@ struct SettingsView: View {
                             }
                             .labelsHidden()
                     }
+                    Text("The app can try to guess the color of the event based on if it has the same name as an event in the past. Make sure it is spelled the same and push enter after entering event title to make the guess. ").font(.caption)
                 }
                 VStack{
                     HStack {
-                        Text("Set time on to-do completion: ")
+                        Text("Set time on to-do completion: ").padding().font(.title3)
                         Spacer()
                     }
                     HStack {

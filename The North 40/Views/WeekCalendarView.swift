@@ -293,11 +293,19 @@ struct WeeklyPlanner: View {
         
             .sheet(isPresented: $showingEditEventSheet) { [clickedOnTime, selectedEditEvent] in
                 NavigationView {
-                    if selectedEditEvent == nil {
-                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
-                    } else {
-                        //An event was clicked
-                        EditEventView(editEvent: selectedEditEvent)
+                    ZStack {
+                        if selectedEditEvent == nil {
+                            EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                        } else {
+                            //An event was clicked
+                            EditEventView(editEvent: selectedEditEvent)
+                        }
+                    }.toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Close") {
+                                showingEditEventSheet = false
+                            }
+                        }
                     }
                 }
             }
@@ -666,19 +674,27 @@ struct AllDayListWeek: View {
             }
             .sheet(isPresented: $showingDetailSheet) { [detailShowing, selectedEvent, selectedBirthdayBoy, selectedGoal] in
                 NavigationView {
-                    if detailShowing == DetailOptions.event {
-                        EditEventView(editEvent: selectedEvent)
-                    } else if detailShowing == DetailOptions.goal {
-                        if selectedGoal != nil {
-                            GoalDetailView(selectedGoal: selectedGoal!)
+                    ZStack {
+                        if detailShowing == DetailOptions.event {
+                            EditEventView(editEvent: selectedEvent)
+                        } else if detailShowing == DetailOptions.goal {
+                            if selectedGoal != nil {
+                                GoalDetailView(selectedGoal: selectedGoal!)
+                            } else {
+                                Text("No Goal Selected")
+                            }
                         } else {
-                            Text("No Goal Selected")
+                            if selectedBirthdayBoy != nil {
+                                PersonDetailView(selectedPerson: selectedBirthdayBoy!)
+                            } else {
+                                Text("No Birthday Boy or Girl Selected")
+                            }
                         }
-                    } else {
-                        if selectedBirthdayBoy != nil {
-                            PersonDetailView(selectedPerson: selectedBirthdayBoy!)
-                        } else {
-                            Text("No Birthday Boy or Girl Selected")
+                    }.toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Close") {
+                                showingDetailSheet = false
+                            }
                         }
                     }
                 }

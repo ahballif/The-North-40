@@ -36,7 +36,8 @@ struct The_North_40App: App {
             "showAllDayTodos":true,
             "roundScheduleCompletedTodosschedu":false,
             "defaultColor":"#FF7051",
-            "showHolidays":true
+            "showHolidays":true,
+            "defaultEventDuration": 0 // in minutes
         ])
         
         

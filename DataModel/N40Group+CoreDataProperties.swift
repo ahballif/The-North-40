@@ -38,6 +38,10 @@ extension N40Group {
             $0.name < $1.name //sorts alphabetically by name
         }
      }
+    
+    public func isPersonInGroup(_ person: N40Person) -> Bool {
+        return getPeople.contains(person)
+    }
 
 }
 

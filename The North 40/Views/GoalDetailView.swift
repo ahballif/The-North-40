@@ -194,13 +194,23 @@ struct GoalInfoView: View {
                 Text("Deadline: \(selectedGoal.deadline.dateOnlyToString())")
             }
             
-            List {
-                ForEach(selectedGoal.getAttachedPeople) {person in
-                    NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                        Text("\(person.firstName) \(person.lastName)")
-                    }.buttonStyle(.plain)
+            if (selectedGoal.getAttachedPeople.count > 0) {
+                VStack {
+                    HStack{
+                        Text("Attached People: ").bold()
+                        Spacer()
+                    }.padding()
+                    ForEach(selectedGoal.getAttachedPeople) {person in
+                        HStack {
+                            NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
+                                Text("\(person.firstName) \(person.lastName)")
+                            }.buttonStyle(.plain)
+                            Spacer()
+                        }.padding(.horizontal)
+                            .padding(.vertical, 3)
+                    }
                 }
-            }.scrollContentBackground(.hidden)
+            }
             
             //Show Parent Goal
             if ((selectedGoal.endGoals ?? ([] as NSSet)).count > 0) {
@@ -221,6 +231,7 @@ struct GoalInfoView: View {
                                 }
                             }.buttonStyle(.plain)
                                 .padding(.horizontal)
+                                .padding(.vertical, 3)
                         }
                     }
                 }

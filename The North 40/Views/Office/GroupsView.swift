@@ -259,7 +259,9 @@ struct EditGroupView: View {
     
     public func attachPerson(addPerson: N40Person) {
         //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
-        attachedPeople.append(addPerson)
+        if (!attachedPeople.contains(addPerson)) {
+            attachedPeople.append(addPerson)
+        }
         saveGroup()
     }
     
@@ -447,6 +449,14 @@ fileprivate struct SelectPeopleView: View {
                             let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
                             if groupSet.count > 0 {
                                 Section(header: Text(group.name)) {
+                                    //first a button to attach the whole group
+                                    Button("Attach Entire Group") {
+                                        for eachPerson in groupSet {
+                                            editGroupView.attachPerson(addPerson: eachPerson)
+                                        }
+                                        dismiss()
+                                    }.foregroundColor(.blue)
+                                    
                                     ForEach(groupSet) {person in
                                         //see if the person is already in the group.
                                         if !person.getGroups.contains(editGroupView.editGroup ?? N40Group()) {

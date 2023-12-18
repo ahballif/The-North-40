@@ -245,7 +245,9 @@ struct EditNoteView: View {
     
     public func attachPerson(addPerson: N40Person) {
         //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
-        attachedPeople.append(addPerson)
+        if (!attachedPeople.contains(addPerson)) {
+            attachedPeople.append(addPerson)
+        }
     }
     
     public func removePerson(removedPerson: N40Person) {
@@ -435,6 +437,14 @@ fileprivate struct SelectPeopleView: View {
                             if groupSet.count > 0 {
                                 Section(header: Text(group.name)) {
                                     ForEach(groupSet) {person in
+                                        //first a button to attach the whole group
+                                        Button("Attach Entire Group") {
+                                            for eachPerson in groupSet {
+                                                editNoteView.attachPerson(addPerson: eachPerson)
+                                            }
+                                            dismiss()
+                                        }.foregroundColor(.blue)
+                                        
                                         if !selectedPeopleList.contains(person) {
                                             personListItem(person: person)
                                         }

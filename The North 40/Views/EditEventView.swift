@@ -33,7 +33,7 @@ struct EditEventView: View {
     @State public var isScheduled: Bool = true
     @State public var chosenStartDate: Date = Date()
     @State private var chosenEndDate = Date()
-    @State private var duration = 0
+    @State private var duration = UserDefaults.standard.integer(forKey: "defaultEventDuration")
     @State private var allDay: Bool = false
     
     @State private var contactMethod = N40Event.CONTACT_OPTIONS[UserDefaults.standard.integer(forKey: "defaultContactMethod")]
@@ -55,6 +55,7 @@ struct EditEventView: View {
     @State private var selectedColor = Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
     
     @State private var isAlreadyRepeating = false
+    @State private var redoingEventRepeat = false
     @State private var repeatOptionSelected = "No Repeat"
     @State private var numberOfRepeats = 3 // in occurances unless it's in days then its months and if its on specific days its in weeks.
     @State private var isShowingEditAllConfirm: Bool = false
@@ -368,7 +369,7 @@ struct EditEventView: View {
                             }
                         }
                         
-                        if (editEvent!.recurringTag != "") {
+                        if (isAlreadyRepeating) {
                             
                             Button {
                                 isPresentingRecurringDeleteConfirm.toggle()
@@ -477,6 +478,10 @@ struct EditEventView: View {
                 }.disabled(!isScheduled)
                     .onChange(of: chosenEndDate, perform: { _ in
                         duration = getMinutesDifferenceFromTwoDates(start: chosenStartDate, end: chosenEndDate)
+                        if duration < 0 {
+                            duration += 60*12
+                            chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
+                        }
                         allConfirmsFalse()
                     })
                 
@@ -593,7 +598,10 @@ struct EditEventView: View {
                                 
                             } else {
                                 Text("This is a repeating event. ")
-                                
+                                Button("Edit the repeat cycle") {
+                                    redoingEventRepeat = true
+                                    isAlreadyRepeating = false //this will trigger the options to load on the screen
+                                }
                                 Spacer()
                             }
                         }
@@ -606,7 +614,13 @@ struct EditEventView: View {
                                 } else {
                                     Text("For \(numberOfRepeats) Occurrences")
                                 }
-                                Stepper("", value: $numberOfRepeats, in: 1...52)
+                                Stepper("", onIncrement: {
+                                    numberOfRepeats += 1
+                                }, onDecrement: {
+                                    if numberOfRepeats >= 1 {
+                                        numberOfRepeats -= 1
+                                    }
+                                })
                                     .disabled(!isScheduled)
                                 
                             }
@@ -716,7 +730,9 @@ struct EditEventView: View {
     
     public func attachPerson(addPerson: N40Person) {
         //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
-        attachedPeople.append(addPerson)
+        if (!attachedPeople.contains(addPerson)) {
+            attachedPeople.append(addPerson)
+        }
     }
     
     public func removePerson(removedPerson: N40Person) {
@@ -884,9 +900,12 @@ struct EditEventView: View {
             
             
             if saveAsCopy {
-                //don't repeat the duplicate
-                repeatOptionSelected = repeatOptions[0]
+                //don't repeat the duplicate (unless a new repeat options was selected)
                 newEvent.recurringTag = ""
+            } else {
+                if redoingEventRepeat {
+                    deleteAllRecurringEvents(includeThisEvent: false)
+                }
             }
             
             //Making recurring events
@@ -1051,12 +1070,12 @@ struct EditEventView: View {
         }
     }
     
-    private func deleteAllRecurringEvents() {
+    private func deleteAllRecurringEvents(includeThisEvent: Bool = true) {
         if editEvent != nil {
             let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
             
             let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
-            let isFuturePredicate = NSPredicate(format: "startDate >= %@", ((editEvent?.startDate ?? Date()) as CVarArg)) //will include this event
+            let isFuturePredicate = includeThisEvent ? NSPredicate(format: "startDate >= %@", ((editEvent?.startDate ?? Date()) as CVarArg)) : NSPredicate(format: "startDate > %@", ((editEvent?.startDate ?? Date()) as CVarArg))
             let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (editEvent!.recurringTag))
             
             let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
@@ -1310,6 +1329,14 @@ fileprivate struct SelectPeopleView: View {
                             let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
                             if groupSet.count > 0 {
                                 Section(header: Text(group.name)) {
+                                    //first a button to attach the whole group
+                                    Button("Attach Entire Group") {
+                                        for eachPerson in groupSet {
+                                            editEventView.attachPerson(addPerson: eachPerson)
+                                        }
+                                        dismiss()
+                                    }.foregroundColor(.blue)
+                                    
                                     ForEach(groupSet) {person in
                                         if !selectedPeopleList.contains(person) {
                                             personListItem(person: person)
