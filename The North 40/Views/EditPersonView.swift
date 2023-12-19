@@ -279,8 +279,12 @@ struct EditPersonView: View {
             let cnState = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.state)" : ""
             let cnZipCode = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.postalCode)" : ""
             let cnCountry = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.country)" : ""
-            address = "\(cnAddress), \(cnCity), \(cnState), \(cnZipCode), \(cnCountry)"
-            
+            address = ""
+            if cnAddress != "" {address += "\(cnAddress)"}
+            if cnCity != "" {address += ", \(cnCity)"}
+            if cnState != "" {address += ", \(cnState)"}
+            if cnZipCode != "" {address += ", \(cnZipCode)"}
+            if cnCountry != "" {address += ", \(cnCountry)"}
             
             phoneNumber1 = contact!.phoneNumbers.count > 0 ? contact!.phoneNumbers[0].value.stringValue : ""
             if phoneNumber1.filter("1234567890".contains).count == 10 {

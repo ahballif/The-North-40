@@ -38,14 +38,14 @@ struct TimelineView: View {
                 ScrollView {
                     VStack {
                         
-                        //unschedule first
-                        ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
-                            eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
-                                .padding(.horizontal)
-                                .padding(.vertical, 2)
-                            //other events get padding added inside TimelineObject, but these do not because they aren't processed as timeline objects.
-                            
-                        }
+//                        //unscheduled first
+//                        ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
+//                            eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+//                                .padding(.horizontal)
+//                                .padding(.vertical, 2)
+//                            //other events get padding added inside TimelineObject, but these do not because they aren't processed as timeline objects.
+//                            
+//                        }
                         
                         let timelineObjects = getTimelineObjects()
                         
@@ -328,7 +328,7 @@ struct TimelineObject: View {
     
 }
 
-private struct eventDisplayBoxView: View {
+struct eventDisplayBoxView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject var updater: RefreshView
     //viewContext used for saving if you check off an item

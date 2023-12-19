@@ -18,6 +18,8 @@ struct PersonDetailView: View {
     @State private var showingWhatToCreateConfirm = false
     @State private var editEventEventType = N40Event.NON_REPORTABLE_TYPE
     @State private var showingEditEventSheet = false
+    @State private var showingEditNoteSheet = false
+    
     
     @State private var photoImage: Image?
     @State private var showingFullImageSheet = false
@@ -162,12 +164,20 @@ struct PersonDetailView: View {
                                     let type = N40Event.EVENT_TYPE_OPTIONS[N40Event.NON_REPORTABLE_TYPE]
                                     Label(type[0], systemImage: type[1])
                                 }
-                                
+                                Button {
+                                    //("New Note")
+                                    showingEditNoteSheet.toggle()
+                                } label: {
+                                    Label("New Note", systemImage: "note.text.badge.plus")
+                                }
                             } message: {
                                 Text("What would you like to add?")
                             }
                             .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
                                 EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingPerson: selectedPerson)
+                            }
+                            .sheet(isPresented: $showingEditNoteSheet, onDismiss: {updater.updater.toggle()}) {
+                                EditNoteView(attachingPerson: selectedPerson)
                             }
                             
                         }
@@ -196,25 +206,25 @@ struct PersonInfoView: View {
                 
                 
                 if (selectedPerson.address != "") {
-                    addressBar(contactInfoValue: selectedPerson.address)
+                    addressBar(contactInfoValue: selectedPerson.address, selectedPerson: selectedPerson)
                 }
                 if (selectedPerson.phoneNumber1 != "") {
-                    phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber1)
+                    phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber1, selectedPerson: selectedPerson)
                 }
                 if (selectedPerson.phoneNumber2 != "") {
-                    phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber2)
+                    phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber2, selectedPerson: selectedPerson)
                 }
                 if (selectedPerson.email1 != "") {
-                    emailBar(contactInfoValue: selectedPerson.email1)
+                    emailBar(contactInfoValue: selectedPerson.email1, selectedPerson: selectedPerson)
                 }
                 if (selectedPerson.email2 != "") {
-                    emailBar(contactInfoValue: selectedPerson.email2)
+                    emailBar(contactInfoValue: selectedPerson.email2, selectedPerson: selectedPerson)
                 }
                 if (selectedPerson.socialMedia1 != "") {
-                    socialMediaBar(contactInfoValue: selectedPerson.socialMedia1)
+                    socialMediaBar(contactInfoValue: selectedPerson.socialMedia1, selectedPerson: selectedPerson)
                 }
                 if (selectedPerson.socialMedia2 != "") {
-                    socialMediaBar(contactInfoValue: selectedPerson.socialMedia2)
+                    socialMediaBar(contactInfoValue: selectedPerson.socialMedia2, selectedPerson: selectedPerson)
                 }
                 
                 if (selectedPerson.hasBirthday) {
@@ -261,6 +271,9 @@ struct PersonInfoView: View {
 
 private struct phoneNumberBar: View {
     var contactInfoValue: String
+    var selectedPerson: N40Person
+    @State private var showingAddContactSheet = false
+    @State private var texting = false
     
     var body: some View {
         HStack {
@@ -268,23 +281,33 @@ private struct phoneNumberBar: View {
             Spacer()
             
             Button(action: {
+                texting = false
+                showingAddContactSheet.toggle()
                 guard let number = URL(string: "tel://" + contactInfoValue.filter("0123456789".contains)) else { return }
                 UIApplication.shared.open(number)
             }){
                 Label("", systemImage: "phone.fill")
             }
             Button(action: {
+                texting = true
+                showingAddContactSheet.toggle()
                 guard let number = URL(string: "sms://" + contactInfoValue.filter("0123456789".contains)) else { return }
                 UIApplication.shared.open(number)
             }){
                 Label("", systemImage: "message.fill")
             }
         }.padding()
+            .sheet(isPresented: $showingAddContactSheet) {  [texting] in
+                let method = texting ? ["Text Message","message"] : ["Phone Call","phone.fill"]
+                EditEventView(contactMethod: method, eventType: N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE], attachingPerson: selectedPerson)
+            }
     }
 }
 
 private struct emailBar: View {
     var contactInfoValue: String
+    var selectedPerson: N40Person
+    @State private var showingAddContactSheet = false
     
     var body: some View {
         HStack {
@@ -292,17 +315,23 @@ private struct emailBar: View {
             Spacer()
             
             Button(action: {
+                showingAddContactSheet.toggle()
                 guard let email = URL(string: "mailto:" + contactInfoValue) else { return }
                 UIApplication.shared.open(email)
             }){
                 Label("", systemImage: "envelope.fill")
             }
         }.padding()
+            .sheet(isPresented: $showingAddContactSheet) {
+                EditEventView(contactMethod: ["Email", "envelope"], eventType: N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE], attachingPerson: selectedPerson)
+            }
     }
 }
 
 private struct socialMediaBar: View {
     var contactInfoValue: String
+    var selectedPerson: N40Person
+    @State private var showingAddContactSheet = false
     
     var body: some View {
         HStack {
@@ -310,6 +339,7 @@ private struct socialMediaBar: View {
             Spacer()
             
             Button(action: {
+                showingAddContactSheet.toggle()
                 guard let social = URL(string: contactInfoValue) else { return }
                 UIApplication.shared.open(social)
             }){
@@ -317,11 +347,16 @@ private struct socialMediaBar: View {
                 
             }
         }.padding()
+            .sheet(isPresented: $showingAddContactSheet) {
+                EditEventView(contactMethod: ["Social Media", "ellipsis.bubble"], eventType: N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE], attachingPerson: selectedPerson)
+            }
     }
 }
 
 private struct addressBar: View {
     var contactInfoValue: String
+    var selectedPerson: N40Person
+    @State private var showingAddContactSheet = false
     
     var body: some View {
         HStack {
@@ -329,12 +364,16 @@ private struct addressBar: View {
             Spacer()
             
             Button(action: {
+                showingAddContactSheet.toggle()
                 guard let address = URL(string: "https://www.google.com/maps/place/\(contactInfoValue.replacingOccurrences(of: " ", with: "+"))") else { return }
                 UIApplication.shared.open(address)
             }) {
                 Label("", systemImage: "map.fill")
             }
         }.padding()
+            .sheet(isPresented: $showingAddContactSheet) {
+                EditEventView(contactMethod: ["In Person", "person.2.fill"], eventType: N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE], attachingPerson: selectedPerson)
+            }
     }
 }
 

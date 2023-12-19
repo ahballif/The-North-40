@@ -26,6 +26,7 @@
 		07180B032AC874B7008DC9E0 /* ExportImportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07180B022AC874B7008DC9E0 /* ExportImportData.swift */; };
 		07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D262A9596B2009DE0E0 /* PersonDetailView.swift */; };
 		07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D292A98E983009DE0E0 /* OfficeView.swift */; };
+		075D63082B31FE83009905FA /* SelectViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075D63072B31FE83009905FA /* SelectViews.swift */; };
 		075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */; };
 		0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6F82A81E15600E29EBD /* The_North_40App.swift */; };
 		0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6FA2A81E15600E29EBD /* ContentView.swift */; };
@@ -99,6 +100,7 @@
 		07241D262A9596B2009DE0E0 /* PersonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetailView.swift; sourceTree = "<group>"; };
 		07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_8-23-23.xcdatamodel"; sourceTree = "<group>"; };
 		07241D292A98E983009DE0E0 /* OfficeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeView.swift; sourceTree = "<group>"; };
+		075D63072B31FE83009905FA /* SelectViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectViews.swift; sourceTree = "<group>"; };
 		075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGoalView.swift; sourceTree = "<group>"; };
 		0768C6F52A81E15600E29EBD /* The North 40.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "The North 40.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0768C6F82A81E15600E29EBD /* The_North_40App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40App.swift; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 		079F068F2A8ED215009A01F5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				075D63072B31FE83009905FA /* SelectViews.swift */,
 				079F06CC2A8F19B2009A01F5 /* EditEventView.swift */,
 				075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */,
 				0768C7832A89B63500E29EBD /* EditPersonView.swift */,
@@ -446,6 +449,7 @@
 				0711DEFF2AA393B2006C0005 /* FinanceView.swift in Sources */,
 				0711DEFC2AA392BF006C0005 /* N40Transaction+CoreDataClass.swift in Sources */,
 				07C5601D2ADB1DA600F2EC88 /* ContactPicker.swift in Sources */,
+				075D63082B31FE83009905FA /* SelectViews.swift in Sources */,
 				0768C7772A87188C00E29EBD /* N40Goal+CoreDataProperties.swift in Sources */,
 				075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */,
 				07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */,
@@ -636,7 +640,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -672,7 +676,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;

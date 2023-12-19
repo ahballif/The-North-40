@@ -109,6 +109,9 @@ struct EditNoteView: View {
     
     public var editNote: N40Note?
     
+    public var attachingPerson: N40Person?
+    public var attachingGoal: N40Goal?
+    
     @State private var title = ""
     @State private var information = ""
     @State private var date = Date()
@@ -122,6 +125,11 @@ struct EditNoteView: View {
     @State private var showingOptionsSheet = false
     
     @State private var showingConfirmDelete = false
+    
+    @FocusState private var focusedField: FocusField?
+    enum FocusField: Hashable {
+        case title, body
+    }
     
     var body: some View {
         VStack {
@@ -162,6 +170,8 @@ struct EditNoteView: View {
             //title
             HStack {
                 TextField("Note Title", text: $title).font(.title2)
+                    .focused($focusedField, equals: .title)
+                              
                 Spacer()
             }
             HStack {
@@ -173,6 +183,8 @@ struct EditNoteView: View {
             }
             
             TextEditor(text: $information)
+                .focused($focusedField, equals: .body)
+                          
                 //.shadow(color: .gray, radius: 5)
             
             
@@ -182,6 +194,17 @@ struct EditNoteView: View {
         .padding()
             .onAppear {
                 populateFields()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.51) {  /// Anything over 0.5 seems to work
+                    if editNote == nil {
+                        self.focusedField = .title
+                    } else {
+                        if title == "" {
+                            self.focusedField = .title
+                        } else {
+                            self.focusedField = .body
+                        }
+                    }
+                }
             }
     }
     
@@ -240,6 +263,17 @@ struct EditNoteView: View {
         }
         editNote?.attachedGoals?.reversed().forEach { goal in
             attachedGoals.append(goal as! N40Goal)
+        }
+        
+        if editNote == nil {
+            //This is for if you create an event from a timeline view.
+            if attachingGoal != nil {
+                attachedGoals.append(attachingGoal!)
+            }
+            if attachingPerson != nil {
+                attachedPeople.append(attachingPerson!)
+            }
+ 
         }
     }
     
@@ -361,188 +395,4 @@ struct EditNoteView: View {
         }.padding()
     }
     
-}
-
-
-
-
-
-// ********************** SELECT PEOPLE VIEW ***************************
-// A sheet that pops up where you can select people to be attached.
-
-fileprivate struct SelectPeopleView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) private var dismiss
-    
-    let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
-    let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    
-    @State private var sortingAlphabetical = false
-    
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
-    private var allGroups: FetchedResults<N40Group>
-    
-    
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
-    private var fetchedPeople: FetchedResults<N40Person>
-    
-    var editNoteView: EditNoteView
-    var selectedPeopleList: [N40Person]
-    
-    @State private var isArchived = false
-    @State private var searchText: String = ""
-    
-    var body: some View {
-        NavigationStack {
-            VStack {
-                HStack {
-                    Text("Sort all alphabetically: ")
-                    Spacer()
-                    Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
-                }.padding()
-                
-                if sortingAlphabetical {
-                    
-                    List{
-                        let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
-                        if noLetterLastNames.count > 0 {
-                            Section(header: Text("*")) {
-                                ForEach(noLetterLastNames, id: \.self) { person in
-                                    if !selectedPeopleList.contains(person) {
-                                        personListItem(person: person)
-                                    }
-                                }
-                            }
-                        }
-                        ForEach(alphabet, id: \.self) { letter in
-                            let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
-                            if (letterSet.count > 0) {
-                                Section(header: Text(letter)) {
-                                    ForEach(letterSet, id: \.self) { person in
-                                        if !selectedPeopleList.contains(person) {
-                                            personListItem(person: person)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }.listStyle(.sidebar)
-                        .padding(.horizontal, 3)
-                    
-                } else {
-                    
-                    List {
-                        ForEach(allGroups) {group in
-                            let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
-                            if groupSet.count > 0 {
-                                Section(header: Text(group.name)) {
-                                    ForEach(groupSet) {person in
-                                        //first a button to attach the whole group
-                                        Button("Attach Entire Group") {
-                                            for eachPerson in groupSet {
-                                                editNoteView.attachPerson(addPerson: eachPerson)
-                                            }
-                                            dismiss()
-                                        }.foregroundColor(.blue)
-                                        
-                                        if !selectedPeopleList.contains(person) {
-                                            personListItem(person: person)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {$0.lastName < $1.lastName}
-                        if ungroupedSet.count > 0 {
-                            Section(header: Text("Ungrouped People")) {
-                                ForEach(ungroupedSet) {person in
-                                    if !selectedPeopleList.contains(person) {
-                                        personListItem(person: person)
-                                    }
-                                }
-                            }
-                        }
-                    }.listStyle(.sidebar)
-                }
-                
-            }.searchable(text: $searchText)
-        }
-    }
-    
-    
-    
-    
-    private func personListItem (person: N40Person) -> some View {
-        return HStack {
-            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
-            Spacer()
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            editNoteView.attachPerson(addPerson: person)
-            dismiss()
-        }
-    }
-}
-
-// ********************** SELECT GOAL VIEW ***************************
-// A sheet that pops up where you can select people to be attached.
-
-fileprivate struct SelectGoalView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) private var dismiss
-    
-    
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
-    private var fetchedGoals: FetchedResults<N40Goal>
-    
-    var editNoteView: EditNoteView
-    
-    var body: some View {
-        List(fetchedGoals) {goal in
-            if goal.getEndGoals.count == 0 {
-                goalBox(goal)
-                    .onTapGesture {
-                        editNoteView.attachGoal(addGoal: goal)
-                        dismiss()
-                    }
-                ForEach(goal.getSubGoals, id: \.self) {subGoal in
-                    if !subGoal.isCompleted {
-                        goalBox(subGoal)
-                            .padding(.leading, 25.0)
-                            .onTapGesture {
-                                editNoteView.attachGoal(addGoal: subGoal)
-                                dismiss()
-                            }
-                    }
-                }
-            }
-            
-        }
-    }
-    
-    private func goalBox (_ goal: N40Goal) -> some View {
-        return VStack {
-            ZStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .foregroundColor(Color(hex: goal.color))
-                    .opacity(1.0)
-                    .frame(height: 50.0)
-                HStack {
-                    Text(goal.name)
-                    Spacer()
-                }.padding()
-            }
-            if goal.hasDeadline {
-                HStack {
-                    Text("Deadline: \(goal.deadline.dateOnlyToString())")
-                    Spacer()
-                }.padding()
-            }
-        }.background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color(hex: goal.color)!)
-                .opacity(0.5)
-        )
-    }
 }

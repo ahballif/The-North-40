@@ -44,6 +44,10 @@ struct SettingsView: View {
     @State private var defaultColor: Color = (Color(hex: UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0)))
     @State private var defaultEventDuration: Int = UserDefaults.standard.integer(forKey: "defaultEventDuration")
     
+    @State private var addContactOnCall = UserDefaults.standard.bool(forKey: "addContactOnCall")
+    
+    @State private var tintCompletedTodos = UserDefaults.standard.bool(forKey: "tintCompletedTodos")
+    
     var body: some View {
         VStack {
             ScrollView {
@@ -87,6 +91,15 @@ struct SettingsView: View {
                                 UserDefaults.standard.set(showEventsWithoutGoalGray, forKey: "showNoGoalEventsGray")
                             }
                     }.disabled(!showEventsWithGoalColor)
+                    HStack{
+                        Text("Tint Completed To-Dos: ")
+                        Spacer()
+                        Toggle("tintCompletedTodos", isOn: $tintCompletedTodos)
+                            .labelsHidden()
+                            .onChange(of: tintCompletedTodos) { _ in
+                                UserDefaults.standard.set(tintCompletedTodos, forKey: "tintCompletedTodos")
+                            }
+                    }
                     HStack{
                         Text("Show All-Day To-Dos: ")
                         Spacer()
@@ -215,6 +228,17 @@ struct SettingsView: View {
                             .labelsHidden()
                     }
                     Text("The app can try to guess the color of the event based on if it has the same name as an event in the past. Make sure it is spelled the same and push enter after entering event title to make the guess. ").font(.caption)
+                    
+                    HStack {
+                        Text("Create event when contacting person: ")
+                        Spacer()
+                        Toggle("addContactOnCall", isOn: $addContactOnCall)
+                            .onChange(of: addContactOnCall) {_ in
+                                UserDefaults.standard.set(addContactOnCall, forKey: "addContactOnCall")
+                            }
+                            .labelsHidden()
+                    }
+                    Text("Creates an event with the correct contact type when you push the button on a person's contact view to text, call, etc. ").font(.caption)
                 }
                 VStack{
                     HStack {

@@ -37,7 +37,9 @@ struct The_North_40App: App {
             "roundScheduleCompletedTodosschedu":false,
             "defaultColor":"#FF7051",
             "showHolidays":true,
-            "defaultEventDuration": 0 // in minutes
+            "defaultEventDuration": 0, // in minutes
+            "addContactOnCall":true,
+            "tintCompletedTodos":false
         ])
         
         

@@ -260,9 +260,16 @@ struct AllDayList: View {
             }
         }.sheet(isPresented: $showingDetailSheet) { [detailShowing, selectedEvent, selectedBirthdayBoy, selectedGoal] in
             NavigationView {
-                ZStack {
+                //ZStack {
                     if detailShowing == DetailOptions.event {
                         EditEventView(editEvent: selectedEvent)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Close") {
+                                        showingDetailSheet = false
+                                    }
+                                }
+                            }
                     } else if detailShowing == DetailOptions.goal {
                         if selectedGoal != nil {
                             GoalDetailView(selectedGoal: selectedGoal!)
@@ -276,13 +283,8 @@ struct AllDayList: View {
                             Text("No Birthday Boy or Girl Selected")
                         }
                     }
-                }.toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Close") {
-                            showingDetailSheet = false
-                        }
-                    }
-                }
+                //}
+                
             }.navigationViewStyle(StackNavigationViewStyle())
                 
                 
@@ -602,6 +604,9 @@ struct DailyPlanner: View {
     
     @State private var scrollToNowToggle = false
     
+    @State private var dragging = false
+    @State private var isWaitingForDrag = true
+    
     var body: some View {
         
         //The main timeline
@@ -687,27 +692,28 @@ struct DailyPlanner: View {
                     value.scrollTo(Int(Date().get(.hour)))
                 }
                 
-                
             }
             
         }
         
             .sheet(isPresented: $showingEditEventSheet) { [clickedOnTime, selectedEditEvent] in
                 NavigationView {
-                    ZStack {
-                        if selectedEditEvent == nil {
-                            EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
-                        } else {
-                            //An event was clicked
-                            EditEventView(editEvent: selectedEditEvent)
-                        }
-                    }.toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Close") {
-                                showingEditEventSheet = false
+                    
+                    if selectedEditEvent == nil {
+                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                            //no toolbar item if it's a new event. 
+                    } else {
+                        //An event was clicked
+                        EditEventView(editEvent: selectedEditEvent)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Close") {
+                                        showingEditEventSheet = false
+                                    }
+                                }
                             }
-                        }
                     }
+                    
                 }
             }
             
@@ -909,6 +915,46 @@ struct DailyPlanner: View {
                 selectedEditEvent = event
                 showingEditEventSheet.toggle()
             }
+            .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
+            .gesture(
+                DragGesture()
+                    .onChanged{
+                        if !dragging {
+                            //the drag just started
+                            dragging = true
+                            isWaitingForDrag = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                                if dragging {
+                                    isWaitingForDrag = false
+                                    let impactMed = UIImpactFeedbackGenerator(style: .heavy)
+                                    impactMed.impactOccurred()
+                                }
+                            }
+                        } else {
+                            if !isWaitingForDrag {
+                                //moving within the day
+                                let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
+                                let moveAmount = $0.location.y - eventStartPos
+                                let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
+                                let numOfMinutesMoved = (moveAmount/hourHeight*60.0/minimumDuration).rounded()*minimumDuration
+                                let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
+                                
+                                event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
+                                    
+                            }
+                        }
+                    }
+                    .onEnded { _ in
+                        
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            // handle error
+                        }
+                        isWaitingForDrag = true
+                        dragging = false
+                    })
         }
     }
     

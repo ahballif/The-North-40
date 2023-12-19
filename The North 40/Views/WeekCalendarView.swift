@@ -133,7 +133,7 @@ struct WeekCalendarView: View {
                 
             }
             
-        }.highPriorityGesture(DragGesture(minimumDistance: 25, coordinateSpace: .global)
+        }.gesture(DragGesture(minimumDistance: 25, coordinateSpace: .global)
             .onEnded { value in
 
                 let horizontalAmount = value.translation.width
@@ -176,6 +176,10 @@ struct WeeklyPlanner: View {
     @Binding var showingBackgroundEvents: Bool
     
     @GestureState var press = false
+    
+    @State private var dragging = false
+    @State private var isWaitingForDrag = true
+    
     
     var body: some View {
         
@@ -293,20 +297,22 @@ struct WeeklyPlanner: View {
         
             .sheet(isPresented: $showingEditEventSheet) { [clickedOnTime, selectedEditEvent] in
                 NavigationView {
-                    ZStack {
-                        if selectedEditEvent == nil {
-                            EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
-                        } else {
-                            //An event was clicked
-                            EditEventView(editEvent: selectedEditEvent)
-                        }
-                    }.toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Close") {
-                                showingEditEventSheet = false
+                    
+                    if selectedEditEvent == nil {
+                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                            //no toolbar item if it's a new event
+                    } else {
+                        //An event was clicked
+                        EditEventView(editEvent: selectedEditEvent)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button("Close") {
+                                        showingEditEventSheet = false
+                                    }
+                                }
                             }
-                        }
                     }
+                    
                 }
             }
             
@@ -497,10 +503,61 @@ struct WeeklyPlanner: View {
             .frame(width: (geometry.size.width)/CGFloat(numberOfColumns), alignment: .leading)
             //.padding(.trailing, 5)
             .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
+            .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
+            
             .onTapGesture {
                 selectedEditEvent = event
                 showingEditEventSheet.toggle()
             }
+            
+            .gesture(
+                DragGesture()
+                    .onChanged{
+                        if !dragging {
+                            //the drag just started
+                            dragging = true
+                            isWaitingForDrag = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                                if dragging {
+                                    isWaitingForDrag = false
+                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
+                                    impactMed.impactOccurred()
+                                }
+                            }
+                        } else {
+                            if !isWaitingForDrag {
+                                //moving within the day
+                                let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
+                                let moveAmount = $0.location.y - eventStartPos
+                                let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
+                                let numOfMinutesMoved = (moveAmount/hourHeight*60.0/minimumDuration).rounded()*minimumDuration
+                                let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
+                                
+                                
+                                event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
+                                
+                                    
+                            }
+                        }
+                    }
+                    .onEnded {
+                        if !isWaitingForDrag {
+                            let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
+                            //add one if it's negative because the step is symmetric about 0
+                            
+                            event.startDate = Calendar.current.date(byAdding: .day, value: dayOffset, to: event.startDate) ?? event.startDate
+                            
+                        }
+            
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            // handle error
+                        }
+                        isWaitingForDrag = true
+                        dragging = false
+                    })
         }
     }
     
@@ -674,9 +731,16 @@ struct AllDayListWeek: View {
             }
             .sheet(isPresented: $showingDetailSheet) { [detailShowing, selectedEvent, selectedBirthdayBoy, selectedGoal] in
                 NavigationView {
-                    ZStack {
+                    
                         if detailShowing == DetailOptions.event {
                             EditEventView(editEvent: selectedEvent)
+                                .toolbar {
+                                    ToolbarItem(placement: .navigationBarLeading) {
+                                        Button("Close") {
+                                            showingDetailSheet = false
+                                        }
+                                    }
+                                }
                         } else if detailShowing == DetailOptions.goal {
                             if selectedGoal != nil {
                                 GoalDetailView(selectedGoal: selectedGoal!)
@@ -690,13 +754,7 @@ struct AllDayListWeek: View {
                                 Text("No Birthday Boy or Girl Selected")
                             }
                         }
-                    }.toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Close") {
-                                showingDetailSheet = false
-                            }
-                        }
-                    }
+                    
                 }
             }
     }
