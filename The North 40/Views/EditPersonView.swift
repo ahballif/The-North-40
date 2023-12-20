@@ -23,6 +23,7 @@ struct EditPersonView: View {
     @State private var firstName: String = ""
     @State private var lastName: String = ""
     @State private var title: String = ""
+    @State private var company: String = ""
     
     @State private var address: String = ""
     
@@ -37,6 +38,9 @@ struct EditPersonView: View {
     
     @State private var birthday: Date = Date()
     @State private var hasBirthday: Bool = false
+    
+    @State private var favoriteColor: Color = (Color(hex: "#FF7051") ?? Color.red)
+    @State private var hasFavoriteColor: Bool = false
     
     @State private var isPresentingDeleteConfirm = false
     
@@ -122,6 +126,7 @@ struct EditPersonView: View {
                     TextField("Last Name", text: $lastName)
                     
                     TextField("Title", text: $title)
+                    TextField("Company", text: $company)
                 }.padding()
                 
                 TextField("Address", text: $address).padding()
@@ -170,6 +175,26 @@ struct EditPersonView: View {
                         DatePicker("", selection: $birthday, displayedComponents: .date)
                         Button(role: .destructive){
                             hasBirthday = false
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                }.padding()
+                
+                HStack {
+                    Text("Favorite Color: ")
+                    Spacer()
+                    if (!hasFavoriteColor) {
+                        Button {
+                            hasFavoriteColor = true
+                        } label: {
+                            Label("Add Favorite Color", systemImage: "plus")
+                        }
+                    } else {
+                        ColorPicker("favoriteColor",selection: $favoriteColor, supportsOpacity: false)
+                            .labelsHidden()
+                        Button(role: .destructive){
+                            hasFavoriteColor = false
                         } label: {
                             Image(systemName: "trash")
                         }
@@ -264,6 +289,7 @@ struct EditPersonView: View {
                     
                 }
             }
+        
     }
     
     private func loadContact(contact: CNContact?) {
@@ -271,7 +297,7 @@ struct EditPersonView: View {
             firstName = contact!.givenName
             lastName = contact!.familyName
             title = contact!.namePrefix
-            
+            company = contact!.organizationName
             
             //get the address
             let cnAddress = contact!.postalAddresses.count > 0 ? "\(contact!.postalAddresses[0].value.street)" : ""
@@ -335,6 +361,7 @@ struct EditPersonView: View {
             newPerson.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
             newPerson.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
             newPerson.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+            newPerson.company = company.trimmingCharacters(in: .whitespacesAndNewlines)
             
             newPerson.address = address.trimmingCharacters(in: .whitespacesAndNewlines)
             
@@ -351,6 +378,9 @@ struct EditPersonView: View {
             newPerson.email2 = email2
             newPerson.socialMedia1 = socialMedia1
             newPerson.socialMedia2 = socialMedia2
+            
+            newPerson.hasFavoriteColor = hasFavoriteColor
+            newPerson.favoriteColor = favoriteColor.toHex() ?? "#FF7051"
             
             newPerson.photo = photoData
             
@@ -377,6 +407,7 @@ struct EditPersonView: View {
         firstName = editPerson?.firstName ?? ""
         lastName = editPerson?.lastName ?? ""
         title = editPerson?.title ?? ""
+        company = editPerson?.company ?? ""
         
         address = editPerson?.address ?? ""
         
@@ -391,6 +422,9 @@ struct EditPersonView: View {
         email2 = editPerson?.email2 ?? ""
         socialMedia1 = editPerson?.socialMedia1 ?? ""
         socialMedia2 = editPerson?.socialMedia2 ?? ""
+        
+        hasFavoriteColor = editPerson?.hasFavoriteColor ?? false
+        favoriteColor = Color(hex: editPerson?.favoriteColor ?? "#FF7051") ?? Color.red
         
         if editPerson != nil {
             if editPerson!.photo != nil {

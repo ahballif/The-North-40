@@ -32,7 +32,7 @@ struct GoalDetailView: View {
                     HStack {
                         Spacer()
                         NavigationLink(destination: EditGoalView(editGoal: selectedGoal)) {
-                            Label("", systemImage: "pencil")
+                            Label("", systemImage: "square.and.pencil.circle.fill")
                         }
                     }.padding()
                 }.background(
@@ -158,7 +158,7 @@ struct GoalDetailView: View {
                         Text("What would you like to add?")
                     }
                     .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
-                        EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingGoal: selectedGoal)
+                        EditEventView(isScheduled: selectedView==1, eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingGoal: selectedGoal)
                     }
                     .sheet(isPresented: $showingEditGoalSheet, onDismiss: {updater.updater.toggle()}) {
                         EditGoalView(editGoal: nil, parentGoal: selectedGoal)
@@ -225,7 +225,7 @@ struct GoalInfoView: View {
                     ForEach(selectedGoal.getAttachedPeople) {person in
                         HStack {
                             NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                                Text("\(person.firstName) \(person.lastName)")
+                                Text(("\(person.title) \(person.firstName) \(person.lastName) \(person.company)").trimmingCharacters(in: .whitespacesAndNewlines))
                             }.buttonStyle(.plain)
                             Spacer()
                         }.padding(.horizontal)

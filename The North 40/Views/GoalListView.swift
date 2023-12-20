@@ -331,7 +331,7 @@ struct GoalBoard: View {
                                 VStack {
                                     ForEach(goal.getAttachedPeople) {eachPerson in
                                         HStack {
-                                            Text((eachPerson.title == "" ? "\(eachPerson.firstName)" : "\(eachPerson.title)") + " \(eachPerson.lastName)").lineLimit(0)
+                                            Text(("\(eachPerson.title) \(eachPerson.firstName) \(eachPerson.lastName) \(eachPerson.company)").trimmingCharacters(in: .whitespacesAndNewlines)).lineLimit(0)
                                             Spacer()
                                         }
                                         .padding(.horizontal)

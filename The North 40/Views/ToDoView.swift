@@ -330,7 +330,7 @@ struct SortedToDoList: View {
                             let personSetOfToDos = setOfToDos.filter({ $0.isAttachedToPerson(person: person)})
                             
                             if personSetOfToDos.count > 0 {
-                                Section(header: Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")) {
+                                Section(header: Text(("\(person.title) \(person.firstName) \(person.lastName) \(person.company)").trimmingCharacters(in: .whitespacesAndNewlines))) {
                                     ForEach(personSetOfToDos) { todo in
                                         ToDoListItem(todo: todo, updateFunction: loadSetOfToDos, showing: showing)
                                     }
@@ -555,6 +555,14 @@ fileprivate struct ToDoListItem: View {
                                     toDo.startDate = Calendar.current.date(byAdding: .minute, value: Int(roundedMinutes - minutes), to: toDo.startDate) ?? toDo.startDate
                                     
                                 }
+                            }
+                            
+                            //duplicate the event if repeatOnCompleteInDays is greater than 0
+                            if toDo.repeatOnCompleteInDays > 0 && toDo.status != N40Event.UNREPORTED && (toDo.eventType == N40Event.TODO_TYPE || toDo.eventType == N40Event.REPORTABLE_TYPE) {
+                                for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
+                                    viewContext.delete(futureOccurance)
+                                }
+                                EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
                             }
                             
                             do {

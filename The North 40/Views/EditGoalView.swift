@@ -120,7 +120,7 @@ struct EditGoalView: View {
                 ForEach(attachedPeople) { person in
                     HStack {
                         NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                            Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
+                            Text(("\(person.title) \(person.firstName) \(person.lastName) \(person.company)").trimmingCharacters(in: .whitespacesAndNewlines))
                         }.buttonStyle(.plain)
                         Spacer()
                         Button {

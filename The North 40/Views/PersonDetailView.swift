@@ -45,7 +45,7 @@ struct PersonDetailView: View {
                             .scaledToFit()
                     }
                 }
-                Text(("\(selectedPerson.title) " + "\(selectedPerson.firstName) \(selectedPerson.lastName)"))
+                Text(("\(selectedPerson.title) \(selectedPerson.firstName) \(selectedPerson.lastName) \(selectedPerson.company)").trimmingCharacters(in: .whitespacesAndNewlines))
                     .font(.title)
                 Spacer()
                 Button {
@@ -66,6 +66,13 @@ struct PersonDetailView: View {
                         print("Could not import contact photo")
                     }
                 }
+            }
+            .if(selectedPerson.hasFavoriteColor) {view in
+                view.background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(hex: selectedPerson.favoriteColor) ?? .clear)
+                        .opacity(0.5)
+                )
             }
             
             HStack {
@@ -174,7 +181,7 @@ struct PersonDetailView: View {
                                 Text("What would you like to add?")
                             }
                             .sheet(isPresented: $showingEditEventSheet, onDismiss: {updater.updater.toggle()}) {
-                                EditEventView(eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingPerson: selectedPerson)
+                                EditEventView(isScheduled: selectedView==1, eventType: N40Event.EVENT_TYPE_OPTIONS[editEventEventType], attachingPerson: selectedPerson)
                             }
                             .sheet(isPresented: $showingEditNoteSheet, onDismiss: {updater.updater.toggle()}) {
                                 EditNoteView(attachingPerson: selectedPerson)
@@ -187,6 +194,8 @@ struct PersonDetailView: View {
             
             
             Spacer()
+        }.if(selectedPerson.hasFavoriteColor) {view in
+            view.background(Color(hex: selectedPerson.favoriteColor)?.opacity(0.25))
         }
         
         

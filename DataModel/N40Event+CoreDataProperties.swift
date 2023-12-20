@@ -30,6 +30,7 @@ extension N40Event {
     @NSManaged public var recurringTag: String
     @NSManaged public var allDay: Bool
     @NSManaged public var bucketlist: Bool
+    @NSManaged public var repeatOnCompleteInDays: Int16
     
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?
@@ -51,6 +52,7 @@ extension N40Event {
     public static let SKIPPED = 1
     public static let ATTEMPTED = 2
     public static let HAPPENED = 3
+    
     
     
     
@@ -95,31 +97,71 @@ extension N40Event {
         return answer
     }
     public func isRecurringEventLast (viewContext: NSManagedObjectContext) -> Bool {
-        var isLast = false
-        
-        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
-        
-        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
-        let isFuturePredicate = NSPredicate(format: "startDate >= %@", (self.startDate as CVarArg)) //will include this event
-        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (self.recurringTag))
-        
-        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
-        fetchRequest.predicate = compoundPredicate
-        
-        do {
-            // Peform Fetch Request
-            let fetchedEvents = try viewContext.fetch(fetchRequest)
+        var isLast = true
+        if recurringTag != "" {
+            let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
             
-            if fetchedEvents.count == 1 {
-                isLast = true
+            let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+            let isFuturePredicate = NSPredicate(format: "startDate >= %@", (self.startDate as CVarArg)) //will include this event
+            let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (self.recurringTag))
+            
+            let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+            fetchRequest.predicate = compoundPredicate
+            
+            do {
+                // Peform Fetch Request
+                let fetchedEvents = try viewContext.fetch(fetchRequest)
+                
+                if fetchedEvents.count != 1 {
+                    isLast = false
+                }
+                
+            } catch {
+                print("couldn't fetch recurring events")
             }
-            
-        } catch {
-            print("couldn't fetch recurring events")
         }
-        
         return isLast
         
+        
+        
+    }
+    
+    public func getFutureRecurringEvents (viewContext: NSManagedObjectContext) -> [N40Event] {
+        var returningEvents: [N40Event] = []
+        if recurringTag != "" {
+            let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+            
+            let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+            let isFuturePredicate = NSPredicate(format: "startDate > %@", (self.startDate as CVarArg)) //will not include this event
+            let sameTagPredicate = NSPredicate(format: "recurringTag == %@", (self.recurringTag))
+            
+            let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+            fetchRequest.predicate = compoundPredicate
+            
+            do {
+                // Peform Fetch Request
+                let fetchedEvents = try viewContext.fetch(fetchRequest)
+                
+                for eachFetchedEvent in fetchedEvents {
+                    returningEvents.append(eachFetchedEvent)
+                }
+                
+            } catch {
+                print("couldn't fetch recurring events")
+            }
+        }
+        return returningEvents
+    }
+    
+    public func getFirstFavoriteColor () -> String? {
+        if getAttachedPeople.count > 0 {
+            for person in getAttachedPeople {
+                if person.hasFavoriteColor {
+                    return person.favoriteColor
+                }
+            }
+        }
+        return nil
     }
     
 

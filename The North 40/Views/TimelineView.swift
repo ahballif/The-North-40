@@ -344,7 +344,7 @@ struct eventDisplayBoxView: View {
         NavigationLink (destination: EditEventView(editEvent: myEvent).onDisappear(perform: {updater.updater.toggle()} )){
             ZStack {
                 //Draw the background box different based on event type
-                let colorHex = myEvent.color
+                let colorHex = "E3E3E3"
                 if myEvent.eventType == N40Event.INFORMATION_TYPE {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(.gray)
@@ -464,7 +464,7 @@ struct eventDisplayBoxView: View {
                     if (myEvent.recurringTag != "") {
                         ZStack {
                             Image(systemName: "repeat")
-                            if (myEvent.isRecurringEventLast(viewContext: viewContext)) {
+                            if (myEvent.isRecurringEventLast(viewContext: viewContext) && myEvent.repeatOnCompleteInDays == 0) {
                                 Image(systemName: "line.diagonal")
                                     .scaleEffect(x: -1.2, y: 1.2)
                             }
@@ -534,6 +534,15 @@ struct eventDisplayBoxView: View {
                     toDo.status = 3
                     updater.updater.toggle()
                     //toDo.startDate = Date() //Set it as completed now.
+                    
+                    //duplicate the event if repeatOnCompleteInDays is greater than 0
+                    if toDo.repeatOnCompleteInDays > 0 && toDo.status != N40Event.UNREPORTED && (toDo.eventType == N40Event.TODO_TYPE || toDo.eventType == N40Event.REPORTABLE_TYPE) {
+                        for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
+                            viewContext.delete(futureOccurance)
+                        }
+                        EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                    }
+                    
                     do {
                         try viewContext.save()
                     } catch {

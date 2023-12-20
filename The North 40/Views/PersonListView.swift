@@ -54,8 +54,10 @@ struct PersonListView: View {
                             let noLetterLastNames = allPeople.filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                 if $0.lastName != $1.lastName { // first, compare by last names
                                     return $0.lastName < $1.lastName
-                                } else { // All other fields are tied, break ties by last name
+                                } else if $0.firstName != $1.firstName { //see if comparing by first names works
                                     return $0.firstName < $1.firstName
+                                } else { // All other fields are tied, break ties by last name
+                                    return $0.company < $1.company
                                 }
                             }
                             if noLetterLastNames.count > 0 {
@@ -69,8 +71,10 @@ struct PersonListView: View {
                                 let letterSet = allPeople.filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                     if $0.lastName != $1.lastName { // first, compare by last names
                                         return $0.lastName < $1.lastName
-                                    } else { // All other fields are tied, break ties by last name
+                                    } else if $0.firstName != $1.firstName { //see if comparing by first names works
                                         return $0.firstName < $1.firstName
+                                    } else { // All other fields are tied, break ties by last name
+                                        return $0.company < $1.company
                                     }
                                 }
                                 if (letterSet.count > 0) {
@@ -91,8 +95,10 @@ struct PersonListView: View {
                                 let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                     if $0.lastName != $1.lastName { // first, compare by last names
                                         return $0.lastName < $1.lastName
-                                    } else { // All other fields are tied, break ties by last name
+                                    } else if $0.firstName != $1.firstName { //see if comparing by first names works
                                         return $0.firstName < $1.firstName
+                                    } else { // All other fields are tied, break ties by last name
+                                        return $0.company < $1.company
                                     }
                                 }
                                 if groupSet.count > 0 {
@@ -107,8 +113,10 @@ struct PersonListView: View {
                             let ungroupedSet = unassignedToGroupPeople.reversed().filter { $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                 if $0.lastName != $1.lastName { // first, compare by last names
                                     return $0.lastName < $1.lastName
-                                } else { // All other fields are tied, break ties by last name
+                                } else if $0.firstName != $1.firstName { //see if comparing by first names works
                                     return $0.firstName < $1.firstName
+                                } else { // All other fields are tied, break ties by last name
+                                    return $0.company < $1.company
                                 }
                             }
                             if ungroupedSet.count > 0 {
@@ -162,8 +170,16 @@ struct PersonListView: View {
     private func personListItem (person: N40Person) -> some View {
         return NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
             HStack {
-                Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName)")
-                Text("\(person.lastName)").bold()
+                if person.title != "" || person.firstName != "" {
+                    Text("\(person.title) \(person.firstName)".trimmingCharacters(in: .whitespacesAndNewlines))
+                }
+                if person.company == "" {
+                    Text("\(person.lastName)").bold()
+                } else if person.company != "" && person.lastName != "" {
+                    Text("\(person.lastName) (\(person.company))").bold()
+                } else {
+                    Text("\(person.company)").bold()
+                }
                 Spacer()
             }
         }.swipeActions {

@@ -373,17 +373,17 @@ struct WeeklyPlanner: View {
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
         
-        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
-            if event.getAttachedGoals.count > 0 {
-                colorHex = event.getAttachedGoals.first!.color
-            } else {
-                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
-                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
-                } else {
-                    colorHex = event.color
-                }
-            }
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0 {
+            //draw with the goal color
+            colorHex = event.getAttachedGoals.first!.color
+        } else if UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil {
+            //draw with the person color
+            colorHex = event.getFirstFavoriteColor()!
+        } else if (UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+            //draw with the gray color
+            colorHex = "#b9baa2"
         } else {
+            //draw with the original color
             colorHex = event.color
         }
         
@@ -482,7 +482,7 @@ struct WeeklyPlanner: View {
                         if (event.recurringTag != "") {
                             ZStack {
                                 Image(systemName: "repeat")
-                                if (event.isRecurringEventLast(viewContext: viewContext)) {
+                                if (event.isRecurringEventLast(viewContext: viewContext) && event.repeatOnCompleteInDays == 0) {
                                     Image(systemName: "line.diagonal")
                                         .scaleEffect(x: -1.2, y: 1.2)
                                 }
@@ -600,6 +600,14 @@ struct WeeklyPlanner: View {
                     toDo.startDate = Calendar.current.date(byAdding: .minute, value: Int(roundedMinutes - minutes), to: toDo.startDate) ?? toDo.startDate
                     
                 }
+            }
+            
+            //duplicate the event if repeatOnCompleteInDays is greater than 0
+            if toDo.repeatOnCompleteInDays > 0 && toDo.status != N40Event.UNREPORTED && (toDo.eventType == N40Event.TODO_TYPE || toDo.eventType == N40Event.REPORTABLE_TYPE) {
+                for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
+                    viewContext.delete(futureOccurance)
+                }
+                EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
             }
             
         } else {
@@ -842,17 +850,17 @@ struct AllDayListWeek: View {
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
         
-        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
-            if event.getAttachedGoals.count > 0 {
-                colorHex = event.getAttachedGoals.first!.color
-            } else {
-                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
-                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
-                } else {
-                    colorHex = event.color
-                }
-            }
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0 {
+            //draw with the goal color
+            colorHex = event.getAttachedGoals.first!.color
+        } else if UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil {
+            //draw with the person color
+            colorHex = event.getFirstFavoriteColor()!
+        } else if (UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+            //draw with the gray color
+            colorHex = "#b9baa2"
         } else {
+            //draw with the original color
             colorHex = event.color
         }
 
@@ -947,7 +955,7 @@ struct AllDayListWeek: View {
                         if (event.recurringTag != "") {
                             ZStack {
                                 Image(systemName: "repeat")
-                                if (event.isRecurringEventLast(viewContext: viewContext)) {
+                                if (event.isRecurringEventLast(viewContext: viewContext) && event.repeatOnCompleteInDays == 0) {
                                     Image(systemName: "line.diagonal")
                                         .scaleEffect(x: -1.2, y: 1.2)
                                 }
@@ -963,6 +971,8 @@ struct AllDayListWeek: View {
             .buttonStyle(.plain)
             .font(.caption)
             .frame(height: allEventHeight)
+            .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
+            
             .onTapGesture {
                 detailShowing = DetailOptions.event
                 selectedEvent = event
@@ -1062,6 +1072,15 @@ struct AllDayListWeek: View {
                     //This means it was checked off but hasn't been finally hidden
                     toDo.status = 3
                     //toDo.startDate = Date() //Set it as completed now.
+                    
+                    //duplicate the event if repeatOnCompleteInDays is greater than 0
+                    if toDo.repeatOnCompleteInDays > 0 && toDo.status != N40Event.UNREPORTED && (toDo.eventType == N40Event.TODO_TYPE || toDo.eventType == N40Event.REPORTABLE_TYPE) {
+                        for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
+                            viewContext.delete(futureOccurance)
+                        }
+                        EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                    }
+                    
                     do {
                         try viewContext.save()
                     } catch {

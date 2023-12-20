@@ -39,7 +39,8 @@ struct The_North_40App: App {
             "showHolidays":true,
             "defaultEventDuration": 0, // in minutes
             "addContactOnCall":true,
-            "tintCompletedTodos":false
+            "tintCompletedTodos":false,
+            "showEventsWithPersonColor":false
         ])
         
         

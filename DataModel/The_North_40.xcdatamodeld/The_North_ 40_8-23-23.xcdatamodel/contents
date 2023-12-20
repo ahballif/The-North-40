@@ -18,6 +18,7 @@
         <attribute name="location" attributeType="String" defaultValueString=""/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
+        <attribute name="repeatOnCompleteInDays" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="315537915600" usesScalarValueType="NO"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="summary" attributeType="String" defaultValueString=""/>
@@ -61,10 +62,13 @@
         <attribute name="birthday" attributeType="Date" defaultDateTimeInterval="-31558200" usesScalarValueType="NO"/>
         <attribute name="birthdayDay" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="birthdayMonth" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="company" attributeType="String" defaultValueString=""/>
         <attribute name="email1" attributeType="String" defaultValueString=""/>
         <attribute name="email2" attributeType="String" defaultValueString=""/>
+        <attribute name="favoriteColor" attributeType="String" defaultValueString="#FF7051"/>
         <attribute name="firstName" attributeType="String" defaultValueString=""/>
         <attribute name="hasBirthday" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="hasFavoriteColor" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isArchived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="lastName" attributeType="String" defaultValueString=""/>
         <attribute name="notes" attributeType="String" defaultValueString=""/>

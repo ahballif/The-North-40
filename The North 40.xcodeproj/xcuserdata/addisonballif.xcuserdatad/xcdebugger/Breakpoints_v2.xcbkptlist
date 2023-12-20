@@ -295,8 +295,8 @@
             filePath = "The North 40/Views/Office/SettingsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "388"
-            endingLineNumber = "388"
+            startingLineNumber = "400"
+            endingLineNumber = "400"
             landmarkName = "body"
             landmarkType = "24">
             <Locations>
@@ -343,8 +343,8 @@
             filePath = "The North 40/Views/Office/SettingsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "394"
-            endingLineNumber = "394"
+            startingLineNumber = "406"
+            endingLineNumber = "406"
             landmarkName = "body"
             landmarkType = "24">
             <Locations>
@@ -406,8 +406,8 @@
             filePath = "The North 40/Views/CalendarView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "917"
-            endingLineNumber = "917"
+            startingLineNumber = "929"
+            endingLineNumber = "929"
             landmarkName = "eventCell(_:allEvents:)"
             landmarkType = "7">
             <Locations>

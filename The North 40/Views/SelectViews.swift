@@ -181,7 +181,7 @@ public struct SelectPeopleView: View {
     
     private func personListItem (person: N40Person) -> some View {
         return HStack {
-            Text((person.title == "" ? "" : "\(person.title) ") + "\(person.firstName) \(person.lastName)")
+            Text(("\(person.title) \(person.firstName) \(person.lastName) \(person.company)").trimmingCharacters(in: .whitespacesAndNewlines))
             Spacer()
         }
         .contentShape(Rectangle())

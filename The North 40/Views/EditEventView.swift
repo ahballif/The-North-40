@@ -16,7 +16,7 @@ struct EditEventView: View {
     @State public var editEvent: N40Event?
     
     
-    private let repeatOptions = ["No Repeat", "Every Day", "On Days:", "Every Week", "Every Two Weeks", "Monthly (Day of Month)", "Monthly (Week of Month)", "Yearly"]
+    private let repeatOptions = ["No Repeat", "Every Day", "On Days:", "Every Week", "Every Two Weeks", "Monthly (Day of Month)", "Monthly (Week of Month)", "Yearly", "On Complete"]
     @State private var repeatMonday = true
     @State private var repeatTuesday = true
     @State private var repeatWednesday = true
@@ -24,6 +24,8 @@ struct EditEventView: View {
     @State private var repeatFriday = true
     @State private var repeatSaturday = false
     @State private var repeatSunday = false
+    
+    @State private var repeatOnCompleteInDays = 0
     
     @State private var eventTitle = ""
     @State private var location = ""
@@ -292,7 +294,7 @@ struct EditEventView: View {
                             
                             HStack {
                                 NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-                                    Text((person.title == "" ? "\(person.firstName)" : "\(person.title)") + " \(person.lastName)")
+                                    Text(("\(person.title) \(person.firstName) \(person.lastName) \(person.company)").trimmingCharacters(in: .whitespacesAndNewlines))
                                 }.buttonStyle(.plain)
                                 
                                 Spacer()
@@ -380,7 +382,7 @@ struct EditEventView: View {
                             }
                         }
                         
-                        if (isAlreadyRepeating) {
+                        if (!editEvent!.isRecurringEventLast(viewContext: viewContext)) {
                             
                             Button {
                                 isPresentingRecurringDeleteConfirm.toggle()
@@ -616,7 +618,7 @@ struct EditEventView: View {
                                 Spacer()
                             }
                         }
-                        if (!isAlreadyRepeating && repeatOptionSelected != "No Repeat") {
+                        if (!isAlreadyRepeating && repeatOptionSelected != "No Repeat" && repeatOptionSelected != "On Complete") {
                             HStack {
                                 if repeatOptionSelected == "Every Day" {
                                     Text("For \(numberOfRepeats) Months")
@@ -730,6 +732,16 @@ struct EditEventView: View {
                                     }
                                 }
                             }
+                        } else if !isAlreadyRepeating && repeatOptionSelected == "On Complete" {
+                            HStack {
+                                if eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE] || eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE] {
+                                    Text("Repeat In \(repeatOnCompleteInDays) Days")
+                                    Stepper("", value: $repeatOnCompleteInDays, in: 0...31)
+                                        .disabled(!isScheduled)
+                                } else {
+                                    Text("Event must be To-Do or Reportable type. ")
+                                }
+                            }
                         }
                     }.padding()
                 }.border(.gray)
@@ -784,6 +796,14 @@ struct EditEventView: View {
             status = Int(editEvent?.status ?? 0)
             summary = editEvent?.summary ?? ""
             
+            repeatOnCompleteInDays = Int(editEvent!.repeatOnCompleteInDays)
+            if repeatOnCompleteInDays > 0  {
+                repeatOptionSelected = "On Complete"
+                isAlreadyRepeating = false
+                redoingEventRepeat = false //doesn't apply to this type of repeat.
+            } else if editEvent!.recurringTag != "" {
+                isAlreadyRepeating = true
+            }
             
             attachedPeople = []
             attachedGoals = []
@@ -796,9 +816,7 @@ struct EditEventView: View {
             }
             
             
-            if editEvent!.recurringTag != "" {
-                isAlreadyRepeating = true
-            }
+            
         } else {
             //This is for if you create an event from a timeline view.
             if attachingGoal != nil {
@@ -851,10 +869,10 @@ struct EditEventView: View {
                 
                 if newEvent.name == "" {
                     if attachedPeople.count > 0 {
-                        defaultName = attachedPeople[0].firstName + " " + attachedPeople[0].lastName
+                        defaultName = ("\(attachedPeople[0].title) \(attachedPeople[0].firstName) \(attachedPeople[0].lastName) \(attachedPeople[0].company)").trimmingCharacters(in: .whitespacesAndNewlines)
                         for eachPerson in attachedPeople {
                             if eachPerson != attachedPeople[0] {
-                                defaultName += ", " + eachPerson.firstName + " " + eachPerson.lastName
+                                defaultName += ", " + ("\(eachPerson.title) \(eachPerson.firstName) \(eachPerson.lastName) \(eachPerson.company)").trimmingCharacters(in: .whitespacesAndNewlines)
                             }
                         }
                     } else if attachedGoals.count > 0 {
@@ -920,33 +938,36 @@ struct EditEventView: View {
             }
             
             //Making recurring events
-            if repeatOptionSelected != repeatOptions[0] {
-                let recurringTag = UUID().uuidString
-                newEvent.recurringTag = recurringTag
+            if repeatOptionSelected != repeatOptions[0] && repeatOptionSelected != "On Complete" {
+                newEvent.repeatOnCompleteInDays = 0
+                if newEvent.recurringTag == "" {
+                    let recurringTag = UUID().uuidString
+                    newEvent.recurringTag = recurringTag
+                }
                 if repeatOptionSelected == "Every Day" {
                     //Repeat Daily
                     for i in 1...30*numberOfRepeats {
-                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate)!)
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                     }
                     
                 } else if repeatOptionSelected == "Every Week" {
                     //Repeat Weekly
                     if numberOfRepeats > 1 {
                         for i in 1...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                 } else if repeatOptionSelected == "Every Two Weeks" {
                     if numberOfRepeats > 1 {
                         for i in 1...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                 } else if repeatOptionSelected == "Monthly (Day of Month)" {
                     //Repeat Monthly
                     if numberOfRepeats > 1 {
                         for i in 1...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                 } else if repeatOptionSelected == "Monthly (Week of Month)" {
@@ -986,7 +1007,7 @@ struct EditEventView: View {
                         
                         
                         
-                        duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate)
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
                         lastCreatedDate = repeatDate
                         repeatsMade += 1
                     }
@@ -995,7 +1016,7 @@ struct EditEventView: View {
                     //Repeat Yearly
                     if numberOfRepeats > 1 {
                         for i in 1...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                 } else if repeatOptionSelected == "On Days:" {
@@ -1005,48 +1026,64 @@ struct EditEventView: View {
                         //This is the case where we don't add any days.
                         if numberOfRepeats > 1 {
                             for i in 1...numberOfRepeats-1 {
-                                duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate)!)
+                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                             }
                         }
                     }
                     if (today == "Monday" && repeatTuesday) || (today == "Tuesday" && repeatWednesday) || (today == "Wednesday" && repeatThursday) || (today == "Thursday" && repeatFriday) || (today == "Friday" && repeatSaturday) || (today == "Saturday" && repeatSunday) || (today == "Sunday" && repeatMonday) {
                         //This is the case where we add 1 day
                         for i in 0...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+1, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+1, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                     if (today == "Monday" && repeatWednesday) || (today == "Tuesday" && repeatThursday) || (today == "Wednesday" && repeatFriday) || (today == "Thursday" && repeatSaturday) || (today == "Friday" && repeatSunday) || (today == "Saturday" && repeatMonday) || (today == "Sunday" && repeatTuesday) {
                         //This is the case where we add two days
                         for i in 0...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+2, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+2, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                     if (today == "Monday" && repeatThursday) || (today == "Tuesday" && repeatFriday) || (today == "Wednesday" && repeatSaturday) || (today == "Thursday" && repeatSunday) || (today == "Friday" && repeatMonday) || (today == "Saturday" && repeatTuesday) || (today == "Sunday" && repeatWednesday) {
                         //This is the case where we add three days
                         for i in 0...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+3, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+3, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                     if (today == "Monday" && repeatFriday) || (today == "Tuesday" && repeatSaturday) || (today == "Wednesday" && repeatSunday) || (today == "Thursday" && repeatMonday) || (today == "Friday" && repeatTuesday) || (today == "Saturday" && repeatWednesday) || (today == "Sunday" && repeatThursday) {
                         //This is the case where we add four days
                         for i in 0...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+4, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+4, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                     if (today == "Monday" && repeatSaturday) || (today == "Tuesday" && repeatSunday) || (today == "Wednesday" && repeatMonday) || (today == "Thursday" && repeatTuesday) || (today == "Friday" && repeatWednesday) || (today == "Saturday" && repeatThursday) || (today == "Sunday" && repeatFriday) {
                         //This is the case where we add five days
                         for i in 0...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+5, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+5, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                     if (today == "Monday" && repeatSunday) || (today == "Tuesday" && repeatMonday) || (today == "Wednesday" && repeatTuesday) || (today == "Thursday" && repeatWednesday) || (today == "Friday" && repeatThursday) || (today == "Saturday" && repeatFriday) || (today == "Sunday" && repeatSaturday) {
                         //This is the case where we add six days
                         for i in 0...numberOfRepeats-1 {
-                            duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+6, to: newEvent.startDate)!)
+                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7+6, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                         }
                     }
                 }
                 
+            } else if repeatOptionSelected == "On Complete" {
+                newEvent.repeatOnCompleteInDays = Int16(repeatOnCompleteInDays)
+                if newEvent.recurringTag == "" {
+                    let recurringTag = UUID().uuidString
+                    newEvent.recurringTag = recurringTag
+                }
+                
+            }
+            
+            
+            //duplicate the event if repeatOnCompleteInDays is greater than 0
+            if newEvent.repeatOnCompleteInDays > 0 && newEvent.status != N40Event.UNREPORTED && (eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE] || eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]) {
+                for futureOccurance in newEvent.getFutureRecurringEvents(viewContext: viewContext) {
+                    viewContext.delete(futureOccurance)
+                }
+                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: Int(newEvent.repeatOnCompleteInDays), to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
             }
             
                         
@@ -1211,9 +1248,9 @@ struct EditEventView: View {
         }
     }
     
-    private func duplicateN40Event(originalEvent: N40Event, newStartDate: Date) {
+    public static func duplicateN40Event(originalEvent: N40Event, newStartDate: Date, vc: NSManagedObjectContext) {
         
-        let newEvent = N40Event(context: viewContext)
+        let newEvent = N40Event(context: vc)
         newEvent.name = originalEvent.name
         newEvent.isScheduled = originalEvent.isScheduled
         newEvent.startDate = newStartDate // This one is different
@@ -1227,6 +1264,7 @@ struct EditEventView: View {
         newEvent.eventType = originalEvent.eventType
         newEvent.color = originalEvent.color
         newEvent.recurringTag = originalEvent.recurringTag
+        newEvent.repeatOnCompleteInDays = originalEvent.repeatOnCompleteInDays
         originalEvent.getAttachedPeople.forEach {person in
             newEvent.addToAttachedPeople(person)
         }
@@ -1235,7 +1273,7 @@ struct EditEventView: View {
         }
         
         do {
-            try viewContext.save()
+            try vc.save()
         }
         catch {
             // Handle Error
@@ -1553,17 +1591,17 @@ fileprivate struct scheduleViewCanvas: View {
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
         
-        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
-            if event.getAttachedGoals.count > 0 {
-                colorHex = event.getAttachedGoals.first!.color
-            } else {
-                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
-                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
-                } else {
-                    colorHex = event.color
-                }
-            }
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0 {
+            //draw with the goal color
+            colorHex = event.getAttachedGoals.first!.color
+        } else if UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil {
+            //draw with the person color
+            colorHex = event.getFirstFavoriteColor()!
+        } else if (UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+            //draw with the gray color
+            colorHex = "#b9baa2"
         } else {
+            //draw with the original color
             colorHex = event.color
         }
         
@@ -1658,7 +1696,7 @@ fileprivate struct scheduleViewCanvas: View {
                     if (event.recurringTag != "") {
                         ZStack {
                             Image(systemName: "repeat")
-                            if (event.isRecurringEventLast(viewContext: viewContext)) {
+                            if (event.isRecurringEventLast(viewContext: viewContext) && event.repeatOnCompleteInDays == 0) {
                                 Image(systemName: "line.diagonal")
                                     .scaleEffect(x: -1.2, y: 1.2)
                             }

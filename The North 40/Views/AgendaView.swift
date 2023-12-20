@@ -144,17 +144,17 @@ struct AgendaView: View {
         //get color for event cell
         var colorHex = "#FF7051" //default redish color
         
-        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
-            if event.getAttachedGoals.count > 0 {
-                colorHex = event.getAttachedGoals.first!.color
-            } else {
-                if UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
-                    colorHex = "#b9baa2" // a grayish color if it's not assigned to a goal
-                } else {
-                    colorHex = event.color
-                }
-            }
+        if UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0 {
+            //draw with the goal color
+            colorHex = event.getAttachedGoals.first!.color
+        } else if UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil {
+            //draw with the person color
+            colorHex = event.getFirstFavoriteColor()!
+        } else if (UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+            //draw with the gray color
+            colorHex = "#b9baa2"
         } else {
+            //draw with the original color
             colorHex = event.color
         }
         
@@ -247,7 +247,7 @@ struct AgendaView: View {
                     if (event.recurringTag != "") {
                         ZStack {
                             Image(systemName: "repeat")
-                            if (event.isRecurringEventLast(viewContext: viewContext)) {
+                            if (event.isRecurringEventLast(viewContext: viewContext) && event.repeatOnCompleteInDays == 0) {
                                 Image(systemName: "line.diagonal")
                                     .scaleEffect(x: -1.2, y: 1.2)
                             }
@@ -302,6 +302,15 @@ struct AgendaView: View {
                     //This means it was checked off but hasn't been finally hidden
                     toDo.status = 3
                     //toDo.startDate = Date() //Set it as completed now.
+                    
+                    //duplicate the event if repeatOnCompleteInDays is greater than 0
+                    if toDo.repeatOnCompleteInDays > 0 && toDo.status != N40Event.UNREPORTED && (toDo.eventType == N40Event.TODO_TYPE || toDo.eventType == N40Event.REPORTABLE_TYPE) {
+                        for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
+                            viewContext.delete(futureOccurance)
+                        }
+                        EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                    }
+                    
                     do {
                         try viewContext.save()
                     } catch {
@@ -311,6 +320,8 @@ struct AgendaView: View {
             }
         } else {
             toDo.status = 0
+            
+            
             
             do {
                 try viewContext.save()
