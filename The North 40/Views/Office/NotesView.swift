@@ -23,13 +23,20 @@ struct NotesView: View {
     
     @State private var showingArchivedNotesSheet = false
     
+    @State private var sortBy: SortByOptions = .alphabetical
+    enum SortByOptions: Hashable {
+        case alphabetical, date
+    }
+    
     var body: some View {
         VStack {
             Text("Notes")
                 .font(.title)
             
             List {
-                ForEach(fetchedNotes) {note in
+                let sortedNotes = sortBy == .date ? fetchedNotes.sorted {$0.date < $1.date} : fetchedNotes.sorted{$0.title < $1.title}
+                
+                ForEach(sortedNotes) {note in
                     Button(note.title) {
                         editNoteItem = note
                     }.foregroundColor(((colorScheme == .dark) ? .white : .black))
@@ -63,35 +70,67 @@ struct NotesView: View {
             
         
             .toolbar {
-                Button {
-                    showingArchivedNotesSheet.toggle()
-                } label: {
-                    Label("Archived", systemImage: "archivebox")
-                }.sheet(isPresented: $showingArchivedNotesSheet) {
-                    NavigationView {
-                        VStack {
-                            HStack {
-                                Text("Archived Notes").font(.title2)
-                                Spacer()
-                            }.padding()
-                            List {
-                                ForEach(fetchedArchivedNotes) {archiveNote in
-                                    NavigationLink(destination: EditNoteView(editNote: archiveNote)) {
-                                        HStack {
-                                            Text(archiveNote.title)
-                                            Spacer()
-                                            Text(archiveNote.date.dateOnlyToString())
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button {
+                        showingArchivedNotesSheet.toggle()
+                    } label: {
+                        Label("Archived", systemImage: "archivebox")
+                    }.sheet(isPresented: $showingArchivedNotesSheet) {
+                        NavigationView {
+                            VStack {
+                                HStack {
+                                    Text("Archived Notes").font(.title2)
+                                    Spacer()
+                                    Button {
+                                        if sortBy == .date {
+                                            sortBy = .alphabetical
+                                        } else {
+                                            sortBy = .date
+                                        }
+                                    } label: {
+                                        if sortBy == .date {
+                                            Image(systemName: "a.square")
+                                        }  else {
+                                            Image(systemName: "calendar.badge.clock")
                                         }
                                     }
-                                    .swipeActions {
-                                        Button {
-                                            archiveNote.archived = false
-                                        } label: {
-                                            Label("Unarchive", systemImage: "arrowshape.left.fill")
-                                        }.tint(.green)
+                                }.padding()
+                                List {
+                                    let sortedArchivedNotes = sortBy == .date ? fetchedArchivedNotes.sorted {$0.date < $1.date} : fetchedArchivedNotes.sorted{$0.title < $1.title}
+                                    
+                                    ForEach(sortedArchivedNotes) {archiveNote in
+                                        NavigationLink(destination: EditNoteView(editNote: archiveNote)) {
+                                            HStack {
+                                                Text(archiveNote.title)
+                                                Spacer()
+                                                Text(archiveNote.date.dateOnlyToString())
+                                            }
+                                        }
+                                        .swipeActions {
+                                            Button {
+                                                archiveNote.archived = false
+                                            } label: {
+                                                Label("Unarchive", systemImage: "arrowshape.left.fill")
+                                            }.tint(.green)
+                                        }
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        if sortBy == .date {
+                            sortBy = .alphabetical
+                        } else {
+                            sortBy = .date
+                        }
+                    } label: {
+                        if sortBy == .date {
+                            Image(systemName: "a.square")
+                        }  else {
+                            Image(systemName: "calendar.badge.clock")
                         }
                     }
                 }

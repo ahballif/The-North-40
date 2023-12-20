@@ -129,7 +129,7 @@ struct ToDoView: View {
     
 }
 
-struct Badge: View {
+fileprivate struct Badge: View {
     let count: Int
 
     var body: some View {

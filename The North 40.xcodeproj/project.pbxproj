@@ -27,6 +27,7 @@
 		07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D262A9596B2009DE0E0 /* PersonDetailView.swift */; };
 		07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D292A98E983009DE0E0 /* OfficeView.swift */; };
 		075D63082B31FE83009905FA /* SelectViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075D63072B31FE83009905FA /* SelectViews.swift */; };
+		075D630A2B334C2A009905FA /* ToDoView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075D63092B334C2A009905FA /* ToDoView2.swift */; };
 		075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */; };
 		0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6F82A81E15600E29EBD /* The_North_40App.swift */; };
 		0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C6FA2A81E15600E29EBD /* ContentView.swift */; };
@@ -101,6 +102,7 @@
 		07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_8-23-23.xcdatamodel"; sourceTree = "<group>"; };
 		07241D292A98E983009DE0E0 /* OfficeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeView.swift; sourceTree = "<group>"; };
 		075D63072B31FE83009905FA /* SelectViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectViews.swift; sourceTree = "<group>"; };
+		075D63092B334C2A009905FA /* ToDoView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView2.swift; sourceTree = "<group>"; };
 		075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditGoalView.swift; sourceTree = "<group>"; };
 		0768C6F52A81E15600E29EBD /* The North 40.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "The North 40.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0768C6F82A81E15600E29EBD /* The_North_40App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_North_40App.swift; sourceTree = "<group>"; };
@@ -293,6 +295,7 @@
 				0768C7832A89B63500E29EBD /* EditPersonView.swift */,
 				07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */,
 				079F068D2A8ED14A009A01F5 /* ToDoView.swift */,
+				075D63092B334C2A009905FA /* ToDoView2.swift */,
 				07180AFE2AAD56BE008DC9E0 /* AgendaView.swift */,
 				0768C7812A89B4E900E29EBD /* CalendarView.swift */,
 				07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */,
@@ -473,6 +476,7 @@
 				0768C6F92A81E15600E29EBD /* The_North_40App.swift in Sources */,
 				07180AFF2AAD56BE008DC9E0 /* AgendaView.swift in Sources */,
 				0711DF012AA3963E006C0005 /* EnvelopeView.swift in Sources */,
+				075D630A2B334C2A009905FA /* ToDoView2.swift in Sources */,
 				0768C7762A87188C00E29EBD /* N40Goal+CoreDataClass.swift in Sources */,
 				0711DEE92A9E4DE6006C0005 /* SettingsView.swift in Sources */,
 				0711DEDA2A9A3E8A006C0005 /* TimelineView.swift in Sources */,

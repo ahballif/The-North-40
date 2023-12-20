@@ -40,7 +40,9 @@ struct The_North_40App: App {
             "defaultEventDuration": 0, // in minutes
             "addContactOnCall":true,
             "tintCompletedTodos":false,
-            "showEventsWithPersonColor":false
+            "showEventsWithPersonColor":false,
+            "todoSortByGoals":false,
+            "colorToDoList":false
         ])
         
         

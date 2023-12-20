@@ -66,6 +66,12 @@ extension N40Person {
         return set.sorted {$0.date < $1.date}
     }
     
+    public var getAttachedGoals: [N40Goal] {
+        //returns an array of the notes attached
+        let set = attachedGoals as? Set<N40Goal> ?? []
+        return set.sorted {$0.deadline < $1.deadline}
+    }
+    
     public var getFullName: String {
         return title + " " + firstName + " " + lastName
     }

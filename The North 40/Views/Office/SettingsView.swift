@@ -36,6 +36,8 @@ struct SettingsView: View {
     @State private var setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
     @State private var roundScheduleCompletedTodos = UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos")
     
+    @State private var colorToDoList = UserDefaults.standard.bool(forKey: "colorToDoList")
+    
     @State private var showHolidays = UserDefaults.standard.bool(forKey: "showHolidays")
     
     @State private var savingToFile = false
@@ -150,6 +152,15 @@ struct SettingsView: View {
                                 .labelsHidden()
                                 .onChange(of: showTodayTodosFront) {_ in
                                     UserDefaults.standard.set(showTodayTodosFront, forKey: "showTodayTodosFront")
+                                }
+                        }
+                        HStack {
+                            Text("Color To-Do's on To-Do List")
+                            Spacer()
+                            Toggle("colorToDoList", isOn: $colorToDoList)
+                                .labelsHidden()
+                                .onChange(of: colorToDoList) {_ in
+                                    UserDefaults.standard.set(colorToDoList, forKey: "colorToDoList")
                                 }
                         }
                     }

@@ -18,7 +18,7 @@ struct DashboardView: View {
                     .frame(width:5)
                     .frame(maxHeight:.infinity)
                 
-                ToDoView()
+                ToDoView2()
                     //.frame(width: geometry.size.width*3.0/11.0)
                 
                 Color.gray

@@ -62,6 +62,12 @@ struct EditEventView: View {
     @State private var numberOfRepeats = 3 // in occurances unless it's in days then its months and if its on specific days its in weeks.
     @State private var isShowingEditAllConfirm: Bool = false
     
+    let formatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        return formatter
+    }()
+    
     @State private var isShowingSaveAsCopyConfirm: Bool = false
     
     //for the delete button
@@ -620,21 +626,30 @@ struct EditEventView: View {
                         }
                         if (!isAlreadyRepeating && repeatOptionSelected != "No Repeat" && repeatOptionSelected != "On Complete") {
                             HStack {
-                                if repeatOptionSelected == "Every Day" {
-                                    Text("For \(numberOfRepeats) Months")
-                                } else if repeatOptionSelected == "On Days:" {
-                                    Text("For \(numberOfRepeats) Weeks")
-                                } else {
-                                    Text("For \(numberOfRepeats) Occurrences")
-                                }
-                                Stepper("", onIncrement: {
-                                    numberOfRepeats += 1
-                                }, onDecrement: {
-                                    if numberOfRepeats >= 1 {
-                                        numberOfRepeats -= 1
+                                //["No Repeat", "Every Day", "On Days:", "Every Week", "Every Two Weeks", "Monthly (Day of Month)", "Monthly (Week of Month)", "Yearly", "On Complete"]
+                                let occuranceText = repeatOptionSelected == "Every Day" ? "Months" : repeatOptionSelected == "On Days:" ? "Weeks" : repeatOptionSelected == "Every Week" ? "Weeks" : repeatOptionSelected == "Monthly (Day of Month)" || repeatOptionSelected == "Monthly (Week of Month)" ? "Months" : repeatOptionSelected == "Yearly" ? "Years" : "Occurances"
+                                
+                                Text("For")
+                                TextField("-", value: $numberOfRepeats, formatter: formatter)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
+                                        if let textField = obj.object as? UITextField {
+                                            textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
+                                        }
                                     }
-                                })
-                                    .disabled(!isScheduled)
+                                    .frame(width: 75)
+                                    .padding(.horizontal)
+                                Text(occuranceText)
+                                Spacer()
+                                
+//                                Stepper("", onIncrement: {
+//                                    numberOfRepeats += 1
+//                                }, onDecrement: {
+//                                    if numberOfRepeats >= 1 {
+//                                        numberOfRepeats -= 1
+//                                    }
+//                                })
+//                                    .disabled(!isScheduled)
                                 
                             }
                         }
@@ -735,9 +750,21 @@ struct EditEventView: View {
                         } else if !isAlreadyRepeating && repeatOptionSelected == "On Complete" {
                             HStack {
                                 if eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE] || eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE] {
-                                    Text("Repeat In \(repeatOnCompleteInDays) Days")
-                                    Stepper("", value: $repeatOnCompleteInDays, in: 0...31)
-                                        .disabled(!isScheduled)
+                                    Text("Repeat In")
+                                    TextField("-", value: $repeatOnCompleteInDays, formatter: formatter)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
+                                            if let textField = obj.object as? UITextField {
+                                                textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
+                                            }
+                                        }
+                                        .frame(width: 75)
+                                        .padding(.horizontal)
+                                    Text("Days")
+                                    Spacer()
+                                    
+//                                    Stepper("", value: $repeatOnCompleteInDays, in: 0...31)
+//                                        .disabled(!isScheduled)
                                 } else {
                                     Text("Event must be To-Do or Reportable type. ")
                                 }

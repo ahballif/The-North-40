@@ -108,6 +108,10 @@ struct TimelineView: View {
             for eachNote in selectedPerson!.getAttachedNotes {
                 returnedTimelineObjects.append(TimelineObject(date: eachNote.date, type: TimelineType.note, note: eachNote))
             }
+            //add attached goals
+            for eachAttachedGoal in selectedPerson!.getAttachedGoals {
+                returnedTimelineObjects.append(TimelineObject(date: eachAttachedGoal.deadline, type: TimelineType.personGoal, goal: eachAttachedGoal))
+            }
         }
         
         //add the now line
@@ -151,7 +155,7 @@ struct TimelineView: View {
 }
 
 enum TimelineType {
-    case event, dueDate, subGoalDueDate, birthday, month, year, nowLine, note
+    case event, dueDate, subGoalDueDate, birthday, month, year, nowLine, note, personGoal
 }
 
 struct TimelineObject: View {
@@ -241,7 +245,7 @@ struct TimelineObject: View {
                 } else {
                     Text("nil goal")
                 }
-            } else if type == TimelineType.subGoalDueDate {
+            } else if type == TimelineType.subGoalDueDate || type == TimelineType.personGoal {
                 if goal != nil {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 8)
@@ -250,7 +254,7 @@ struct TimelineObject: View {
                         //.frame(height: cellHeight)
                             .frame(maxWidth: .infinity)
                         
-                        Text("Sub Goal: \(goal!.name)").padding()
+                        Text(type == TimelineType.subGoalDueDate ? "Sub Goal: \(goal!.name)" : "Goal: \(goal!.name)").padding()
                         
                     }.onTapGesture {
                         showingDetailSheet.toggle()

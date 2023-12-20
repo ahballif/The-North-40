@@ -29,7 +29,7 @@ struct ContentView: View {
                     .toolbarBackground(.visible, for: .tabBar)
             }
             if UIDevice.current.userInterfaceIdiom != .pad {
-                ToDoView()
+                ToDoView2()
                     .environment(\.managedObjectContext, viewContext)
                     .tabItem {
                         Label("To Do's", systemImage: "checklist")
