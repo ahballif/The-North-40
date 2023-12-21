@@ -42,7 +42,8 @@ struct The_North_40App: App {
             "tintCompletedTodos":false,
             "showEventsWithPersonColor":false,
             "todoSortByGoals":false,
-            "colorToDoList":false
+            "colorToDoList":false,
+            "repeatByEndDate":true
         ])
         
         

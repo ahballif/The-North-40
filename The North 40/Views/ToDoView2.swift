@@ -105,15 +105,21 @@ struct ToDoView2: View {
                                     Section(header: Text(i == 0 ? "Today" : "\(thisDay.dayOfWeek()) \(thisDay.get(.day))")) {
                                         ForEach(daySet) {eachEvent in
                                             toDoCell(eachEvent)
+                                        }.onMove { from, to in
+                                            
                                         }
                                         if daySet.count < 1 {
                                             HStack {
-                                                Image(systemName: "bird")
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .padding(5)
-                                                VStack{
-                                                    Text("You don't have any more To-Do's today. You're on top of it!")
+                                                if overDueSet.count == 0 {
+                                                    Image(systemName: "bird")
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fit)
+                                                        .padding(5)
+                                                    VStack{
+                                                        Text("You don't have any more To-Do's today. You're on top of it!")
+                                                    }
+                                                } else {
+                                                    Text("You have no To-Do's today, but you do have some overdue To-Do's")
                                                 }
                                             }
                                         }
@@ -164,51 +170,136 @@ struct ToDoView2: View {
                             showingInboxSheet.toggle()
                         } label: {
                             Image(systemName: "archivebox")
-                        }.sheet(isPresented: $showingInboxSheet) {
+                        }.sheet(isPresented: $showingInboxSheet) { [showingBucketlist] in
                             //The inbox and bucket sheet list
                             NavigationStack{
-                                List {
-                                    let noGoalSet = (!showingBucketlist ? inboxTodos : bucketlistTodos).filter { $0.getAttachedGoals.count < 1}.sorted {$0.startDate < $1.startDate}
-                                    //since unassigned todays are only today or unscheduled, we don't need to filter out repeats in the future.
-                                    if noGoalSet.count > 0 {
-                                        Section(header: Text("Unassigned To-Do Items")) {
-                                            ForEach(noGoalSet) {eachEvent in
-                                                toDoCell(eachEvent)
-                                            }
-                                        }
-                                    }
-                                    
-                                    ForEach(allGoals) {eachGoal in
-                                        if eachGoal.getEndGoals.count == 0 {
-                                            //only display if it's an end goal (sub goals will be under)
-                                            let goalSet = (!showingBucketlist ? inboxTodos : bucketlistTodos).filter{ $0.isAttachedToGoal(goal: eachGoal) }.sorted {$0.startDate < $1.startDate}
-                                            if getTotalAttachedToDos(eachGoal) > 0 {
-                                                Section(header: Text(eachGoal.name)) {
-                                                    ForEach(goalSet) {eachEvent in
+                                VStack {
+                                    if (!showingBucketlist && inboxTodos.count > 0) || (showingBucketlist && bucketlistTodos.count > 0) {
+                                        List {
+                                            
+                                            let noGoalSet = (!showingBucketlist ? inboxTodos : bucketlistTodos).filter { $0.getAttachedGoals.count < 1}.sorted {$0.startDate < $1.startDate}
+                                            //since unassigned todays are only today or unscheduled, we don't need to filter out repeats in the future.
+                                            if noGoalSet.count > 0 {
+                                                Section(header: Text("Unassigned To-Do Items")) {
+                                                    ForEach(noGoalSet) {eachEvent in
                                                         toDoCell(eachEvent)
+                                                            .swipeActions {
+                                                                if showingBucketlist {
+                                                                    Button("Unbucket", role: .destructive) {
+                                                                        eachEvent.bucketlist = false
+                                                                        
+                                                                        do {
+                                                                            try viewContext.save()
+                                                                        } catch {
+                                                                            // handle error
+                                                                        }
+                                                                    }
+                                                                    .tint(.cyan)
+                                                                } else {
+                                                                    Button("Bucket", role: .destructive) {
+                                                                        eachEvent.bucketlist = true
+                                                                        
+                                                                        do {
+                                                                            try viewContext.save()
+                                                                        } catch {
+                                                                            // handle error
+                                                                        }
+                                                                    }
+                                                                    .tint(.cyan)
+                                                                }
+                                                            }
                                                     }
-                                                }.headerProminence(.increased)
-                                                
-                                                //now sub goals
-                                                ForEach(eachGoal.getSubGoals) {eachSubGoal in
+                                                }
+                                            }
+                                            
+                                            ForEach(allGoals) {eachGoal in
+                                                if eachGoal.getEndGoals.count == 0 {
                                                     //only display if it's an end goal (sub goals will be under)
-                                                    let subGoalSet = (!showingBucketlist ? inboxTodos : bucketlistTodos).filter{ $0.isAttachedToGoal(goal: eachSubGoal) }.sorted {$0.startDate < $1.startDate}
-                                                    if subGoalSet.count > 0 {
-                                                        Section(header: Text(eachSubGoal.name)) {
-                                                            ForEach(subGoalSet) {eachEvent in
+                                                    let goalSet = (!showingBucketlist ? inboxTodos : bucketlistTodos).filter{ $0.isAttachedToGoal(goal: eachGoal) }.sorted {$0.startDate < $1.startDate}
+                                                    if getTotalAttachedToDos(eachGoal) > 0 {
+                                                        Section(header: Text(eachGoal.name)) {
+                                                            ForEach(goalSet) {eachEvent in
                                                                 toDoCell(eachEvent)
+                                                                    .swipeActions {
+                                                                    if showingBucketlist {
+                                                                        Button("Unbucket", role: .destructive) {
+                                                                            eachEvent.bucketlist = false
+                                                                            
+                                                                            do {
+                                                                                try viewContext.save()
+                                                                            } catch {
+                                                                                // handle error
+                                                                            }
+                                                                        }
+                                                                        .tint(.cyan)
+                                                                    } else {
+                                                                        Button("Bucket", role: .destructive) {
+                                                                            eachEvent.bucketlist = true
+                                                                            
+                                                                            do {
+                                                                                try viewContext.save()
+                                                                            } catch {
+                                                                                // handle error
+                                                                            }
+                                                                        }
+                                                                        .tint(.cyan)
+                                                                    }
+                                                                }
+                                                            }
+                                                        }.headerProminence(.increased)
+                                                        
+                                                        //now sub goals
+                                                        ForEach(eachGoal.getSubGoals) {eachSubGoal in
+                                                            //only display if it's an end goal (sub goals will be under)
+                                                            let subGoalSet = (!showingBucketlist ? inboxTodos : bucketlistTodos).filter{ $0.isAttachedToGoal(goal: eachSubGoal) }.sorted {$0.startDate < $1.startDate}
+                                                            if subGoalSet.count > 0 {
+                                                                Section(header: Text(eachSubGoal.name)) {
+                                                                    ForEach(subGoalSet) {eachEvent in
+                                                                        toDoCell(eachEvent)
+                                                                            .swipeActions {
+                                                                                if showingBucketlist {
+                                                                                    Button("Unbucket", role: .destructive) {
+                                                                                        eachEvent.bucketlist = false
+                                                                                        
+                                                                                        do {
+                                                                                            try viewContext.save()
+                                                                                        } catch {
+                                                                                            // handle error
+                                                                                        }
+                                                                                    }
+                                                                                    .tint(.cyan)
+                                                                                } else {
+                                                                                    Button("Bucket", role: .destructive) {
+                                                                                        eachEvent.bucketlist = true
+                                                                                        
+                                                                                        do {
+                                                                                            try viewContext.save()
+                                                                                        } catch {
+                                                                                            // handle error
+                                                                                        }
+                                                                                    }
+                                                                                    .tint(.cyan)
+                                                                                }
+                                                                            }
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }
                                                 }
+                                                
                                             }
                                         }
+                                    } else {
+                                        Text("You have no To-Do items in your \(showingBucketlist ? "bucketlist" : "inbox").")
                                     }
-                                }.toolbar {
+                                }
+                                .toolbar {
                                     Button("Close") {
                                         showingInboxSheet = false
                                     }
                                 }
+                                .navigationTitle(Text(showingBucketlist ? "Bucketlist" : "Inbox"))
                             }
                         }
                     }
@@ -285,6 +376,16 @@ struct ToDoView2: View {
                                     if !event.allDay { //Don't show the date if it's an all day event.
                                         Text(event.startDate, formatter: todayFormatter)
                                         //Don't change color if it's not overdue
+                                    }
+                                }
+                            }
+                            //recurring event icon
+                            if (event.recurringTag != "") {
+                                ZStack {
+                                    Image(systemName: "repeat")
+                                    if (event.isRecurringEventLast(viewContext: viewContext) && event.repeatOnCompleteInDays == 0) {
+                                        Image(systemName: "line.diagonal")
+                                            .scaleEffect(x: -1.2, y: 1.2)
                                     }
                                 }
                             }

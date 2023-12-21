@@ -48,7 +48,7 @@ struct SettingsView: View {
     @State private var defaultEventDuration: Int = UserDefaults.standard.integer(forKey: "defaultEventDuration")
     
     @State private var addContactOnCall = UserDefaults.standard.bool(forKey: "addContactOnCall")
-    
+    @State private var repeatByEndDate = UserDefaults.standard.bool(forKey: "repeatByEndDate")
     @State private var tintCompletedTodos = UserDefaults.standard.bool(forKey: "tintCompletedTodos")
     
     var body: some View {
@@ -145,15 +145,15 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(showReportablesOnTodo, forKey: "reportablesOnTodoList")
                                 }
                         }
-                        HStack {
-                            Text("Use Today/Inbox/Buckelist Sorting: ")
-                            Spacer()
-                            Toggle("showTodayTodosFront", isOn: $showTodayTodosFront)
-                                .labelsHidden()
-                                .onChange(of: showTodayTodosFront) {_ in
-                                    UserDefaults.standard.set(showTodayTodosFront, forKey: "showTodayTodosFront")
-                                }
-                        }
+//                        HStack { //Currently obsolete when using ToDoView2
+//                            Text("Use Today/Inbox/Buckelist Sorting: ")
+//                            Spacer()
+//                            Toggle("showTodayTodosFront", isOn: $showTodayTodosFront)
+//                                .labelsHidden()
+//                                .onChange(of: showTodayTodosFront) {_ in
+//                                    UserDefaults.standard.set(showTodayTodosFront, forKey: "showTodayTodosFront")
+//                                }
+//                        }
                         HStack {
                             Text("Color To-Do's on To-Do List")
                             Spacer()
@@ -215,6 +215,15 @@ struct SettingsView: View {
                                     defaultEventDuration = UserDefaults.standard.integer(forKey: "defaultEventDuration")
                                 }
                             }).labelsHidden()
+                        }
+                        HStack {
+                            Text("Calculate Repeat Based Off End Date: ")
+                            Spacer()
+                            Toggle("repeatByEndDate", isOn: $repeatByEndDate)
+                                .labelsHidden()
+                                .onChange(of: repeatByEndDate) {_ in
+                                    UserDefaults.standard.set(repeatByEndDate, forKey: "repeatByEndDate")
+                                }
                         }
                     }
                     VStack {

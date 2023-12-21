@@ -26,20 +26,20 @@ struct GoalDetailView: View {
         ZStack {
             VStack {
                 
-                ZStack {
-                    Text(selectedGoal.name)
-                        .font(.title)
-                    HStack {
-                        Spacer()
-                        NavigationLink(destination: EditGoalView(editGoal: selectedGoal)) {
-                            Label("", systemImage: "square.and.pencil.circle.fill")
-                        }
-                    }.padding()
-                }.background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(hex: selectedGoal.color) ?? .clear)
-                        .opacity(0.5)
-                )
+//                ZStack {
+//                    Text(selectedGoal.name)
+//                        .font(.title)
+//                    HStack {
+//                        Spacer()
+//                        NavigationLink(destination: EditGoalView(editGoal: selectedGoal)) {
+//                            Label("", systemImage: "square.and.pencil.circle.fill")
+//                        }
+//                    }.padding()
+//                }.background(
+//                    RoundedRectangle(cornerRadius: 6)
+//                        .fill(Color(hex: selectedGoal.color) ?? .clear)
+//                        .opacity(0.5)
+//                )
                 
                 HStack {
                     
@@ -101,7 +101,13 @@ struct GoalDetailView: View {
                 
                 Spacer()
             }.background(Color(hex: selectedGoal.color)?.opacity(0.25))
-         
+                .navigationTitle(selectedGoal.name)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar{
+                    NavigationLink(destination: EditGoalView(editGoal: selectedGoal)) {
+                        Label("", systemImage: "square.and.pencil.circle.fill")
+                    }
+                }
             
             
             //The Add Button
@@ -212,10 +218,6 @@ struct GoalInfoView: View {
                 }
             }.padding()
             
-            if (selectedGoal.hasDeadline) {
-                Text("Deadline: \(selectedGoal.deadline.dateOnlyToString())").padding()
-            }
-            
             if (selectedGoal.getAttachedPeople.count > 0) {
                 VStack {
                     HStack{
@@ -233,6 +235,20 @@ struct GoalInfoView: View {
                     }
                 }
             }
+            
+            if (selectedGoal.hasDeadline) {
+                HStack{
+                    Text("Deadline: \(selectedGoal.deadline.dateOnlyToString())").padding()
+                    Spacer()
+                }
+            }
+            if (selectedGoal.isCompleted) {
+                HStack {
+                    Text("Completed on \(selectedGoal.dateCompleted.dateOnlyToString())").padding()
+                    Spacer()
+                }
+            }
+            
             
             //Show Parent Goal
             if ((selectedGoal.endGoals ?? ([] as NSSet)).count > 0) {
@@ -264,7 +280,7 @@ struct GoalInfoView: View {
             if ((selectedGoal.subGoals ?? ([] as NSSet)).count > 0) {
                 VStack {
                     HStack {
-                        Text("Intermediate Landmark Goals: ").bold()
+                        Text("Sub-Goals: ").bold()
                         Spacer()
                     }.padding(.horizontal)
                         .padding(.vertical,3)
@@ -286,6 +302,19 @@ struct GoalInfoView: View {
                 }
             }
             
+            //Some stats
+            VStack {
+                HStack {
+                    Text("\(selectedGoal.getFutureEvents.count) plans made. ")
+                    Spacer()
+                }
+                HStack {
+                    PieChartView(slices: [(selectedGoal.getPercentTodosFinished, Color(hex: selectedGoal.color) ?? Color.red),(1-selectedGoal.getPercentTodosFinished, Color.clear)]).frame(width: 30)
+                    Text(String(format: "%.0f", 100.0*selectedGoal.getPercentTodosFinished)+"% todo's completed.")
+                    Spacer()
+                }
+            }.padding()
+            
             if fetchedUnscheduledEvents.count > 0 {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
@@ -297,7 +326,7 @@ struct GoalInfoView: View {
                                 Text("Unscheduled Events").font(.title2).padding()
                                 //unscheduled first
                                 ForEach(fetchedUnscheduledEvents) { eachEvent in
-                                    eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
+                                    eventDisplayBoxView(myEvent: eachEvent, colorHex: selectedGoal.color).environmentObject(updater)
                                         .padding(.horizontal)
                                         .padding(.vertical, 2)
                                     //other events get padding added inside TimelineObject, but these do not because they aren't processed as timeline objects.
@@ -313,6 +342,7 @@ struct GoalInfoView: View {
                         }
                     }
                 }.padding(.horizontal, 10)
+                    .padding(.top, 10)
             }
             //Complete Goal HIGH FIVE
             Button {
@@ -342,6 +372,7 @@ struct GoalInfoView: View {
         }.onAppear {
             isCompleted = selectedGoal.isCompleted
         }
+        
     }
     
     private func dateToString(input: Date) -> String {
@@ -376,4 +407,41 @@ struct GoalInfoView: View {
     }
     
     
+}
+
+// https://medium.com/@iOSchandra0/how-to-create-a-pie-chart-in-swiftui-c7f056d54c81
+fileprivate struct PieChartView: View {
+    @State var slices: [(Double, Color)]
+    var body: some View {
+        Canvas { context, size in
+            // Add these lines to display as Donut
+            //Start Donut
+//            let donut = Path { p in
+//                p.addEllipse(in: CGRect(origin: .zero, size: size))
+//                p.addEllipse(in: CGRect(x: size.width * 0.25, y: size.height * 0.25, width: size.width * 0.5, height: size.height * 0.5))
+//            }
+//            context.clip(to: donut, style: .init(eoFill: true))
+            //End Donut
+            let total = slices.reduce(0) { $0 + $1.0 }
+            context.translateBy(x: size.width * 0.5, y: size.height * 0.5)
+            var pieContext = context
+            pieContext.rotate(by: .degrees(-90))
+            let radius = min(size.width, size.height) * 0.48
+            let gapSize = Angle(degrees: 5) // size of the gap between slices in degrees
+
+            var startAngle = Angle.zero
+            for (value, color) in slices {
+                let angle = Angle(degrees: 360 * (value / total))
+                let endAngle = startAngle + angle
+                let path = Path { p in
+                    p.move(to: .zero)
+                    p.addArc(center: .zero, radius: radius, startAngle: startAngle + Angle(degrees: 5) / 2, endAngle: endAngle, clockwise: false)
+                    p.closeSubpath()
+                }
+                pieContext.fill(path, with: .color(color))
+                startAngle = endAngle
+            }
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
 }

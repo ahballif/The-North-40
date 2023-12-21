@@ -57,7 +57,7 @@ struct ContentView: View {
                     Label("People", systemImage: "person.fill")
                 }
                 .toolbarBackground(.visible, for: .tabBar)
-            GoalListView()
+            GoalListView2()
                 .environment(\.managedObjectContext, viewContext)
                 .tabItem{
                     Label("Goals", systemImage: "pencil.and.ruler.fill")

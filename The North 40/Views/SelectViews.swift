@@ -219,75 +219,75 @@ public struct SelectGoalView: View {
     @State private var showingAddGoalSheet = false
     
     public var body: some View {
-        List {
-            Button {
-                showingAddGoalSheet.toggle()
-            } label: {
-                Label("Create New Goal", systemImage: "plus")
-            }.sheet(isPresented: $showingAddGoalSheet) {
-                EditGoalView()
-            }
-            ForEach(fetchedGoals) {goal in
-                if goal.getEndGoals.count == 0 {
-                    goalBox(goal)
-                        .onTapGesture {
-                            if editEventView != nil {
-                                editEventView!.attachGoal(addGoal: goal)
-                            } else if editGoalView != nil {
-                                editGoalView!.addEndGoal(newEndGoal: goal)
-                            } else if editGroupView != nil {
-                                editGroupView!.attachGoal(addGoal: goal)
-                            } else if editNoteView != nil {
-                                editNoteView!.attachGoal(addGoal: goal)
-                            }
-                            dismiss()
-                        }
-                    ForEach(goal.getSubGoals, id: \.self) {subGoal in
-                        if !subGoal.isCompleted {
-                            goalBox(subGoal)
-                                .padding(.leading, 25.0)
-                                .onTapGesture {
-                                    if editEventView != nil {
-                                        editEventView!.attachGoal(addGoal: goal)
-                                    } else if editGoalView != nil {
-                                        editGoalView!.addEndGoal(newEndGoal: goal)
-                                    } else if editGroupView != nil {
-                                        editGroupView!.attachGoal(addGoal: goal)
-                                    } else if editNoteView != nil {
-                                        editNoteView!.attachGoal(addGoal: goal)
-                                    }
-                                    dismiss()
-                                }
-                        }
-                    }
+        ZStack {
+            
+            List {
+                Button {
+                    showingAddGoalSheet.toggle()
+                } label: {
+                    Label("Create New Goal", systemImage: "plus")
+                }.sheet(isPresented: $showingAddGoalSheet) {
+                    EditGoalView()
                 }
+                ForEach(fetchedGoals.sorted(by: {$0.priorityIndex > $1.priorityIndex})) {goal in
+                    goalBoard(goal)
+                        .padding(.leading, goal.endGoalLayers == 3 ? 60 : goal.endGoalLayers == 2 ? 45 : goal.endGoalLayers == 1 ? 25 : 0)
+                }
+            }
+            VStack {
+                HStack {
+                    Spacer()
+                    Button("Close") {
+                        dismiss()
+                    }.padding()
+                        .buttonStyle(.borderedProminent)
+                }
+                Spacer()
             }
         }
     }
     
-    private func goalBox (_ goal: N40Goal) -> some View {
+    private func goalBoard(_ goal: N40Goal) -> some View {
+        
         return VStack {
+            
             ZStack {
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: 10)
                     .foregroundColor(Color(hex: goal.color))
-                    .opacity(1.0)
+                    .opacity(0.65)
                     .frame(height: 50.0)
-                HStack {
-                    Text(goal.name)
-                    Spacer()
-                }.padding()
+                VStack{
+                    HStack{
+                        Text(goal.name)
+                        Spacer()
+                    }
+                    HStack{
+                        if !goal.isCompleted {
+                            if goal.hasDeadline {
+                                Text("By: \(goal.deadline.dateOnlyToString())").font(.caption)
+                                Spacer()
+                            }
+                        } else {
+                            Text("Completed: \(goal.dateCompleted.dateOnlyToString())").font(.caption)
+                            Spacer()
+                        }
+                    }
+                }.padding(.horizontal)
+                    .padding(.vertical, 5)
+            }.onTapGesture {
+                if editEventView != nil {
+                    editEventView!.attachGoal(addGoal: goal)
+                } else if editGoalView != nil {
+                    editGoalView!.addEndGoal(newEndGoal: goal)
+                } else if editNoteView != nil {
+                    editNoteView!.attachGoal(addGoal: goal)
+                } else if editGroupView != nil {
+                    editGroupView!.attachGoal(addGoal: goal)
+                }
+                dismiss()
             }
-            if goal.hasDeadline {
-                HStack {
-                    Text("Deadline: \(goal.deadline.dateOnlyToString())")
-                    Spacer()
-                }.padding()
-            }
-        }.background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color(hex: goal.color)!)
-                .opacity(0.5)
-        )
+            
+        }
     }
     
 }

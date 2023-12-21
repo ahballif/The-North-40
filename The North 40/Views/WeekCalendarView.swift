@@ -530,7 +530,7 @@ struct WeeklyPlanner: View {
                                 let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
                                 let moveAmount = $0.location.y - eventStartPos
                                 let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
-                                let numOfMinutesMoved = (moveAmount/hourHeight*60.0/minimumDuration).rounded()*minimumDuration
+                                let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration 
                                 let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
                                 
                                 

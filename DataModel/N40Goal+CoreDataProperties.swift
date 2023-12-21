@@ -79,6 +79,25 @@ extension N40Goal {
         }
     }
     
+    public var endGoalLayers: Int {
+        //returns how many layers deep this goal is.
+        var layers = 0 //top layer
+        if getEndGoals.count > 0 {
+            layers = 1
+            for endGoal in getEndGoals {
+                if endGoal.getEndGoals.count > 0 {
+                    if layers < 2 {layers = 2}
+                    for endEndGoal in endGoal.getEndGoals {
+                        if endEndGoal.getEndGoals.count > 0 {
+                            layers = 3
+                        }
+                    }
+                }
+            }
+        }
+        return layers
+    }
+    
     public var getUnfinishedTodos: [N40Event] {
         var unfinishedTodos: [N40Event] = []
         
@@ -106,8 +125,11 @@ extension N40Goal {
     }
     
     public var getPercentTodosFinished: Double {
-        let totalTodos = self.getTimelineEvents.count
+        let totalTodos = self.getTimelineEvents.filter{$0.eventType == N40Event.TODO_TYPE}.count
         let unfinishedTodos = self.getUnfinishedTodos.count
+        if totalTodos == 0 {
+            return 0.0
+        }
         return 1.0 - Double(unfinishedTodos)/Double(totalTodos)
     }
     public var getNextEventDate: Date? {

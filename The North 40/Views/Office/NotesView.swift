@@ -30,45 +30,58 @@ struct NotesView: View {
     
     var body: some View {
         VStack {
-            Text("Notes")
-                .font(.title)
-            
-            List {
-                let sortedNotes = sortBy == .date ? fetchedNotes.sorted {$0.date < $1.date} : fetchedNotes.sorted{$0.title < $1.title}
+            ZStack {
+                Text("Notes")
+                    .font(.title)
                 
-                ForEach(sortedNotes) {note in
-                    Button(note.title) {
-                        editNoteItem = note
-                    }.foregroundColor(((colorScheme == .dark) ? .white : .black))
-                        .swipeActions {
-                            Button {
-                                note.archived = true
-                                
-                                do {
-                                    try viewContext.save()
-                                }
-                                catch {
-                                    // Handle Error
-                                    print("Error info: \(error)")
-                                }
-                            } label: {
-                                Label("Archive", systemImage: "Archive Box")
-                            }.tint(.purple)
+                List {
+                    let sortedNotes = sortBy == .date ? fetchedNotes.sorted {$0.date < $1.date} : fetchedNotes.sorted{$0.title < $1.title}
+                    
+                    ForEach(sortedNotes) {note in
+                        Button(note.title) {
+                            editNoteItem = note
+                        }.foregroundColor(((colorScheme == .dark) ? .white : .black))
+                            .swipeActions {
+                                Button {
+                                    note.archived = true
+                                    
+                                    do {
+                                        try viewContext.save()
+                                    }
+                                    catch {
+                                        // Handle Error
+                                        print("Error info: \(error)")
+                                    }
+                                } label: {
+                                    Label("Archive", systemImage: "Archive Box")
+                                }.tint(.purple)
+                            }
+                    }.sheet(item: $editNoteItem) {item in
+                        EditNoteView(editNote: item)
+                    }
+                }
+                
+                //The add goal button
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        
+                        Button(action: {showingCreateSheet.toggle()}) {
+                            Image(systemName: "plus.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(Circle())
+                                .frame(minWidth: 50, maxWidth: 50)
+                                .padding(30)
                         }
-                }.sheet(item: $editNoteItem) {item in
-                    EditNoteView(editNote: item)
+                        .sheet(isPresented: $showingCreateSheet) {
+                            EditNoteView()
+                        }
+                    }
                 }
                 
-                Button {
-                    showingCreateSheet.toggle()
-                } label: {
-                    Label("Add Note", systemImage: "plus")
-                }.sheet(isPresented: $showingCreateSheet) {
-                    EditNoteView()
-                }
             }
-            
-        
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {

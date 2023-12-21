@@ -74,7 +74,19 @@ struct TimelineView: View {
         
         //first add event in timeline objects
         for eachEvent in allScheduledEvents {
-            returnedTimelineObjects.append(TimelineObject(date: eachEvent.startDate, type: TimelineType.event, event: eachEvent))
+            var eventColor = "E3E3E3"
+            if selectedGoal != nil && UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
+                eventColor = selectedGoal!.color
+            } else if selectedPerson != nil && UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") {
+                if selectedPerson!.hasFavoriteColor {
+                    eventColor = selectedPerson!.favoriteColor
+                } else if !UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+                    eventColor = eachEvent.color
+                }
+            } else if (UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") || UserDefaults.standard.bool(forKey: "showEventsInGoalColor")) && !UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
+                eventColor = eachEvent.color
+            }
+            returnedTimelineObjects.append(TimelineObject(date: eachEvent.startDate, type: TimelineType.event, event: eachEvent, eventColor: eventColor))
         }
         
         //next add notes, birthdays, duedates, etc.
@@ -172,9 +184,11 @@ struct TimelineObject: View {
     private let goal: N40Goal?
     private let note: N40Note?
     
+    public let eventColor: String?
+    
     @State var showingDetailSheet = false
     
-    init(date: Date, type: TimelineType, event: N40Event? = nil, person: N40Person? = nil, goal: N40Goal? = nil, note: N40Note? = nil) {
+    init(date: Date, type: TimelineType, event: N40Event? = nil, person: N40Person? = nil, goal: N40Goal? = nil, note: N40Note? = nil, eventColor: String? = nil) {
         self.date = date
         self.type = type
         
@@ -182,6 +196,8 @@ struct TimelineObject: View {
         self.person = person
         self.goal = goal
         self.note = note
+        
+        self.eventColor = eventColor
     }
     
     var body: some View {
@@ -220,7 +236,7 @@ struct TimelineObject: View {
             } else if type == TimelineType.event {
                 //Draw the event box
                 if event != nil {
-                    eventDisplayBoxView(myEvent: self.event!).environmentObject(updater)
+                    eventDisplayBoxView(myEvent: self.event!, colorHex: eventColor ?? "E3E3E3").environmentObject(updater)
                 } else {
                     Text("nil event")
                 }
@@ -340,6 +356,8 @@ struct eventDisplayBoxView: View {
     
     @State var myEvent: N40Event
     
+    public var colorHex = "E3E3E3"
+    
     private let cellHeight = 50.0
     
     @State private var showingEditViewSheet = false
@@ -348,7 +366,6 @@ struct eventDisplayBoxView: View {
         NavigationLink (destination: EditEventView(editEvent: myEvent).onDisappear(perform: {updater.updater.toggle()} )){
             ZStack {
                 //Draw the background box different based on event type
-                let colorHex = "E3E3E3"
                 if myEvent.eventType == N40Event.INFORMATION_TYPE {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(.gray)
@@ -491,6 +508,7 @@ struct eventDisplayBoxView: View {
     //.offset(x: 30, y: offset + hourHeight/2)
         
     }
+    
     
     
     private func formatDateToString(date: Date) -> String {

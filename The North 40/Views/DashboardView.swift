@@ -25,7 +25,7 @@ struct DashboardView: View {
                     .frame(width:5)
                     .frame(maxHeight:.infinity)
                 
-                GoalListView(isNavigationViewStacked: true)
+                GoalListView2(isNavigationViewStacked: true)
                     //.frame(width: geometry.size.width*3.0/11.0)
                 
                 
