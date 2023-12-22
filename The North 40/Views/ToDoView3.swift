@@ -1,5 +1,5 @@
 //
-//  ToDoView2.swift
+//  ToDoView3.swift
 //  The North 40
 //
 //  Created by Addison Ballif on 12/20/23.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ToDoView2: View {
+struct ToDoView3: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @State private var showingEditEventSheet = false
@@ -85,49 +85,65 @@ struct ToDoView2: View {
                         
                     } else { //sort by date
                         List {
-                            let overDueTodos = mainTodos.filter { $0.startDate < Date().startOfDay && $0.isScheduled }
-                            let overDueReportables = mainReportables.filter { $0.startDate < Date().startOfDay  && $0.isScheduled }
-                            let overDueSet = (UserDefaults.standard.bool(forKey: "reportablesOnTodoList") ? overDueTodos + overDueReportables : overDueTodos).sorted {$0.startDate < $1.startDate}
-                            if overDueSet.count > 0 {
-                                Section(header: Text("Overdue")) {
-                                    ForEach(overDueSet) {eachEvent in
-                                        toDoCell(eachEvent)
-                                    }
-                                }
-                            }
+                            let fullSet = getFullSetOfToDos()
                             
-                            ForEach(0..<numberOfDaysAhead, id: \.self) {i in
-                                let thisDay = Calendar.current.date(byAdding: .day, value: i, to: Date()) ?? Date()
-                                let todosToday = mainTodos.filter {$0.startDate >= thisDay.startOfDay && $0.startDate < thisDay.endOfDay  && $0.isScheduled }
-                                let reportablesToday = mainReportables.filter {$0.startDate >= thisDay.startOfDay && $0.startDate < thisDay.endOfDay  && $0.isScheduled }
-                                let daySet = (UserDefaults.standard.bool(forKey: "reportablesOnTodoList") ? todosToday + reportablesToday : todosToday).sorted {$0.startDate < $1.startDate}
-                                if daySet.count > 0 || i == 0 {
-                                    Section(header: Text(i == 0 ? "Today" : "\(thisDay.dayOfWeek()) \(thisDay.get(.day))")) {
-                                        ForEach(daySet) {eachEvent in
-                                            toDoCell(eachEvent)
-                                        }
-                                        //                                        .onMove { from, to in
-                                        //
-                                        //                                        }
-                                        if daySet.count < 1 {
+                            
+                            
+                            ForEach(fullSet) {eachEvent in
+                                let i = fullSet.firstIndex(of: eachEvent) ?? 0
+
+                                if i == 0 {
+                                    if eachEvent.startDate < Date().startOfDay {
+                                        //draw the overdue title
+                                        dateDivider(altText: "Overdue").moveDisabled(true)
+                                    } else {
+                                        //draw the today divider
+                                        dateDivider(Date()).moveDisabled(true)
+
+                                        //draw the message if the first event is not today
+                                        if eachEvent.startDate > Date().endOfDay {
                                             HStack {
-                                                if overDueSet.count == 0 {
-                                                    Image(systemName: "bird")
-                                                        .resizable()
-                                                        .aspectRatio(contentMode: .fit)
-                                                        .padding(5)
-                                                    VStack{
-                                                        Text("You don't have any more To-Do's today. You're on top of it!")
-                                                    }
-                                                } else {
-                                                    Text("You have no To-Do's today, but you do have some overdue To-Do's")
+                                                Image(systemName: "bird")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .padding(5)
+                                                VStack{
+                                                    Text("You don't have any more To-Do's today. You're on top of it!")
                                                 }
-                                            }
+                                            }.moveDisabled(true)
+
+                                            dateDivider(eachEvent.startDate).moveDisabled(true)
                                         }
+
+
                                     }
+
+                                } else {
+                                    let lastEvent = fullSet[i-1]
+
+                                    //draw the message if there are none today
+                                    if eachEvent.startDate > Date().endOfDay && lastEvent.startDate < Date().startOfDay {
+                                        //draw the today divider
+                                        dateDivider(Date()).moveDisabled(true)
+
+                                        Text("You have no To-Do's today, but you do have some overdue To-Do's").moveDisabled(true)
+                                    }
+
+                                    //draw the day divider
+                                    if eachEvent.startDate.startOfDay > lastEvent.startDate.endOfDay && eachEvent.startDate >= Date().startOfDay {
+                                        //(overdue events don't get day dividers)
+
+                                        dateDivider(eachEvent.startDate).moveDisabled(true)
+                                    }
+
+
                                 }
-                            }
-                        }.listStyle(.insetGrouped)
+
+
+                                toDoCell(eachEvent)
+                            }.onMove(perform: move)
+                        
+                        }.listStyle(.plain)
                     }
                 }
                 
@@ -222,30 +238,30 @@ struct ToDoView2: View {
                                                             ForEach(goalSet) {eachEvent in
                                                                 toDoCell(eachEvent)
                                                                     .swipeActions {
-                                                                        if showingBucketlist {
-                                                                            Button("Unbucket", role: .destructive) {
-                                                                                eachEvent.bucketlist = false
-                                                                                
-                                                                                do {
-                                                                                    try viewContext.save()
-                                                                                } catch {
-                                                                                    // handle error
-                                                                                }
+                                                                    if showingBucketlist {
+                                                                        Button("Unbucket", role: .destructive) {
+                                                                            eachEvent.bucketlist = false
+                                                                            
+                                                                            do {
+                                                                                try viewContext.save()
+                                                                            } catch {
+                                                                                // handle error
                                                                             }
-                                                                            .tint(.cyan)
-                                                                        } else {
-                                                                            Button("Bucket", role: .destructive) {
-                                                                                eachEvent.bucketlist = true
-                                                                                
-                                                                                do {
-                                                                                    try viewContext.save()
-                                                                                } catch {
-                                                                                    // handle error
-                                                                                }
-                                                                            }
-                                                                            .tint(.cyan)
                                                                         }
+                                                                        .tint(.cyan)
+                                                                    } else {
+                                                                        Button("Bucket", role: .destructive) {
+                                                                            eachEvent.bucketlist = true
+                                                                            
+                                                                            do {
+                                                                                try viewContext.save()
+                                                                            } catch {
+                                                                                // handle error
+                                                                            }
+                                                                        }
+                                                                        .tint(.cyan)
                                                                     }
+                                                                }
                                                             }
                                                         }.headerProminence(.increased)
                                                         
@@ -327,6 +343,51 @@ struct ToDoView2: View {
         
     }
     
+    func move(from source: IndexSet, to destination: Int) {
+        // move the data here
+        var fullSet = getFullSetOfToDos()
+        
+        fullSet.move(fromOffsets: source, toOffset: destination)
+        
+        if destination > 1  {
+            //change the date based on the surrounding dates
+            let ogStartDate = fullSet[destination-1].startDate
+            fullSet[destination-1].startDate = fullSet[destination - 2].startDate
+            if fullSet[destination-1].startDate.startOfDay != ogStartDate.startOfDay {
+                fullSet[destination-1].allDay = true
+            }
+        }
+        
+        do {
+            try viewContext.save()
+        } catch {
+            // handle error
+        }
+        
+    }
+    
+    private func getFullSetOfToDos() -> [N40Event] {
+        var fullSet: [N40Event] = []
+        
+        let overDueTodos = mainTodos.filter { $0.startDate < Date().startOfDay && $0.isScheduled }
+        let overDueReportables = mainReportables.filter { $0.startDate < Date().startOfDay  && $0.isScheduled }
+        let overDueSet = (UserDefaults.standard.bool(forKey: "reportablesOnTodoList") ? overDueTodos + overDueReportables : overDueTodos).sorted {$0.startDate < $1.startDate}
+        
+        fullSet = fullSet + overDueSet
+        
+        for i in 0..<numberOfDaysAhead {
+            
+            let thisDay = Calendar.current.date(byAdding: .day, value: i, to: Date()) ?? Date()
+            let todosToday = mainTodos.filter {$0.startDate >= thisDay.startOfDay && $0.startDate < thisDay.endOfDay  && $0.isScheduled }
+            let reportablesToday = mainReportables.filter {$0.startDate >= thisDay.startOfDay && $0.startDate < thisDay.endOfDay  && $0.isScheduled }
+            let daySet = (UserDefaults.standard.bool(forKey: "reportablesOnTodoList") ? todosToday + reportablesToday : todosToday).sorted {$0.startDate < $1.startDate}
+            
+            fullSet = fullSet + daySet
+        }
+        
+        return fullSet
+    }
+    
     private func getTotalAttachedToDos(_ goal: N40Goal) -> Int {
         var total = 0
         total += (!showingBucketlist ? inboxTodos : bucketlistTodos).filter{ $0.isAttachedToGoal(goal: goal) }.count
@@ -338,7 +399,22 @@ struct ToDoView2: View {
     
     
     private func toDoCell(_ event: N40Event) -> some View {
-        return VStack {
+        return ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .if(UserDefaults.standard.bool(forKey: "colorToDoList") && UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) { view in
+                //draw with the goal color
+                view.foregroundColor(Color(hex: event.getAttachedGoals.first!.color)?.opacity(0.5))
+                }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && !(UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) && (UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil)) {view in
+                    //draw with the person color
+                    view.foregroundColor(Color(hex: event.getFirstFavoriteColor()!)?.opacity(0.5))
+                }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && !(UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) && !(UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil) && ((UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray"))) {view in
+                    //draw with the gray color
+                    view.foregroundColor(Color(hex: "#b9baa2")?.opacity(0.5))
+                }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && !(UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) && !(UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil) && !((UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray"))) {view in
+                    //draw with the original color
+                    view.foregroundColor(Color(hex: event.color)?.opacity(0.5))
+                }
+                
             HStack {
                 
                 //Button to check off the to-do (only for ToDo Type)
@@ -395,18 +471,22 @@ struct ToDoView2: View {
                 })
             }
             
-        }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) { view in
-            //draw with the goal color
-            view.listRowBackground(Color(hex: event.getAttachedGoals.first!.color)?.opacity(0.5))
-        }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && !(UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) && (UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil)) {view in
-            //draw with the person color
-            view.listRowBackground(Color(hex: event.getFirstFavoriteColor()!)?.opacity(0.5))
-        }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && !(UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) && !(UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil) && ((UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray"))) {view in
-            //draw with the gray color
-            view.listRowBackground(Color(hex: "#b9baa2")?.opacity(0.5))
-        }.if(UserDefaults.standard.bool(forKey: "colorToDoList") && !(UserDefaults.standard.bool(forKey: "showEventsInGoalColor") && event.getAttachedGoals.count > 0) && !(UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") && event.getFirstFavoriteColor() != nil) && !((UserDefaults.standard.bool(forKey: "showEventsInGoalColor") || UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")) && UserDefaults.standard.bool(forKey: "showNoGoalEventsGray"))) {view in
-            //draw with the original color
-            view.listRowBackground(Color(hex: event.color)?.opacity(0.5))
+        }
+    }
+    
+    private func dateDivider(_ date: Date = Date(), altText: String? = nil) -> some View {
+        return VStack {
+            HStack {
+                Text(altText != nil ? altText! : date.startOfDay == Date().startOfDay ? "Today" : "\(date.dayOfWeek()) \(date.get(.day))")
+                    //.padding(.leading)
+                    .font(.headline)
+                    //.frame(maxWidth: .infinity)
+                Color.gray
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 1)
+                    .padding(.leading)
+                
+            }
         }
     }
     

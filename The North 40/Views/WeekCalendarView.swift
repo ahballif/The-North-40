@@ -178,7 +178,8 @@ struct WeeklyPlanner: View {
     @GestureState var press = false
     
     @State private var dragging = false
-    @State private var isWaitingForDrag = true
+    @State private var editModeEvent: N40Event? = nil
+    @State private var drawDragDayOffset: Int = 0
     
     
     var body: some View {
@@ -227,10 +228,12 @@ struct WeeklyPlanner: View {
                                                 let impactMed = UIImpactFeedbackGenerator(style: .medium)
                                                 impactMed.impactOccurred()
                                                 
-                                                
-                                                clickedOnTime = getSelectedTime(idx: idx, day: thisDay)
-                                                selectedEditEvent = nil
-                                                showingEditEventSheet.toggle()
+                                                if editModeEvent == nil {
+                                                    clickedOnTime = getSelectedTime(idx: idx, day: thisDay)
+                                                    selectedEditEvent = nil
+                                                    showingEditEventSheet.toggle()
+                                                }
+                                                editModeEvent = nil
                                             }
                                             .frame(height: DailyPlanner.minimumEventHeight)
                                     }
@@ -292,6 +295,7 @@ struct WeeklyPlanner: View {
             }.onAppear {
                 value.scrollTo(Int(Date().get(.hour)))
             }
+            .scrollDisabled(editModeEvent != nil)
         }
         
         
@@ -394,28 +398,28 @@ struct WeeklyPlanner: View {
                 ZStack {
                     if event.eventType == N40Event.INFORMATION_TYPE {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(.gray)
-                            .opacity(0.0001)
+                            .fill(Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR)
+                            .opacity(editModeEvent == event ? 0.25 : 0.0001)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
-                                    .opacity(0.5)
+                                    .opacity(editModeEvent == event ? 1.0 : 0.5)
                             )
                     } else if event.eventType == N40Event.BACKUP_TYPE {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(.gray)
-                            .opacity(0.25)
+                            .opacity(editModeEvent == event ? 1.0 : 0.25)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
-                                    .opacity(0.5)
+                                    .opacity(editModeEvent == event ? 1.0 : 0.5)
                             )
                     } else {
                         RoundedRectangle(cornerRadius: 8)
                             .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
-                            .opacity(0.5)
+                            .opacity(editModeEvent == event ? 1.0 : 0.5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     
@@ -502,52 +506,50 @@ struct WeeklyPlanner: View {
             .frame(height: height, alignment: .top)
             .frame(width: (geometry.size.width)/CGFloat(numberOfColumns), alignment: .leading)
             //.padding(.trailing, 5)
-            .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
+            .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(numberOfColumns)) + (editModeEvent == event ? CGFloat(drawDragDayOffset)*geometry.size.width*1.1 : 0), y: offset + hourHeight/2)
             .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
             
             .onTapGesture {
-                selectedEditEvent = event
-                showingEditEventSheet.toggle()
+                if editModeEvent == nil {
+                    selectedEditEvent = event
+                    showingEditEventSheet.toggle()
+                }
+                editModeEvent = nil
+            }
+            .onLongPressGesture {
+                let impactMed = UIImpactFeedbackGenerator(style: .heavy)
+                impactMed.impactOccurred()
+                editModeEvent = event
             }
             
             .gesture(
                 DragGesture()
                     .onChanged{
-                        if !dragging {
-                            //the drag just started
-                            dragging = true
-                            isWaitingForDrag = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                                if dragging {
-                                    isWaitingForDrag = false
-                                    let impactMed = UIImpactFeedbackGenerator(style: .medium)
-                                    impactMed.impactOccurred()
-                                }
-                            }
-                        } else {
-                            if !isWaitingForDrag {
-                                //moving within the day
-                                let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
-                                let moveAmount = $0.location.y - eventStartPos
-                                let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
-                                let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration 
-                                let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
-                                
-                                
-                                event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
-                                
-                                    
-                            }
-                        }
+                        dragging = true
+                        //moving within the day
+                        let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
+                        let moveAmount = $0.location.y - eventStartPos
+                        let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
+                        let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration
+                        let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
+                        
+                        
+                        event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
+                        
+                        let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
+                        //add one if it's negative because the step is symmetric about 0
+                        drawDragDayOffset = dayOffset
+                       
+                        
                     }
                     .onEnded {
-                        if !isWaitingForDrag {
-                            let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
-                            //add one if it's negative because the step is symmetric about 0
-                            
-                            event.startDate = Calendar.current.date(byAdding: .day, value: dayOffset, to: event.startDate) ?? event.startDate
-                            
-                        }
+                        
+                        let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
+                        //add one if it's negative because the step is symmetric about 0
+                        
+                        event.startDate = Calendar.current.date(byAdding: .day, value: dayOffset, to: event.startDate) ?? event.startDate
+                        drawDragDayOffset = 0
+                        
             
                         
                         do {
@@ -555,7 +557,7 @@ struct WeeklyPlanner: View {
                         } catch {
                             // handle error
                         }
-                        isWaitingForDrag = true
+                        
                         dragging = false
                     })
         }
@@ -693,7 +695,7 @@ struct AllDayListWeek: View {
                                 }.font(.caption)
                                     .frame(height: allEventHeight)
                             }
-                        }.frame(height: 3*allEventHeight)
+                        }.frame(height: 4*allEventHeight)
                     } else {
                         VStack {
                             ForEach(allDayEvents) { eachEvent in

@@ -38,15 +38,6 @@ struct TimelineView: View {
                 ScrollView {
                     VStack {
                         
-//                        //unscheduled first
-//                        ForEach(events.filter { !$0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE}) { eachEvent in
-//                            eventDisplayBoxView(myEvent: eachEvent).environmentObject(updater)
-//                                .padding(.horizontal)
-//                                .padding(.vertical, 2)
-//                            //other events get padding added inside TimelineObject, but these do not because they aren't processed as timeline objects.
-//                            
-//                        }
-                        
                         let timelineObjects = getTimelineObjects()
                         
                         //need to add tag for now line as well as updater for events
@@ -69,7 +60,7 @@ struct TimelineView: View {
     }
     
     func getTimelineObjects () -> [TimelineObject] {
-        let allScheduledEvents: [N40Event] = events.filter {  $0.isScheduled && $0.eventType != N40Event.BACKUP_TYPE }.sorted {$0.startDate > $1.startDate}
+        let allScheduledEvents: [N40Event] = events.filter {  $0.isScheduled}.sorted {$0.startDate > $1.startDate}
         var returnedTimelineObjects: [TimelineObject] = []
         
         //first add event in timeline objects

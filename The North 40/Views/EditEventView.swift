@@ -1004,7 +1004,7 @@ struct EditEventView: View {
                 }
                 if repeatOptionSelected == "Every Day" {
                     //Repeat Daily
-                    if neverEndingRepeat {numberOfRepeats = 12*50} //repeat for 50 years
+                    if neverEndingRepeat {numberOfRepeats = 12*10} //repeat for 10 years
                     if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                         if numberOfRepeats > 1 {
                             for i in 1...numberOfRepeats*30 {
@@ -1020,7 +1020,7 @@ struct EditEventView: View {
                     }
                 } else if repeatOptionSelected == "Every Week" {
                     //Repeat Weekly
-                    if neverEndingRepeat {numberOfRepeats = 52*50} //repeat for 50 years
+                    if neverEndingRepeat {numberOfRepeats = 52*10} //repeat for 10 years
                     if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                         if numberOfRepeats > 1 {
                             for i in 1...numberOfRepeats-1 {
@@ -1035,7 +1035,7 @@ struct EditEventView: View {
                         }
                     }
                 } else if repeatOptionSelected == "Every Two Weeks" {
-                    if neverEndingRepeat {numberOfRepeats = 26*50} //repeat for 50 years
+                    if neverEndingRepeat {numberOfRepeats = 26*10} //repeat for 10 years
                     if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                         if numberOfRepeats > 1 {
                             for i in 1...numberOfRepeats-1 {
@@ -1051,7 +1051,7 @@ struct EditEventView: View {
                     }
                 } else if repeatOptionSelected == "Monthly (Day of Month)" {
                     //Repeat Monthly
-                    if neverEndingRepeat {numberOfRepeats = 12*50} //repeat for 50 years
+                    if neverEndingRepeat {numberOfRepeats = 12*10} //repeat for 10 years
                     if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                         if numberOfRepeats > 1 {
                             for i in 1...numberOfRepeats-1 {
@@ -1067,7 +1067,7 @@ struct EditEventView: View {
                     }
                 } else if repeatOptionSelected == "Monthly (Week of Month)" {
                     // Repeat monthly keeping the day of week
-                    if neverEndingRepeat {numberOfRepeats = 12*50} //repeat for 50 years
+                    if neverEndingRepeat {numberOfRepeats = 12*10} //repeat for 10 years
                     
                     var repeatsMade = 1 // the first is the original event.
                     
@@ -1149,7 +1149,7 @@ struct EditEventView: View {
                     }
                 } else if repeatOptionSelected == "On Days:" && numberOfRepeats > 1 {
                     //Repeat on days
-                    if neverEndingRepeat {numberOfRepeats = 52*50} //repeat for 50 years
+                    if neverEndingRepeat {numberOfRepeats = 52*10} //repeat for 10 years
                     if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                         
                         let today = newEvent.startDate.dayOfWeek()
@@ -1354,8 +1354,8 @@ struct EditEventView: View {
                         
                         
                         //We need to remove all the people and goals before we reattach any.
-                        let alreadyAttachedPeople = editEvent?.getAttachedPeople ?? []
-                        let alreadyAttachedGoals = editEvent?.getAttachedGoals ?? []
+                        let alreadyAttachedPeople = recurringEvent.getAttachedPeople
+                        let alreadyAttachedGoals = recurringEvent.getAttachedGoals
                         
                         alreadyAttachedPeople.forEach {person in
                             recurringEvent.removeFromAttachedPeople(person)

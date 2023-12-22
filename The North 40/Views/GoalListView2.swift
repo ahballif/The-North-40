@@ -160,7 +160,7 @@ struct GoalListView2: View {
         
         let fetchVisionNote: NSFetchRequest<N40Note> = N40Note.fetchRequest()
         fetchVisionNote.sortDescriptors = [NSSortDescriptor(keyPath: \N40Note.date, ascending: false)]
-        fetchVisionNote.predicate = NSPredicate(format: "title == '_Life Vision_'")
+        fetchVisionNote.predicate = NSPredicate(format: "title == 'Life Vision'")
         
         do {
             // Peform Fetch Request
@@ -183,7 +183,7 @@ struct GoalListView2: View {
         if visionNote == nil {
             let newNote = N40Note(context: viewContext)
             
-            newNote.title = "_Life Vision_"
+            newNote.title = "Life Vision"
             newNote.information = "My visions for my life: "
             newNote.date = Date()
             

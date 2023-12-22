@@ -224,7 +224,7 @@ struct AllDayList: View {
                         }.font(.caption)
                             .frame(height: allEventHeight)
                     }
-                }.frame(height: 3*allEventHeight)
+                }.frame(height: 4*allEventHeight)
             } else {
                 VStack {
                     ForEach(fetchedAllDays) { eachEvent in
@@ -619,7 +619,8 @@ struct DailyPlanner: View {
     @State private var scrollToNowToggle = false
     
     @State private var dragging = false
-    @State private var isWaitingForDrag = true
+    
+    @State private var editModeEvent: N40Event? = nil
     
     var body: some View {
         
@@ -658,10 +659,13 @@ struct DailyPlanner: View {
                                     let impactMed = UIImpactFeedbackGenerator(style: .medium)
                                     impactMed.impactOccurred()
                                     
+                                    if editModeEvent == nil {
+                                        clickedOnTime = getSelectedTime(idx: idx)
+                                        selectedEditEvent = nil
+                                        showingEditEventSheet.toggle()
+                                    }
+                                    editModeEvent = nil
                                     
-                                    clickedOnTime = getSelectedTime(idx: idx)
-                                    selectedEditEvent = nil
-                                    showingEditEventSheet.toggle()
                                 }
                                 .frame(height: DailyPlanner.minimumEventHeight)
                         }
@@ -706,7 +710,7 @@ struct DailyPlanner: View {
                     value.scrollTo(Int(Date().get(.hour)))
                 }
                 
-            }
+            }.scrollDisabled(editModeEvent != nil)
             
         }
         
@@ -815,28 +819,28 @@ struct DailyPlanner: View {
                 ZStack {
                     if event.eventType == N40Event.INFORMATION_TYPE {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(.gray)
-                            .opacity(0.0001)
+                            .fill(Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR)
+                            .opacity(editModeEvent == event ? 0.25 : 0.0001)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
-                                    .opacity(0.5)
+                                    .opacity(editModeEvent == event ? 1.0 : 0.5)
                             )
                     } else if event.eventType == N40Event.BACKUP_TYPE {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(.gray)
-                            .opacity(0.25)
+                            .opacity(editModeEvent == event ? 1.0 : 0.25)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR), lineWidth: 2)
-                                    .opacity(0.5)
+                                    .opacity(editModeEvent == event ? 1.0 : 0.5)
                             )
                     } else {
                         RoundedRectangle(cornerRadius: 8)
                             .fill((Color(hex: colorHex) ?? DEFAULT_EVENT_COLOR))
-                            .opacity(0.5)
+                            .opacity(editModeEvent == event ? 1.0 : 0.5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     
@@ -926,49 +930,44 @@ struct DailyPlanner: View {
             .padding(.trailing, 30)
             .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
             .onTapGesture {
-                selectedEditEvent = event
-                showingEditEventSheet.toggle()
+                if editModeEvent == nil {
+                    selectedEditEvent = event
+                    showingEditEventSheet.toggle()
+                }
+                editModeEvent = nil
             }
             .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
-            .gesture(
-                DragGesture()
-                    .onChanged{
-                        if !dragging {
-                            //the drag just started
+            .onLongPressGesture {
+                let impactMed = UIImpactFeedbackGenerator(style: .heavy)
+                impactMed.impactOccurred()
+                editModeEvent = event
+            }
+            .if(editModeEvent == event) { view in
+                view.gesture(
+                    DragGesture()
+                        .onChanged{
                             dragging = true
-                            isWaitingForDrag = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                                if dragging {
-                                    isWaitingForDrag = false
-                                    let impactMed = UIImpactFeedbackGenerator(style: .heavy)
-                                    impactMed.impactOccurred()
-                                }
-                            }
-                        } else {
-                            if !isWaitingForDrag {
-                                //moving within the day
-                                let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
-                                let moveAmount = $0.location.y - eventStartPos
-                                let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
-                                let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration 
-                                let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
-                                
-                                event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
-                                    
-                            }
+                            //moving within the day
+                            let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
+                            let moveAmount = $0.location.y - eventStartPos
+                            let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
+                            let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration
+                            let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
+                            
+                            event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
                         }
-                    }
-                    .onEnded { _ in
-                        
-                        
-                        do {
-                            try viewContext.save()
-                        } catch {
-                            // handle error
-                        }
-                        isWaitingForDrag = true
-                        dragging = false
-                    })
+                        .onEnded { _ in
+                            
+                            
+                            do {
+                                try viewContext.save()
+                            } catch {
+                                // handle error
+                            }
+                            dragging = false
+                        })
+            }
+            
         }
     }
     
