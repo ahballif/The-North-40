@@ -179,7 +179,8 @@ struct WeeklyPlanner: View {
     
     @State private var dragging = false
     @State private var editModeEvent: N40Event? = nil
-    @State private var drawDragDayOffset: Int = 0
+    @State private var drawDragDayOffset: CGFloat = 0.0
+    @State private var drawDragMinuteOffset: CGFloat = 0.0
     
     
     var body: some View {
@@ -506,7 +507,7 @@ struct WeeklyPlanner: View {
             .frame(height: height, alignment: .top)
             .frame(width: (geometry.size.width)/CGFloat(numberOfColumns), alignment: .leading)
             //.padding(.trailing, 5)
-            .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(numberOfColumns)) + (editModeEvent == event ? CGFloat(drawDragDayOffset)*geometry.size.width*1.1 : 0), y: offset + hourHeight/2)
+            .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(numberOfColumns)) + (editModeEvent == event ? drawDragDayOffset : 0), y: offset + hourHeight/2 + (editModeEvent == event ? drawDragMinuteOffset : 0))
             .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
             
             .onTapGesture {
@@ -521,46 +522,51 @@ struct WeeklyPlanner: View {
                 impactMed.impactOccurred()
                 editModeEvent = event
             }
-            
-            .gesture(
-                DragGesture()
-                    .onChanged{
-                        dragging = true
-                        //moving within the day
-                        let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
-                        let moveAmount = $0.location.y - eventStartPos
-                        let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
-                        let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration
-                        let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
-                        
-                        
-                        event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
-                        
-                        let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
-                        //add one if it's negative because the step is symmetric about 0
-                        drawDragDayOffset = dayOffset
-                       
-                        
-                    }
-                    .onEnded {
-                        
-                        let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
-                        //add one if it's negative because the step is symmetric about 0
-                        
-                        event.startDate = Calendar.current.date(byAdding: .day, value: dayOffset, to: event.startDate) ?? event.startDate
-                        drawDragDayOffset = 0
-                        
-            
-                        
-                        do {
-                            try viewContext.save()
-                        } catch {
-                            // handle error
+            .if(editModeEvent == event) { view in
+                view.gesture(
+                    DragGesture()
+                        .onChanged{
+                            dragging = true
+                            
+                            drawDragDayOffset = $0.translation.width
+                            drawDragMinuteOffset = $0.translation.height
+                           
+                            
                         }
-                        
-                        dragging = false
-                    })
+                        .onEnded {
+                            //moving within the day
+                            let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
+                            let numOfMinutesMoved = round($0.translation.height/hourHeight*60.0/minimumDuration)*minimumDuration
+                            let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
+                            
+                            
+                             
+                            let dayOffset = Int($0.location.x)/Int(geometry.size.width + 10 + 30/Double(numberOfDays)) + ($0.location.x < 0 ? -1 : 0)
+                            //add one if it's negative because the step is symmetric about 0
+                            
+                            dragging = false
+                            drawDragDayOffset = 0
+                            drawDragMinuteOffset = 0
+                            
+                            withAnimation {
+                                event.startDate = Calendar.current.date(byAdding: .day, value: dayOffset, to: event.startDate) ?? event.startDate
+                                drawDragDayOffset = 0
+                                event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
+                                
+                            }
+                            
+                            do {
+                                try viewContext.save()
+                            } catch {
+                                // handle error
+                            }
+                            
+                            
+                        })
+            }
         }
+            
+            
     }
     
     

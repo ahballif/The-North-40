@@ -225,7 +225,9 @@ struct EditGoalView: View {
                 newGoal.removeFromEndGoals(goal)
             }
             for goal in endGoals {
-                newGoal.addToEndGoals(goal)
+                if goal != newGoal {
+                    newGoal.addToEndGoals(goal)
+                }
             }
             
             newGoal.priorityIndex = getDefaultPriorityIndex()

@@ -91,7 +91,39 @@ struct ToDoView2: View {
                             if overDueSet.count > 0 {
                                 Section(header: Text("Overdue")) {
                                     ForEach(overDueSet) {eachEvent in
-                                        toDoCell(eachEvent)
+                                        toDoCell(eachEvent).contextMenu {
+                                            Button("Move to Today") {
+                                                eachEvent.startDate = Date()
+                                                eachEvent.allDay = true
+                                                
+                                                do {
+                                                    try viewContext.save()
+                                                } catch {
+                                                    // handle error
+                                                }
+                                            }
+                                            Button("Move to Tomorrow") {
+                                                eachEvent.startDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+                                                eachEvent.allDay = true
+                                                
+                                                do {
+                                                    try viewContext.save()
+                                                } catch {
+                                                    // handle error
+                                                }
+                                            }
+                                            Button("Move to Inbox") {
+                                                eachEvent.isScheduled = false
+                                                eachEvent.bucketlist = false
+                                                eachEvent.recurringTag = "" // no repeating events in the inbox.
+                                                
+                                                do {
+                                                    try viewContext.save()
+                                                } catch {
+                                                    // handle error
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -370,15 +402,12 @@ struct ToDoView2: View {
                             
                             Spacer()
                             if (event.isScheduled) {
-                                if (event.startDate < Date()) {
-                                    Text(event.startDate, formatter: event.allDay ? lateFormatterDayOnly : lateFormatter)
-                                        .foregroundColor(.red)
-                                } else {
-                                    if !event.allDay { //Don't show the date if it's an all day event.
-                                        Text(event.startDate, formatter: todayFormatter)
-                                        //Don't change color if it's not overdue
+                                
+                                Text(event.startDate, formatter: event.allDay ? lateFormatterDayOnly : event.startDate < Date().startOfDay ? lateFormatter : todayFormatter)
+                                    .if(event.startDate < Date().startOfDay) {view in
+                                        view.foregroundColor(Color.red)
                                     }
-                                }
+                                
                             }
                             //recurring event icon
                             if (event.recurringTag != "") {

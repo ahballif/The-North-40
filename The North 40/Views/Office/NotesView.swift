@@ -31,8 +31,6 @@ struct NotesView: View {
     var body: some View {
         VStack {
             ZStack {
-                Text("Notes")
-                    .font(.title)
                 
                 List {
                     let sortedNotes = sortBy == .date ? fetchedNotes.sorted {$0.date < $1.date} : fetchedNotes.sorted{$0.title < $1.title}
@@ -80,10 +78,12 @@ struct NotesView: View {
                         }
                     }
                 }
+                .navigationTitle("Notes")
                 
             }
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    
                     Button {
                         showingArchivedNotesSheet.toggle()
                     } label: {
@@ -131,8 +131,8 @@ struct NotesView: View {
                             }
                         }
                     }
-                }
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    
+                    
                     Button {
                         if sortBy == .date {
                             sortBy = .alphabetical

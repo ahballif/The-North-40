@@ -290,16 +290,20 @@ private struct phoneNumberBar: View {
             Spacer()
             
             Button(action: {
-                texting = false
-                showingAddContactSheet.toggle()
+                if UserDefaults.standard.bool(forKey: "addContactOnCall") {
+                    texting = false
+                    showingAddContactSheet.toggle()
+                }
                 guard let number = URL(string: "tel://" + contactInfoValue.filter("0123456789".contains)) else { return }
                 UIApplication.shared.open(number)
             }){
                 Label("", systemImage: "phone.fill")
             }
             Button(action: {
-                texting = true
-                showingAddContactSheet.toggle()
+                if UserDefaults.standard.bool(forKey: "addContactOnCall") {
+                    texting = true
+                    showingAddContactSheet.toggle()
+                }
                 guard let number = URL(string: "sms://" + contactInfoValue.filter("0123456789".contains)) else { return }
                 UIApplication.shared.open(number)
             }){
@@ -324,7 +328,9 @@ private struct emailBar: View {
             Spacer()
             
             Button(action: {
-                showingAddContactSheet.toggle()
+                if UserDefaults.standard.bool(forKey: "addContactOnCall") {
+                    showingAddContactSheet.toggle()
+                }
                 guard let email = URL(string: "mailto:" + contactInfoValue) else { return }
                 UIApplication.shared.open(email)
             }){
@@ -348,7 +354,9 @@ private struct socialMediaBar: View {
             Spacer()
             
             Button(action: {
-                showingAddContactSheet.toggle()
+                if UserDefaults.standard.bool(forKey: "addContactOnCall") {
+                    showingAddContactSheet.toggle()
+                }
                 guard let social = URL(string: contactInfoValue) else { return }
                 UIApplication.shared.open(social)
             }){
@@ -373,7 +381,9 @@ private struct addressBar: View {
             Spacer()
             
             Button(action: {
-                showingAddContactSheet.toggle()
+                if UserDefaults.standard.bool(forKey: "addContactOnCall") {
+                    showingAddContactSheet.toggle()
+                }
                 guard let address = URL(string: "https://www.google.com/maps/place/\(contactInfoValue.replacingOccurrences(of: " ", with: "+"))") else { return }
                 UIApplication.shared.open(address)
             }) {

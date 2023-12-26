@@ -621,6 +621,7 @@ struct DailyPlanner: View {
     @State private var dragging = false
     
     @State private var editModeEvent: N40Event? = nil
+    @State private var drawDragMinuteOffset: CGFloat = 0.0
     
     var body: some View {
         
@@ -928,7 +929,7 @@ struct DailyPlanner: View {
             .frame(width: (geometry.size.width-40)/CGFloat(numberOfColumns), alignment: .leading)
             //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
-            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2 + (editModeEvent == event ? drawDragMinuteOffset : 0.0))
             .onTapGesture {
                 if editModeEvent == nil {
                     selectedEditEvent = event
@@ -947,24 +948,35 @@ struct DailyPlanner: View {
                     DragGesture()
                         .onChanged{
                             dragging = true
+                            
+                            drawDragMinuteOffset = $0.translation.height
+                            
+                        }
+                        .onEnded {
+                            
                             //moving within the day
-                            let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
-                            let moveAmount = $0.location.y - eventStartPos
+//                            let eventStartPos = Double(event.startDate.timeIntervalSince1970 - event.startDate.startOfDay.timeIntervalSince1970)/3600*hourHeight + hourHeight/2
+//                            let moveAmount = $0.location.y - eventStartPos
                             let minimumDuration = 60.0/hourHeight*DailyPlanner.minimumEventHeight
-                            let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration
+//                            let numOfMinutesMoved = Double(Int(moveAmount/hourHeight*60.0/minimumDuration) + (moveAmount<0 ? -1 : 0))*minimumDuration
+                            let numOfMinutesMoved = round($0.translation.height/hourHeight*60.0/minimumDuration)*minimumDuration
                             let roundMinutesDifference = Double(event.startDate.get(.minute)) - (Double(event.startDate.get(.minute))/minimumDuration).rounded()*minimumDuration
                             
-                            event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
-                        }
-                        .onEnded { _ in
-                            
-                            
-                            do {
-                                try viewContext.save()
-                            } catch {
-                                // handle error
-                            }
                             dragging = false
+                            drawDragMinuteOffset = 0
+                            
+                            withAnimation {
+                                
+                                
+                                event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
+                                
+                                do {
+                                    try viewContext.save()
+                                } catch {
+                                    // handle error
+                                }
+                                
+                            }
                         })
             }
             

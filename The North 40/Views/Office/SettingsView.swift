@@ -55,9 +55,9 @@ struct SettingsView: View {
         VStack {
             ScrollView {
                 VStack {
-                    Text("Settings")
-                        .font(.title2)
                     
+                    Text("Settings")
+                        .font(.title2).bold()
                     Text("Calendar Settings").font(.title3).padding()
                     HStack {
                         Text("Calendar Resolution: \(smallestDivision) minutes")
@@ -73,7 +73,7 @@ struct SettingsView: View {
                             }
                             .labelsHidden()
                     }
-                    
+                    caption("Defines the smallest time interval that the calendar is divided into. Events shorter than this duration will appear to take up this amount of time.")
                     
                     
                     VStack {
@@ -86,6 +86,7 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(showEventsWithGoalColor, forKey: "showEventsInGoalColor")
                                 }
                         }
+                        caption("Show events with the color of the first goal that is attached to them.")
                         HStack {
                             Text("Show Events with Person Color: ")
                             Spacer()
@@ -95,7 +96,7 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(showEventsWithPersonColor, forKey: "showEventsWithPersonColor")
                                 }
                         }
-                        Text("Attachment to a goal will take priority over attachment to a person when choosing what color to display the event. Events with only be colored by person if the person has a favorite color (assigned in the edit person view). ").font(.caption)
+                        caption("Show events with the color of the first person that is attached to them. Attachment to a goal will take priority over attachment to a person when choosing what color to display the event. Events with only be colored by person if the person has a favorite color (assigned in the edit person view). ")
                         HStack {
                             Text("Make Events without Goal or Person Gray: ")
                             Spacer()
@@ -105,6 +106,7 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(showEventsWithoutGoalGray, forKey: "showNoGoalEventsGray")
                                 }
                         }.disabled(!showEventsWithGoalColor && !showEventsWithPersonColor)
+                        caption("If an event does not have a goal attached or a person with a favorite color, the event will show in gray.")
                         HStack{
                             Text("Tint Completed To-Dos: ")
                             Spacer()
@@ -114,6 +116,7 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(tintCompletedTodos, forKey: "tintCompletedTodos")
                                 }
                         }
+                        caption("If the event is a to-do event and is completed, the event will be faded on the calendar. ")
                         HStack{
                             Text("Show All-Day To-Dos: ")
                             Spacer()
@@ -163,6 +166,7 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(colorToDoList, forKey: "colorToDoList")
                                 }
                         }
+                        caption("Colors them based on the color settings in calendar settings defined above.")
                     }
                     
                     
@@ -225,6 +229,7 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(repeatByEndDate, forKey: "repeatByEndDate")
                                 }
                         }
+                        caption("If this is not selected, events with an end date will repeat for a selected duration.")
                     }
                     VStack {
                         HStack {
@@ -259,7 +264,7 @@ struct SettingsView: View {
                                 }
                                 .labelsHidden()
                         }
-                        Text("The app can try to guess the color of the event based on if it has the same name as an event in the past. Make sure it is spelled the same and push enter after entering event title to make the guess. ").font(.caption)
+                        caption("The app can try to guess the color of the event based on if it has the same name as an event in the past. Make sure it is spelled the same and push enter after entering event title to make the guess. ")
                         
                         HStack {
                             Text("Create event when contacting person: ")
@@ -270,13 +275,14 @@ struct SettingsView: View {
                                 }
                                 .labelsHidden()
                         }
-                        Text("Creates an event with the correct contact type when you push the button on a person's contact view to text, call, etc. ").font(.caption)
+                        caption("Creates an event with the correct contact type when you push the button on a person's contact view to text, call, etc. ")
                     }
                     VStack{
                         HStack {
                             Text("Set time on to-do completion: ").padding().font(.title3)
                             Spacer()
                         }
+                        caption("When completing a to-do event, you can make the app update the time of the event to the time you checked it off. This setting is seperate for several different views.")
                         HStack {
                             Text("on To-Do View: ").padding(.leading)
                             Spacer()
@@ -331,11 +337,24 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(roundScheduleCompletedTodos, forKey: "roundScheduleCompletedTodos")
                                 }
                         }
+                        caption("Round the time of the event based on the calendar resolution determined above in calendar settings.")
                     }
                     
                     
-                    
                     VStack {
+                        VStack {
+                            Rectangle().frame(height: 1)
+                            Button("Privacy Policy") {
+                                if let yourURL = URL(string: "https://ahballif.github.io/North40/privacyPolicy") {
+                                        UIApplication.shared.open(yourURL, options: [:], completionHandler: nil)
+                                    }
+                            }
+                            Rectangle().frame(height: 1)
+                            NavigationLink("Acknowledgments", destination: AcknowledgmentsView())
+                            Rectangle().frame(height: 1)
+                            
+                            
+                        }
                         
                         HStack {
                             Button("Delete Inaccessible Events") {
@@ -378,10 +397,9 @@ struct SettingsView: View {
                                 
                             }
                             Spacer()
-                        }
-                        HStack {
-                            Text("This will only delete any events that cannot be accessed in any way, such as events that are unscheduled and are not attached to any goals or people. ").font(.caption)
-                        }
+                        }.padding(.vertical, 10)
+                        caption("This will only delete any events that cannot be accessed in any way, such as events that are unscheduled and are not attached to any goals or people. To-do events will also not be deleted.")
+                        
                         
                         HStack {
                             Button("Export Database to File") {
@@ -411,10 +429,9 @@ struct SettingsView: View {
                                 Text("The database file has been saved to your app documents folder. ")
                             }
                             Spacer()
-                        }
-                        HStack {
-                            Text("Export your data base to a file for backup. ").font(.caption)
-                        }
+                        }.padding(.vertical, 10)
+                        caption("Export your data base to a file for backup. ")
+                        
                         HStack {
                             Button("Export all person photos") {
                                 let fetchRequest: NSFetchRequest<N40Person> = N40Person.fetchRequest()
@@ -441,7 +458,7 @@ struct SettingsView: View {
                                 }
                             }
                             Spacer()
-                        }.padding(.vertical)
+                        }.padding(.vertical, 10)
                         HStack {
                             Button("Import Database File") {
                                 importConfirm.toggle()
@@ -466,7 +483,7 @@ struct SettingsView: View {
                                 }
                             }
                             Spacer()
-                        }
+                        }.padding(.vertical, 10)
                         
                         
                     }
@@ -477,6 +494,13 @@ struct SettingsView: View {
         }
     }
     
+    
+    private func caption(_ text: String) -> some View {
+        return HStack {
+            Text(text).font(.caption)
+            Spacer()
+        }
+    }
 
 }
 
@@ -491,4 +515,20 @@ fileprivate func readFile(fileURL: URL) -> String {
     }
     
     return text
+}
+
+
+
+
+struct AcknowledgmentsView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Acknowledgments").font(.title)
+                
+                Text("Sven Tiigi for YouTubePlayerView").font(.title2)
+                Text("The MIT License (MIT)\n\nCopyright (c) 2023 Sven Tiigi\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. \n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.")
+            }.padding()
+        }
+    }
 }

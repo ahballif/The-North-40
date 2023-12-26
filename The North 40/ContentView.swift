@@ -27,8 +27,7 @@ struct ContentView: View {
                         Label("Dashboard", systemImage: "gauge.medium")
                     }
                     .toolbarBackground(.visible, for: .tabBar)
-            }
-            if UIDevice.current.userInterfaceIdiom != .pad {
+            } else {
                 ToDoView2()
                     .environment(\.managedObjectContext, viewContext)
                     .tabItem {

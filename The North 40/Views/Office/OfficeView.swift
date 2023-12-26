@@ -36,12 +36,12 @@ struct OfficeView: View {
                     NavigationLink(destination: GroupsView()) {
                         Label("Person Groups", systemImage: "person.3")
                     }
-                    NavigationLink(destination: StatsView()) {
-                        Label("My Stats", systemImage: "chart.bar")
-                    }
-                    NavigationLink(destination: MapView()) {
-                        Label("Map", systemImage: "map")
-                    }
+//                    NavigationLink(destination: StatsView()) {
+//                        Label("My Stats", systemImage: "chart.bar")
+//                    }
+//                    NavigationLink(destination: MapView()) {
+//                        Label("Map", systemImage: "map")
+//                    }
                     NavigationLink(destination: PersonListView(archive: true)) {
                         Label("Archived People", systemImage: "person.badge.clock")
                     }
