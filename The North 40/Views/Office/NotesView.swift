@@ -40,6 +40,21 @@ struct NotesView: View {
                             editNoteItem = note
                         }.foregroundColor(((colorScheme == .dark) ? .white : .black))
                             .swipeActions {
+                                Button(role: .destructive) {
+                                    note.archived = true
+                                    
+                                    do {
+                                        try viewContext.save()
+                                    }
+                                    catch {
+                                        // Handle Error
+                                        print("Error info: \(error)")
+                                    }
+                                } label: {
+                                    Label("Archive", systemImage: "archivebox")
+                                }.tint(.purple)
+                            }
+                            .contextMenu {
                                 Button {
                                     note.archived = true
                                     
@@ -51,8 +66,8 @@ struct NotesView: View {
                                         print("Error info: \(error)")
                                     }
                                 } label: {
-                                    Label("Archive", systemImage: "Archive Box")
-                                }.tint(.purple)
+                                    Label("Archive", systemImage: "archivebox")
+                                }
                             }
                     }.sheet(item: $editNoteItem) {item in
                         EditNoteView(editNote: item)
@@ -120,11 +135,18 @@ struct NotesView: View {
                                             }
                                         }
                                         .swipeActions {
-                                            Button {
+                                            Button(role: .destructive) {
                                                 archiveNote.archived = false
                                             } label: {
                                                 Label("Unarchive", systemImage: "arrowshape.left.fill")
                                             }.tint(.green)
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                archiveNote.archived = false
+                                            } label: {
+                                                Label("Unarchive", systemImage: "arrowshape.left.fill")
+                                            }.foregroundColor(.black)
                                         }
                                     }
                                 }

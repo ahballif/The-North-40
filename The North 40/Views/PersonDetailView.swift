@@ -21,7 +21,7 @@ struct PersonDetailView: View {
     @State private var showingEditNoteSheet = false
     
     
-    @State private var photoImage: Image?
+    @State private var photo: UIImage?
     @State private var showingFullImageSheet = false
     
     @State private var showingEditPersonSheet = false
@@ -31,16 +31,18 @@ struct PersonDetailView: View {
         VStack {
             
             HStack {
-                if photoImage != nil {
+                if photo != nil {
+                    let croppedImage: UIImage = cropImageToSquare(image: photo!) ?? photo!
+                    let photoImage: Image = Image(uiImage: croppedImage)
                     Button {
                         showingFullImageSheet.toggle()
                     } label: {
-                        photoImage!
+                        photoImage
                             .resizable()
                             .frame(width:75, height: 75)
                             .clipShape(Circle())
                     }.sheet(isPresented: $showingFullImageSheet) {
-                        photoImage!
+                        Image(uiImage: photo!) // don't crop it on the sheet
                             .resizable()
                             .scaledToFit()
                     }
@@ -52,20 +54,13 @@ struct PersonDetailView: View {
                     showingEditPersonSheet.toggle()
                 } label: {
                     Image(systemName: "square.and.pencil.circle.fill")
-                }.sheet(isPresented: $showingEditPersonSheet) {
+                }.sheet(isPresented: $showingEditPersonSheet, onDismiss: loadImage) {
                     EditPersonView(editPerson: selectedPerson)
                 }
             }
             .padding()
             .onAppear {
-                //Load the image from data
-                if selectedPerson.photo != nil {
-                    if let uiImage = UIImage(data: selectedPerson.photo!) {
-                        photoImage = Image(uiImage: uiImage)
-                    } else {
-                        print("Could not import contact photo")
-                    }
-                }
+                loadImage()
             }
             .if(selectedPerson.hasFavoriteColor) {view in
                 view.background(
@@ -199,6 +194,20 @@ struct PersonDetailView: View {
         }
         
         
+    }
+    
+    private func loadImage() {
+        //Load the image from data
+        if selectedPerson.photo != nil {
+            if let uiImage = UIImage(data: selectedPerson.photo!) {
+                photo = uiImage
+            } else {
+                photo = nil
+                print("Could not import contact photo")
+            }
+        } else {
+            photo = nil
+        }
     }
 }
 

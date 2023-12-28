@@ -445,7 +445,7 @@ struct SettingsView: View {
                                                     
                                                     if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                                                         
-                                                        let filename = dir.appendingPathComponent(("\(person.title.capitalized)\(person.firstName.capitalized)\(person.lastName.capitalized)\(person.company.capitalized)"))
+                                                        let filename = dir.appendingPathComponent(("\(person.title.capitalized)\(person.firstName.capitalized)\(person.lastName.capitalized)\(person.company.capitalized).png"))
                                                         try? data.write(to: filename)
                                                         
                                                     }
@@ -484,7 +484,12 @@ struct SettingsView: View {
                             }
                             Spacer()
                         }.padding(.vertical, 10)
-                        
+                        HStack {
+                            Button("Import Person Pictures") {
+                                Importer.importPersonPictures(viewContext: viewContext)
+                            }
+                            Spacer()
+                        }.padding(.vertical, 10)
                         
                     }
                     

@@ -225,6 +225,32 @@ struct ToDoView3: View {
                                                                     .tint(.cyan)
                                                                 }
                                                             }
+                                                            .contextMenu {
+                                                                //just have both!
+                                                                if showingBucketlist {
+                                                                    Button("Unbucket") {
+                                                                        eachEvent.bucketlist = false
+                                                                        
+                                                                        do {
+                                                                            try viewContext.save()
+                                                                        } catch {
+                                                                            // handle error
+                                                                        }
+                                                                    }
+                                                                    
+                                                                } else {
+                                                                    Button("Bucket") {
+                                                                        eachEvent.bucketlist = true
+                                                                        
+                                                                        do {
+                                                                            try viewContext.save()
+                                                                        } catch {
+                                                                            // handle error
+                                                                        }
+                                                                    }
+                                                                    
+                                                                }
+                                                            }
                                                     }
                                                 }
                                             }
@@ -238,30 +264,56 @@ struct ToDoView3: View {
                                                             ForEach(goalSet) {eachEvent in
                                                                 toDoCell(eachEvent)
                                                                     .swipeActions {
-                                                                    if showingBucketlist {
-                                                                        Button("Unbucket", role: .destructive) {
-                                                                            eachEvent.bucketlist = false
-                                                                            
-                                                                            do {
-                                                                                try viewContext.save()
-                                                                            } catch {
-                                                                                // handle error
+                                                                        if showingBucketlist {
+                                                                            Button("Unbucket", role: .destructive) {
+                                                                                eachEvent.bucketlist = false
+                                                                                
+                                                                                do {
+                                                                                    try viewContext.save()
+                                                                                } catch {
+                                                                                    // handle error
+                                                                                }
                                                                             }
-                                                                        }
-                                                                        .tint(.cyan)
-                                                                    } else {
-                                                                        Button("Bucket", role: .destructive) {
-                                                                            eachEvent.bucketlist = true
-                                                                            
-                                                                            do {
-                                                                                try viewContext.save()
-                                                                            } catch {
-                                                                                // handle error
+                                                                            .tint(.cyan)
+                                                                        } else {
+                                                                            Button("Bucket", role: .destructive) {
+                                                                                eachEvent.bucketlist = true
+                                                                                
+                                                                                do {
+                                                                                    try viewContext.save()
+                                                                                } catch {
+                                                                                    // handle error
+                                                                                }
                                                                             }
+                                                                            .tint(.cyan)
                                                                         }
-                                                                        .tint(.cyan)
                                                                     }
-                                                                }
+                                                                    .contextMenu {
+                                                                        //just have both!
+                                                                        if showingBucketlist {
+                                                                            Button("Unbucket") {
+                                                                                eachEvent.bucketlist = false
+                                                                                
+                                                                                do {
+                                                                                    try viewContext.save()
+                                                                                } catch {
+                                                                                    // handle error
+                                                                                }
+                                                                            }
+                                                                            
+                                                                        } else {
+                                                                            Button("Bucket") {
+                                                                                eachEvent.bucketlist = true
+                                                                                
+                                                                                do {
+                                                                                    try viewContext.save()
+                                                                                } catch {
+                                                                                    // handle error
+                                                                                }
+                                                                            }
+                                                                            
+                                                                        }
+                                                                    }
                                                             }
                                                         }.headerProminence(.increased)
                                                         
@@ -296,6 +348,32 @@ struct ToDoView3: View {
                                                                                         }
                                                                                     }
                                                                                     .tint(.cyan)
+                                                                                }
+                                                                            }
+                                                                            .contextMenu {
+                                                                                //just have both!
+                                                                                if showingBucketlist {
+                                                                                    Button("Unbucket") {
+                                                                                        eachEvent.bucketlist = false
+                                                                                        
+                                                                                        do {
+                                                                                            try viewContext.save()
+                                                                                        } catch {
+                                                                                            // handle error
+                                                                                        }
+                                                                                    }
+                                                                                    
+                                                                                } else {
+                                                                                    Button("Bucket") {
+                                                                                        eachEvent.bucketlist = true
+                                                                                        
+                                                                                        do {
+                                                                                            try viewContext.save()
+                                                                                        } catch {
+                                                                                            // handle error
+                                                                                        }
+                                                                                    }
+                                                                                    
                                                                                 }
                                                                             }
                                                                     }

@@ -661,6 +661,45 @@ struct Importer {
     }
     
     
+    public static func importPersonPictures(viewContext: NSManagedObjectContext) {
+        let fetchRequest: NSFetchRequest<N40Person> = N40Person.fetchRequest()
+        do {
+            let fetchedResults = try viewContext.fetch(fetchRequest)
+            for eachPerson in fetchedResults {
+                let personFileName = "\(eachPerson.title.capitalized)\(eachPerson.firstName.capitalized)\(eachPerson.lastName.capitalized)\(eachPerson.company.capitalized).png"
+                let personImage: UIImage? = load(fileName: personFileName)
+                
+                if personImage != nil {
+                    eachPerson.photo = personImage!.pngData()
+                } else {
+                    
+                    //for older exports
+                    let personFileName2 = "\(eachPerson.title.capitalized)\(eachPerson.firstName.capitalized)\(eachPerson.lastName.uppercased())\(eachPerson.company.capitalized).png"
+                    let personImage2: UIImage? = load(fileName: personFileName2)
+                    if personImage2 != nil {
+                        eachPerson.photo = personImage2!.pngData()
+                    }
+                }
+            }
+            
+            saveContext(viewContext)
+        } catch { }
+    }
+    
+    private static func load(fileName: String) -> UIImage? {
+        let fileURL = documentsUrl.appendingPathComponent(fileName)
+        do {
+            let imageData = try Data(contentsOf: fileURL)
+            return UIImage(data: imageData)
+        } catch {
+            print("Error loading image : \(error)")
+        }
+        return nil
+    }
+    private static var documentsUrl: URL {
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    }
+    
 }
 
 fileprivate extension String {

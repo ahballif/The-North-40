@@ -184,37 +184,68 @@ struct PersonListView: View {
             }
         }.swipeActions {
             if !person.isArchived {
-                Button("Archive") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        withAnimation {
-                            person.isArchived = true
-                            
-                            do {
-                                try viewContext.save()
-                            } catch {
-                                // handle error
-                            }
-                            
-                            updater.updater.toggle()
+                Button("Archive", role: .destructive) {
+                    withAnimation {
+                        person.isArchived = true
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            // handle error
                         }
+                        
+                        updater.updater.toggle()
+                    }
+                }
+                .tint(.pink)
+            } else {
+                Button("Unarchive", role: .destructive) {
+                    withAnimation {
+                        person.isArchived = false
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            // handle error
+                        }
+                        
+                        updater.updater.toggle()
+                        
+                    }
+                }
+                .tint(.pink)
+            }
+        }
+        .contextMenu {
+            //just have both
+            if !person.isArchived {
+                Button("Archive") {
+                    withAnimation {
+                        person.isArchived = true
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            // handle error
+                        }
+                        
+                        updater.updater.toggle()
                     }
                 }
                 .tint(.pink)
             } else {
                 Button("Unarchive") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        withAnimation {
-                            person.isArchived = false
-                            
-                            do {
-                                try viewContext.save()
-                            } catch {
-                                // handle error
-                            }
-                            
-                            updater.updater.toggle()
-                            
+                    withAnimation {
+                        person.isArchived = false
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            // handle error
                         }
+                        
+                        updater.updater.toggle()
+                        
                     }
                 }
                 .tint(.pink)
