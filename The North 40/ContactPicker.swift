@@ -9,10 +9,9 @@ import Foundation
 import ContactsUI
 
 struct ContactPicker: UIViewControllerRepresentable {
-    
     typealias UIViewControllerType = EmbeddedContactPickerViewController
     @Environment(\.presentationMode) var presentationMode
-    
+    var dismissAction:() -> Void
     @Binding var selectedContact: CNContact?
     
     func makeCoordinator() -> Coordinator {
@@ -34,6 +33,7 @@ struct ContactPicker: UIViewControllerRepresentable {
         }
 
         func embeddedContactPickerViewControllerDidCancel(_ viewController: EmbeddedContactPickerViewController) {
+            parent.dismissAction()
             print("Cancelled")
         }
     }

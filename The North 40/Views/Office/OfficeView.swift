@@ -42,6 +42,9 @@ struct OfficeView: View {
 //                    NavigationLink(destination: MapView()) {
 //                        Label("Map", systemImage: "map")
 //                    }
+                    NavigationLink(destination: SmartSortView()) {
+                        Label("People Randomizer", systemImage: "lightbulb.led")
+                    }
                     NavigationLink(destination: PersonListView(archive: true)) {
                         Label("Archived People", systemImage: "person.badge.clock")
                     }

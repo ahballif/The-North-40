@@ -35,7 +35,7 @@ public struct SelectPeopleView: View {
     var editGroupView: EditGroupView?
     var editNoteView: EditNoteView?
     
-    var selectedPeopleList: [N40Person]
+    @State var selectedPeopleList: [N40Person]
     
     @State private var isArchived = false
     
@@ -43,140 +43,169 @@ public struct SelectPeopleView: View {
     
     @State private var showingAddPersonSheet = false
     
-    public var body: some View {
-        NavigationStack {
-            VStack {
-                HStack {
-                    Text("Sort all alphabetically: ")
-                    Spacer()
-                    Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
-                }.padding()
-                
-                List{
-                    Section {
-                        Button {
-                            showingAddPersonSheet.toggle()
-                        } label: {
-                            Label("Create New Person", systemImage: "plus")
-                        }.sheet(isPresented: $showingAddPersonSheet) {
-                            EditPersonView()
-                        }
-                    }
-                    if sortingAlphabetical {
-                        
-                        
-                        let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
-                        if noLetterLastNames.count > 0 {
-                            Section(header: Text("*")) {
-                                ForEach(noLetterLastNames, id: \.self) { person in
-                                    if editGroupView != nil {
-                                        //edit group view wants it displayed a little differently
-                                        //see if the person is already in the group.
-                                        if !person.getGroups.contains(editGroupView!.editGroup ?? N40Group()) {
-                                            if !selectedPeopleList.contains(person) {
-                                                personListItem(person: person)
-                                            }
-                                        }
-                                    } else {
-                                        if !selectedPeopleList.contains(person) {
-                                            personListItem(person: person)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        ForEach(alphabet, id: \.self) { letter in
-                            let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted { $0.lastName < $1.lastName }
-                            if (letterSet.count > 0) {
-                                Section(header: Text(letter)) {
-                                    ForEach(letterSet, id: \.self) { person in
-                                        if editGroupView != nil {
-                                            //edit group view wants it displayed a little differently
-                                            //see if the person is already in the group.
-                                            if !person.getGroups.contains(editGroupView!.editGroup ?? N40Group()) {
-                                                if !selectedPeopleList.contains(person) {
-                                                    personListItem(person: person)
-                                                }
-                                            }
-                                        } else {
-                                            if !selectedPeopleList.contains(person) {
-                                                personListItem(person: person)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        
-                    } else {
-                        ForEach(allGroups) {group in
-                            let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
-                            if groupSet.count > 0 {
-                                Section(header: Text(group.name)) {
-                                    //first a button to attach the whole group
-                                    Button("Attach Entire Group") {
-                                        for eachPerson in groupSet {
-                                            if editEventView != nil {
-                                                editEventView!.attachPerson(addPerson: eachPerson)
-                                            } else if editGoalView != nil {
-                                                editGoalView!.attachPerson(addPerson: eachPerson)
-                                            } else if editNoteView != nil {
-                                                editNoteView!.attachPerson(addPerson: eachPerson)
-                                            } else if editGroupView != nil {
-                                                editGroupView!.attachPerson(addPerson: eachPerson)
-                                            }
-                                        }
-                                        dismiss()
-                                    }.foregroundColor(.blue)
-                                    
-                                    ForEach(groupSet) {person in
-                                        if editGroupView != nil {
-                                            //edit group view wants it displayed a little differently
-                                            //see if the person is already in the group.
-                                            if !person.getGroups.contains(editGroupView!.editGroup ?? N40Group()) {
-                                                if !selectedPeopleList.contains(person) {
-                                                    personListItem(person: person)
-                                                }
-                                            }
-                                        } else {
-                                            if !selectedPeopleList.contains(person) {
-                                                personListItem(person: person)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {$0.lastName < $1.lastName}
-                        if ungroupedSet.count > 0 {
-                            Section(header: Text("Ungrouped People")) {
-                                ForEach(ungroupedSet) {person in
-                                    if editGroupView != nil {
-                                        //edit group view wants it displayed a little differently
-                                        //see if the person is already in the group.
-                                        if !person.getGroups.contains(editGroupView!.editGroup ?? N40Group()) {
-                                            if !selectedPeopleList.contains(person) {
-                                                personListItem(person: person)
-                                            }
-                                        }
-                                    } else {
-                                        if !selectedPeopleList.contains(person) {
-                                            personListItem(person: person)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                    }
-                }.listStyle(.insetGrouped)
-                    .padding(.horizontal, 3)
-            }.searchable(text: $searchText)
-        }
+    init(editEventView: EditEventView? = nil, editGoalView: EditGoalView? = nil, editGroupView: EditGroupView? = nil, editNoteView: EditNoteView? = nil, selectedPeopleList: [N40Person]) {
+        self.editEventView = editEventView
+        self.editGoalView = editGoalView
+        self.editGroupView = editGroupView
+        self.editNoteView = editNoteView
+        
+        self._selectedPeopleList = State(initialValue: selectedPeopleList)
     }
     
+    public var body: some View {
+        
+        VStack {
+            HStack {
+                Button("Cancel") {
+                    dismiss()
+                }
+                Spacer()
+                Button("Attach") {
+                    if editEventView != nil {
+                        editEventView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                    } else if editGoalView != nil {
+                        editGoalView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                    } else if editGroupView != nil {
+                        editGroupView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                    } else if editNoteView != nil {
+                        editNoteView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                    }
+                    dismiss()
+                }
+            }.padding()
+            HStack {
+                Text("Sort all alphabetically: ")
+                Spacer()
+                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
+            }.padding()
+            
+            List{
+                Section {
+                    Button {
+                        showingAddPersonSheet.toggle()
+                    } label: {
+                        Label("Create New Person", systemImage: "plus")
+                    }.sheet(isPresented: $showingAddPersonSheet) {
+                        EditPersonView()
+                    }
+                }
+                if sortingAlphabetical {
+                    
+                    
+                    let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                        if $0.lastName != $1.lastName { // first, compare by last names
+                            return $0.lastName < $1.lastName
+                        } else if $0.firstName != $1.firstName { //see if comparing by first names works
+                            return $0.firstName < $1.firstName
+                        } else { // All other fields are tied, break ties by last name
+                            return $0.company < $1.company
+                        }
+                    }
+                    if noLetterLastNames.count > 0 {
+                        Section(header: Text("*")) {
+                            ForEach(noLetterLastNames, id: \.self) { person in
+                                personListItem(person: person)
+                            }
+                        }
+                    }
+                    ForEach(alphabet, id: \.self) { letter in
+                        let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                            if $0.lastName != $1.lastName { // first, compare by last names
+                                return $0.lastName < $1.lastName
+                            } else if $0.firstName != $1.firstName { //see if comparing by first names works
+                                return $0.firstName < $1.firstName
+                            } else { // All other fields are tied, break ties by last name
+                                return $0.company < $1.company
+                            }
+                        }
+                        if (letterSet.count > 0) {
+                            Section(header: Text(letter)) {
+                                ForEach(letterSet, id: \.self) { person in
+                                    personListItem(person: person)
+                                }
+                            }
+                        }
+                    }
+                    
+                    
+                } else {
+                    ForEach(allGroups) {group in
+                        let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                            if $0.lastName != $1.lastName { // first, compare by last names
+                                return $0.lastName < $1.lastName
+                            } else if $0.firstName != $1.firstName { //see if comparing by first names works
+                                return $0.firstName < $1.firstName
+                            } else { // All other fields are tied, break ties by last name
+                                return $0.company < $1.company
+                            }
+                        }
+                        if groupSet.count > 0 {
+                            Section(header: Text(group.name)) {
+                                //first a button to attach the whole group
+                                
+                                Button {
+                                    if containsWholeGroup(groupSet: groupSet) {
+                                        for eachPerson in groupSet {
+                                            let idx = selectedPeopleList.firstIndex(of: eachPerson)
+                                            if idx != nil {
+                                                selectedPeopleList.remove(at: idx!)
+                                            }
+                                        }
+                                    } else {
+                                        for eachPerson in groupSet {
+                                            if !selectedPeopleList.contains(eachPerson) {
+                                                selectedPeopleList.append(eachPerson)
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    if containsWholeGroup(groupSet: groupSet) {
+                                        Label("Remove Entire Group", systemImage: "multiply")
+                                            .foregroundColor(.blue)
+                                    } else {
+                                        Label("Attach Entire Group", systemImage: "plus")
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                                
+                                ForEach(groupSet) {person in
+                                    personListItem(person: person)
+                                }
+                            }
+                        }
+                    }
+                    let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                        if $0.lastName != $1.lastName { // first, compare by last names
+                            return $0.lastName < $1.lastName
+                        } else if $0.firstName != $1.firstName { //see if comparing by first names works
+                            return $0.firstName < $1.firstName
+                        } else { // All other fields are tied, break ties by last name
+                            return $0.company < $1.company
+                        }
+                    }
+                    if ungroupedSet.count > 0 {
+                        Section(header: Text("Ungrouped People")) {
+                            ForEach(ungroupedSet) {person in
+                                personListItem(person: person)
+                            }
+                        }
+                    }
+                    
+                }
+            }.listStyle(.insetGrouped)
+                .padding(.horizontal, 3)
+        }.searchable(text: $searchText)
+        
+    }
     
+    private func containsWholeGroup(groupSet: [N40Person]) -> Bool {
+        for eachPerson in groupSet {
+            if !selectedPeopleList.contains(eachPerson) {
+                return false
+            }
+        }
+        return true
+    }
     
     
     private func personListItem (person: N40Person) -> some View {
@@ -186,16 +215,17 @@ public struct SelectPeopleView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            if editEventView != nil {
-                editEventView!.attachPerson(addPerson: person)
-            } else if editGoalView != nil {
-                editGoalView!.attachPerson(addPerson: person)
-            } else if editNoteView != nil {
-                editNoteView!.attachPerson(addPerson: person)
-            } else if editGroupView != nil {
-                editGroupView!.attachPerson(addPerson: person)
+            if selectedPeopleList.contains(person) {
+                let index = selectedPeopleList.firstIndex(of: person)
+                if index != nil {
+                    selectedPeopleList.remove(at: index!)
+                }
+            } else {
+                selectedPeopleList.append(person)
             }
-            dismiss()
+        }
+        .if(selectedPeopleList.contains(person)) {view in
+            view.listRowBackground(Color(hex: "#8fb398") ?? Color.gray)
         }
     }
 }

@@ -292,6 +292,11 @@ struct EditGoalView: View {
         }
     }
     
+    public func setSelectedPeople(selectedPeople: [N40Person]) {
+        //just resets the list to a new value
+        attachedPeople = selectedPeople
+    }
+    
     public func addEndGoal(newEndGoal: N40Goal) {
         endGoals.append(newEndGoal)
     }

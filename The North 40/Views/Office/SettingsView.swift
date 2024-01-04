@@ -282,7 +282,7 @@ struct SettingsView: View {
                             Text("Set time on to-do completion: ").padding().font(.title3)
                             Spacer()
                         }
-                        caption("When completing a to-do event, you can make the app update the time of the event to the time you checked it off. This setting is seperate for several different views.")
+                        caption("When completing a to-do event, you can make the app update the time of the event to the time you checked it off. This setting is separate for several different views.")
                         HStack {
                             Text("on To-Do View: ").padding(.leading)
                             Spacer()

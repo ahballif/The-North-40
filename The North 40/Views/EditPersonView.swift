@@ -53,6 +53,7 @@ struct EditPersonView: View {
     private let photoWidth = 512
     
     @State private var selectedGroups: [N40Group] = []
+    @State private var removeFromGroup: [N40Group] = []
     
     var body: some View {
         VStack {
@@ -78,7 +79,7 @@ struct EditPersonView: View {
                     Button("Import from Contacts") {
                         showingContactPickerSheet.toggle()
                     }.sheet(isPresented: $showingContactPickerSheet, onDismiss: {loadContact(contact: selectedContact)}) {
-                        ContactPicker(selectedContact: $selectedContact)
+                        ContactPicker(dismissAction: {showingContactPickerSheet = false}, selectedContact: $selectedContact)
                     }
                 }
                 
@@ -228,6 +229,7 @@ struct EditPersonView: View {
                                 if selectedGroups.contains(personGroup) && selectedGroups.firstIndex(of: personGroup) != nil {
                                     //remove the group
                                     selectedGroups.remove(at: selectedGroups.firstIndex(of: personGroup)!)
+                                    removeFromGroup.append(personGroup)
                                 } else {
                                     //add the group
                                     selectedGroups.append(personGroup)
@@ -386,6 +388,11 @@ struct EditPersonView: View {
             
             for eachGroup in selectedGroups {
                 eachGroup.addToPeople(newPerson)
+            }
+            for eachGroup in removeFromGroup {
+                if eachGroup.getPeople.contains(newPerson) {
+                    eachGroup.removeFromPeople(newPerson)
+                }
             }
             
             // To save the new entity to the persistent store, call

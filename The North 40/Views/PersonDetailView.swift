@@ -212,39 +212,46 @@ struct PersonDetailView: View {
 }
 
 struct PersonInfoView: View {
+    @Environment(\.colorScheme) var colorScheme
     
     @ObservedObject var selectedPerson: N40Person
     
-    
+    @FetchRequest var fetchedUnscheduledEvents: FetchedResults<N40Event>
+    init (selectedPerson: N40Person) {
+        self.selectedPerson = selectedPerson
+        
+        _fetchedUnscheduledEvents = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "(ANY attachedPeople == %@)", selectedPerson), NSPredicate(format: "isScheduled == NO")]))
+        
+    }
     
     var body: some View {
         VStack {
             ScrollView {
                 
                 
-                
-                if (selectedPerson.address != "") {
-                    addressBar(contactInfoValue: selectedPerson.address, selectedPerson: selectedPerson)
+                VStack {
+                    if (selectedPerson.address != "") {
+                        addressBar(contactInfoValue: selectedPerson.address, selectedPerson: selectedPerson)
+                    }
+                    if (selectedPerson.phoneNumber1 != "") {
+                        phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber1, selectedPerson: selectedPerson)
+                    }
+                    if (selectedPerson.phoneNumber2 != "") {
+                        phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber2, selectedPerson: selectedPerson)
+                    }
+                    if (selectedPerson.email1 != "") {
+                        emailBar(contactInfoValue: selectedPerson.email1, selectedPerson: selectedPerson)
+                    }
+                    if (selectedPerson.email2 != "") {
+                        emailBar(contactInfoValue: selectedPerson.email2, selectedPerson: selectedPerson)
+                    }
+                    if (selectedPerson.socialMedia1 != "") {
+                        socialMediaBar(contactInfoValue: selectedPerson.socialMedia1, selectedPerson: selectedPerson)
+                    }
+                    if (selectedPerson.socialMedia2 != "") {
+                        socialMediaBar(contactInfoValue: selectedPerson.socialMedia2, selectedPerson: selectedPerson)
+                    }
                 }
-                if (selectedPerson.phoneNumber1 != "") {
-                    phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber1, selectedPerson: selectedPerson)
-                }
-                if (selectedPerson.phoneNumber2 != "") {
-                    phoneNumberBar(contactInfoValue: selectedPerson.phoneNumber2, selectedPerson: selectedPerson)
-                }
-                if (selectedPerson.email1 != "") {
-                    emailBar(contactInfoValue: selectedPerson.email1, selectedPerson: selectedPerson)
-                }
-                if (selectedPerson.email2 != "") {
-                    emailBar(contactInfoValue: selectedPerson.email2, selectedPerson: selectedPerson)
-                }
-                if (selectedPerson.socialMedia1 != "") {
-                    socialMediaBar(contactInfoValue: selectedPerson.socialMedia1, selectedPerson: selectedPerson)
-                }
-                if (selectedPerson.socialMedia2 != "") {
-                    socialMediaBar(contactInfoValue: selectedPerson.socialMedia2, selectedPerson: selectedPerson)
-                }
-                
                 if (selectedPerson.hasBirthday) {
                     HStack {
                         Text("\(selectedPerson.firstName)'s Birthday is \(selectedPerson.birthday.getMonthAndDayString())")
@@ -275,6 +282,38 @@ struct PersonInfoView: View {
                     }.padding()
                 }
                 
+                
+                
+                //unscheduled events
+                if fetchedUnscheduledEvents.count > 0 {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(((colorScheme == .dark) ? .black : .white))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        ScrollViewReader {value in
+                            ScrollView {
+                                VStack {
+                                    Text("Unscheduled Events").font(.title2).padding()
+                                    //unscheduled first
+                                    ForEach(fetchedUnscheduledEvents) { eachEvent in
+                                        eventDisplayBoxView(myEvent: eachEvent, colorHex: selectedPerson.hasFavoriteColor ? selectedPerson.favoriteColor : "E5E5E5")
+                                            .padding(.horizontal)
+                                            .padding(.vertical, 2)
+                                        //other events get padding added inside TimelineObject, but these do not because they aren't processed as timeline objects.
+                                        
+                                    }
+                                    
+                                    
+                                    
+                                }
+                                .onAppear {
+                                    value.scrollTo("nowLine")
+                                }
+                            }
+                        }
+                    }.padding(.horizontal, 10)
+                        .padding(.top, 10)
+                }
             }
             
         }

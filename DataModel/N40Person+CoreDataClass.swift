@@ -12,4 +12,6 @@ import CoreData
 
 public class N40Person: NSManagedObject {
 
+    public var randomIndex: Double = 0.0 // used for smart sort
+    
 }

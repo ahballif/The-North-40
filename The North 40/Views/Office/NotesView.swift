@@ -369,6 +369,11 @@ struct EditNoteView: View {
         }
     }
     
+    public func setSelectedPeople(selectedPeople: [N40Person]) {
+        //just resets the list to a new value
+        attachedPeople = selectedPeople
+    }
+    
     public func attachGoal (addGoal: N40Goal)  {
         //attaches a goal to the attachedGoal array.
         attachedGoals.append(addGoal)
