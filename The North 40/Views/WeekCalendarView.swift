@@ -8,14 +8,14 @@
 import SwiftUI
 import CoreData
 
-fileprivate let numberOfDays = 5
+
 
 
 struct WeekCalendarView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.colorScheme) var colorScheme
     
-    
+    private let numberOfDays = UserDefaults.standard.bool(forKey: "show7Days") ? 7 : 5
     
     @State private var selectedDay = Date()
     
@@ -159,6 +159,8 @@ struct WeeklyPlanner: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.colorScheme) var colorScheme
     
+    private let numberOfDays = UserDefaults.standard.bool(forKey: "show7Days") ? 7 : 5
+    
     
     @FetchRequest var fetchedEvents: FetchedResults<N40Event>
     
@@ -194,9 +196,9 @@ struct WeeklyPlanner: View {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(0..<24) { hour in
                             HStack {
-                                Text("\(((hour+11) % 12)+1)")
+                                Text("\(((hour+11) % 12)+1)\(hour < 12 ? "a" : "p")")
                                     .font(.caption)
-                                    .frame(width: 20, alignment: .trailing)
+                                    .frame(width: 30, alignment: .trailing)
                                 Color.gray
                                     .frame(height: 1)
                             }
@@ -637,6 +639,9 @@ struct AllDayListWeek: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.colorScheme) var colorScheme
     
+    private let numberOfDays = UserDefaults.standard.bool(forKey: "show7Days") ? 7 : 5
+    
+    
     private var holidays: [Date: String]
     
     @FetchRequest var fetchedAllDays: FetchedResults<N40Event>
@@ -799,6 +804,7 @@ struct AllDayListWeek: View {
         var birthdayMonthPredicate = NSPredicate(format: "birthdayMonth == %i", Int16((beginningOfWeek as Date).get(.month)))
         var birthdayDayPredicate = NSPredicate(format: "birthdayDay == %i", Int16(filter.get(.day))) //dummy predicate to initialize the variable as a non-optional
         let hasBirthdayPredicate = NSPredicate(format: "hasBirthday == YES")
+        let isNotArchivedPredicate = NSPredicate(format: "isArchived == NO")
         
         let months = Array(Set([Int16((beginningOfWeek as Date).get(.month)), Int16((endOfWeek as Date).get(.month))]))
         if months.count > 1 {
@@ -817,7 +823,7 @@ struct AllDayListWeek: View {
         
         
         
-        _fetchedBirthdayBoys = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [birthdayDayPredicate, birthdayMonthPredicate, hasBirthdayPredicate]))
+        _fetchedBirthdayBoys = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [birthdayDayPredicate, birthdayMonthPredicate, hasBirthdayPredicate, isNotArchivedPredicate]))
         
         
         self.filteredDay = filter

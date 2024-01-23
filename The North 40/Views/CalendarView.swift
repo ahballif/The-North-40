@@ -635,9 +635,9 @@ struct DailyPlanner: View {
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(0..<24) { hour in
                             HStack {
-                                Text("\(((hour+11) % 12)+1)")
+                                Text("\(((hour+11) % 12)+1)\(hour < 12 ? "a" : "p")")
                                     .font(.caption)
-                                    .frame(width: 20, alignment: .trailing)
+                                    .frame(width: 30, alignment: .trailing)
                                 Color.gray
                                     .frame(height: 1)
                             }
@@ -1292,6 +1292,17 @@ extension Date {
 
         // Set Date Format
         dateFormatter.dateFormat = "MMM d, y"
+
+        // Convert Date to String
+        return dateFormatter.string(from: self)
+    }
+    
+    func dateAndTimeToString() -> String {
+        // Create Date Formatter
+        let dateFormatter = DateFormatter()
+
+        // Set Date Format
+        dateFormatter.dateFormat = "MMM d, y - hh:mm a"
 
         // Convert Date to String
         return dateFormatter.string(from: self)

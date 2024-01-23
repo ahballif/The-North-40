@@ -283,7 +283,7 @@ struct TimelineObject: View {
                                     .opacity(0.5)
                             )
                         
-                        Text("\(person!.firstName)'s Birthday!🎉").padding()
+                        Text(person!.birthday.getMonthString().prefix(3) + " \(person!.birthdayDay) - \(person!.firstName)'s Birthday!🎉").padding()
                     }
                 } else {
                     Text("nil birthday boy")

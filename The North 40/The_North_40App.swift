@@ -43,7 +43,8 @@ struct The_North_40App: App {
             "showEventsWithPersonColor":true,
             "todoSortByGoals":false,
             "colorToDoList":true,
-            "repeatByEndDate":true
+            "repeatByEndDate":true,
+            "show7Days":true
         ])
         
         

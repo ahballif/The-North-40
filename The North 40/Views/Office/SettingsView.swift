@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
+    @State private var show7Days = UserDefaults.standard.bool(forKey: "show7Days")
     
     @State private var smallestDivision = Int( 60 * DailyPlanner.minimumEventHeight / UserDefaults.standard.double(forKey: "hourHeight"))
     @State private var randomEventColor = UserDefaults.standard.bool(forKey: "randomEventColor")
@@ -133,6 +134,15 @@ struct SettingsView: View {
                                 .labelsHidden()
                                 .onChange(of: showHolidays) {_ in
                                     UserDefaults.standard.set(showHolidays, forKey: "showHolidays")
+                                }
+                        }
+                        HStack {
+                            Text("Show 7 Days on Weekly Calendar View")
+                            Spacer()
+                            Toggle("show7Days", isOn: $show7Days)
+                                .labelsHidden()
+                                .onChange(of: show7Days) {_ in
+                                    UserDefaults.standard.set(show7Days, forKey: "show7Days")
                                 }
                         }
                     }

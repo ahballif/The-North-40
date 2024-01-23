@@ -18,7 +18,7 @@ struct ToDoView2: View {
     //either we sort by goals or we don't, and if we don't we sort by date.
     @State private var sortByGoals = UserDefaults.standard.bool(forKey: "todoSortByGoals")
     
-    private let numberOfDaysAhead = 30
+    private let numberOfDaysAhead = 8
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "eventType == %i", N40Event.TODO_TYPE), NSPredicate(format: "status != %i", N40Event.HAPPENED)]), animation: .default)
     private var mainTodos: FetchedResults<N40Event> // all undone scheduled todos
@@ -415,18 +415,18 @@ struct ToDoView2: View {
                         }
                     }
                 }
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button {
-                        sortByGoals.toggle()
-                        UserDefaults.standard.set(sortByGoals, forKey: "todoSortByGoals")
-                    } label: {
-                        if sortByGoals {
-                            Image(systemName: "calendar.badge.clock")
-                        } else {
-                            Image(systemName: "pencil.and.ruler.fill")
-                        }
-                    }
-                }
+//                ToolbarItemGroup(placement: .navigationBarTrailing) {
+//                    Button {
+//                        sortByGoals.toggle()
+//                        UserDefaults.standard.set(sortByGoals, forKey: "todoSortByGoals")
+//                    } label: {
+//                        if sortByGoals {
+//                            Image(systemName: "calendar.badge.clock")
+//                        } else {
+//                            Image(systemName: "pencil.and.ruler.fill")
+//                        }
+//                    }
+//                }
             }
             .navigationTitle(Text("To-Do's"))
             .navigationBarTitleDisplayMode(.inline)

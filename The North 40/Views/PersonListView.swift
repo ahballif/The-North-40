@@ -292,7 +292,6 @@ struct SmartSortView: View {
     private var allGroups: FetchedResults<N40Group>
     
     var body: some View {
-        NavigationStack {
             VStack {
                 List {
                     randomizeOrder()
@@ -305,33 +304,33 @@ struct SmartSortView: View {
                 }.listStyle(.sidebar)
                     .padding(.horizontal, 3)
             }.navigationTitle(Text("People (Random Sort)"))
-        }
     }
     
     private func randomizeOrder() -> some View {
         
         for eachPerson in allPeople {
-            let randomFactor = Double.random(in: 0.0 ..< 100.0)/(eachPerson.isArchived ? 10 : 1)
+            //let randomFactor = Double.random(in: 0.0 ..< 140.0)
+            let isArchivedFactor = eachPerson.isArchived ? -100 : 0.0
             
-            let lastEventFactor = abs(Double(eachPerson.getTimelineEvents.first?.startDate.timeIntervalSinceNow ?? 0)/3600/24/7)*10
+            let lastEventFactor = abs(Double(eachPerson.getTimelineEvents.first?.startDate.timeIntervalSinceNow ?? 0)/3600/24/7)*15
             let hasEventsFactor = (eachPerson.getTimelineEvents.count == 0 ? 40.0 : 0.0)
             
-            let hasPhoneNumberFactor = eachPerson.phoneNumber1 == "" && eachPerson.phoneNumber2 == "" ? -35.0 : 0.0
-            let hasSocialMediaFactor = eachPerson.socialMedia1 == "" && eachPerson.socialMedia2 == "" ? -35.0 : 0.0
-            let hasEmailFactor = eachPerson.email1 == "" && eachPerson.email2 == "" ? -20.0 : 0.0
-            let hasAddressFactor = eachPerson.address == "" ? -20 : 0.0
-            let hasNoContactFactor = eachPerson.phoneNumber1 == "" && eachPerson.phoneNumber2 == "" && eachPerson.email1 == "" && eachPerson.email2 == "" && eachPerson.socialMedia1 == "" && eachPerson.socialMedia2 == "" && eachPerson.address == "" ? -40.0 : 0.0
-            let contactsFactor = hasPhoneNumberFactor + hasEmailFactor + hasSocialMediaFactor + hasAddressFactor + hasNoContactFactor
+            let hasPhoneNumberFactor = eachPerson.phoneNumber1 == "" && eachPerson.phoneNumber2 == "" ? -10.0 : 0.0
+            let hasSocialMediaFactor = eachPerson.socialMedia1 == "" && eachPerson.socialMedia2 == "" ? -10.0 : 0.0
+            let hasEmailFactor = eachPerson.email1 == "" && eachPerson.email2 == "" ? -10.0 : 0.0
+            let hasAddressFactor = eachPerson.address == "" ? -10 : 0.0
+            let hasNoContactFactor = eachPerson.phoneNumber1 == "" && eachPerson.phoneNumber2 == "" && eachPerson.email1 == "" && eachPerson.email2 == "" && eachPerson.socialMedia1 == "" && eachPerson.socialMedia2 == "" && eachPerson.address == "" ? -100.0 : 0.0
+            let contactsFactor = hasNoContactFactor + hasPhoneNumberFactor + hasEmailFactor + hasSocialMediaFactor + hasAddressFactor
             
-            let numberOfTimelineEventsFactor = Double(eachPerson.getTimelineEvents.count) * 20.0
+            let numberOfTimelineEventsFactor = Double(eachPerson.getTimelineEvents.count) * -5.0
             
             var groupsFactor = 0.0
             for eachGroup in eachPerson.getGroups {
                 groupsFactor += Double(eachGroup.priorityIndex)/Double(allGroups.count)*150.0
             }
             
-            let finalScore = randomFactor + lastEventFactor + hasEventsFactor + contactsFactor + numberOfTimelineEventsFactor + groupsFactor
-            eachPerson.randomIndex = randomFactor
+            let finalScore =  lastEventFactor + hasEventsFactor + contactsFactor + numberOfTimelineEventsFactor + groupsFactor + isArchivedFactor //+ randomFactor
+            eachPerson.randomIndex = finalScore
             
         }
         
@@ -354,12 +353,18 @@ struct SmartSortView: View {
                     } else {
                         Text("\(person.company)").bold()
                     }
-                    Text("\(person.randomIndex)")
+                    //Text("\(person.randomIndex)")
                     Spacer()
                 }
                 if person.getTimelineEvents.first != nil {
                     HStack {
                         Text("Last event: \(person.getTimelineEvents.first!.startDate.dateOnlyToString())").font(.caption)
+                        Spacer()
+                    }
+                }
+                if person.getTimelineEvents.filter({$0.startDate > Date() && $0.isScheduled}).count > 0 {
+                    HStack{
+                        Text("Next event: \(person.getTimelineEvents.filter({$0.startDate > Date() && $0.isScheduled}).sorted(by: {$0.startDate < $1.startDate}).first!.startDate.dateAndTimeToString())").font(.caption)
                         Spacer()
                     }
                 }
@@ -436,3 +441,4 @@ struct SmartSortView: View {
         }
     }
 }
+

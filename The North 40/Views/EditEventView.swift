@@ -370,9 +370,11 @@ struct EditEventView: View {
         }.padding()
             .onAppear {
                 populateFields()
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.51) {  /// Anything over 0.5 seems to work
                     self.focusedField = .field
                 }
+                
             }
             .toolbar {
                 if (editEvent != nil) {
@@ -615,6 +617,7 @@ struct EditEventView: View {
                                         Text(option)
                                     }
                                 }.disabled(!isScheduled)
+                                    
                                 
                                 Spacer()
                                 
@@ -851,6 +854,7 @@ struct EditEventView: View {
             
             chosenStartDate = editEvent!.startDate
             
+            
             duration = Int(editEvent?.duration ?? 0)
             contactMethod = N40Event.CONTACT_OPTIONS[Int(editEvent?.contactMethod ?? Int16(UserDefaults.standard.integer(forKey: "defaultContactMethod"))) ]
             eventType = N40Event.EVENT_TYPE_OPTIONS[Int(editEvent?.eventType  ?? Int16(UserDefaults.standard.integer(forKey: "defaultCalendarEventType")))]
@@ -902,6 +906,7 @@ struct EditEventView: View {
             selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
         }
         
+        repeatUntil = chosenStartDate
         
         chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
         
