@@ -45,7 +45,7 @@ struct OfficeView: View {
                     NavigationLink(destination: SmartSortView()) {
                         Label("People Randomizer", systemImage: "lightbulb.led")
                     }
-                    NavigationLink(destination: PersonListView(archive: true)) {
+                    NavigationLink(destination: PersonListView2(archive: true)) {
                         Label("Archived People", systemImage: "person.badge.clock")
                     }
                     NavigationLink(destination: SettingsView()) {

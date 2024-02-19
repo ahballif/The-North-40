@@ -538,7 +538,7 @@ fileprivate struct ToDoListItem: View {
                             toDo.status = 3
                             updateFunc()
                             
-                            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView") {
+                            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView")  && (!UserDefaults.standard.bool(forKey: "onlyScheduleUnscheduledTodos") || !toDo.isScheduled) {
                                 toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                                 toDo.isScheduled = true
                                 if UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos") {

@@ -44,7 +44,8 @@ struct The_North_40App: App {
             "todoSortByGoals":false,
             "colorToDoList":true,
             "repeatByEndDate":true,
-            "show7Days":true
+            "show7Days":true,
+            "onlyScheduleUnscheduledTodos":false
         ])
         
         

@@ -16,7 +16,7 @@ struct PersonListView: View {
     let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     
     @State private var showingEditPersonSheet = false
-    @State private var showingArchivedPeopleSheet = false
+    @State private var showingArchivedPeopleSheet = false //doesn't get used
     
     @FetchRequest var allPeople: FetchedResults<N40Person>
     @FetchRequest var allGroups: FetchedResults<N40Group>

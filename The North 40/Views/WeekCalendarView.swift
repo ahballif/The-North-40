@@ -8,7 +8,11 @@
 import SwiftUI
 import CoreData
 
-
+fileprivate extension Date {
+    func dayNumberOfWeek() -> Int? {
+        return Calendar.current.dateComponents([.weekday], from: self).weekday
+    }
+}
 
 
 struct WeekCalendarView: View {
@@ -17,7 +21,7 @@ struct WeekCalendarView: View {
     
     private let numberOfDays = UserDefaults.standard.bool(forKey: "show7Days") ? 7 : 5
     
-    @State private var selectedDay = Date()
+    @State private var selectedDay = Calendar.current.date(byAdding: .day, value: -1*(Date().dayNumberOfWeek() ?? 1) + 1, to: Date()) ?? Date()
     
     //@State private var showingInfoEvents = UserDefaults.standard.bool(forKey: "showingInfoEvents")
     @State private var showingInfoEvents = true
@@ -108,9 +112,19 @@ struct WeekCalendarView: View {
                 
                 
                 
-                Button("Today") {
-                    selectedDay = Date()
+                Button {
+                    if selectedDay.startOfDay == Date().startOfDay {
+                        selectedDay = Calendar.current.date(byAdding: .day, value: -1*(Date().dayNumberOfWeek() ?? 1) + 1, to: Date()) ?? Date()
+                    } else {
+                        selectedDay = Date()
+                    }
                     
+                } label: {
+                    if selectedDay.startOfDay == Date().startOfDay {
+                        Text("Sunday")
+                    } else {
+                        Text("Today")
+                    }
                 }
             }
             .padding(.horizontal)
@@ -593,7 +607,7 @@ struct WeeklyPlanner: View {
         if (toDo.status == 0) {
             toDo.status = 3
             
-            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
+            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") && (!UserDefaults.standard.bool(forKey: "onlyScheduleUnscheduledTodos") || !toDo.isScheduled) {
                 toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                 toDo.isScheduled = true
                 if UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos") {

@@ -37,6 +37,8 @@ struct SettingsView: View {
     @State private var setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
     @State private var roundScheduleCompletedTodos = UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos")
     
+    @State private var onlyScheduleUnscheduledTodos = UserDefaults.standard.bool(forKey: "onlyScheduleUnscheduledTodos")
+    
     @State private var colorToDoList = UserDefaults.standard.bool(forKey: "colorToDoList")
     
     @State private var showHolidays = UserDefaults.standard.bool(forKey: "showHolidays")
@@ -348,6 +350,16 @@ struct SettingsView: View {
                                 }
                         }
                         caption("Round the time of the event based on the calendar resolution determined above in calendar settings.")
+                        
+                        HStack{
+                            Text("Only Schedule Unscheduled Todos: ")
+                            Spacer()
+                            Toggle("onlyScheduleUnscheduledTodos", isOn: $onlyScheduleUnscheduledTodos)
+                                .labelsHidden()
+                                .onChange(of: onlyScheduleUnscheduledTodos) {_ in
+                                    UserDefaults.standard.set(onlyScheduleUnscheduledTodos, forKey: "onlyScheduleUnscheduledTodos")
+                                }
+                        }
                     }
                     
                     

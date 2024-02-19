@@ -312,8 +312,9 @@ struct AllDayList: View {
         let birthdayMonthPredicate = NSPredicate(format: "birthdayMonth == %i", Int16(filter.get(.month)))
         let birthdayDayPredicate = NSPredicate(format: "birthdayDay == %i", Int16(filter.get(.day)))
         let hasBirthdayPredicate = NSPredicate(format: "hasBirthday == YES")
+        let isNotArchivedPredicate = NSPredicate(format: "isArchived == NO")
         
-        _fetchedBirthdayBoys = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [birthdayDayPredicate, birthdayMonthPredicate, hasBirthdayPredicate]))
+        _fetchedBirthdayBoys = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [birthdayDayPredicate, birthdayMonthPredicate, hasBirthdayPredicate, isNotArchivedPredicate]))
         
         
         self.filteredDay = filter
@@ -1005,7 +1006,7 @@ struct DailyPlanner: View {
         if (toDo.status == 0) {
             toDo.status = 3
             
-            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") {
+            if UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView") && (!UserDefaults.standard.bool(forKey: "onlyScheduleUnscheduledTodos") || !toDo.isScheduled) {
                 toDo.startDate = Calendar.current.date(byAdding: .minute, value: -1*Int(toDo.duration), to: Date()) ?? Date()
                 toDo.isScheduled = true
                 if UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos") {

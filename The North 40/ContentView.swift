@@ -23,27 +23,32 @@ struct ContentView: View {
     }
     
     private let cornerRadius = 10.0
-    private let tabOpacity = 0.4
+    private let tabOpacity = 0.6
+    private let selectedBuff = 0.2
     private let tabColor = Color(red: 3.0/255.0, green: 110.0/255.0, blue: 20.0/255.0)
+    
     
     var body: some View {
         VStack {
-            //Show the selected Tab
-            if selectedTab == .dashboard {
-                DashboardView()
-            } else if selectedTab == .todoview {
-                ToDoView2()
-            } else if selectedTab == .weekcalendar {
-                WeekCalendarView()
-            } else if selectedTab == .calendar {
-                CalendarView()
-            } else if selectedTab == .personlist {
-                PersonListView()
-            } else if selectedTab == .goallist {
-                GoalListView2()
-            } else {
-                //office tab
-                OfficeView()
+            ZStack {
+                
+                //Show the selected Tab
+                if selectedTab == .dashboard {
+                    DashboardView()
+                } else if selectedTab == .todoview {
+                    ToDoView2()
+                } else if selectedTab == .weekcalendar {
+                    WeekCalendarView()
+                } else if selectedTab == .calendar {
+                    CalendarView()
+                } else if selectedTab == .personlist {
+                    PersonListView2(archive: false)
+                } else if selectedTab == .goallist {
+                    GoalListView2()
+                } else {
+                    //office tab
+                    OfficeView()
+                }
             }
             HStack{
                 if UIDevice.current.userInterfaceIdiom == .pad {
@@ -51,7 +56,7 @@ struct ContentView: View {
                         selectedTab = .dashboard
                     } label: {
                         ZStack {
-                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .dashboard ? 0.0 : selectedBuff))
                             VStack {
                                 Image(systemName: "gauge.medium")
                                 Text("Dashboard").font(.caption)
@@ -63,7 +68,7 @@ struct ContentView: View {
                         selectedTab = .weekcalendar
                     } label: {
                         ZStack {
-                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .weekcalendar ? 0.0 : selectedBuff))
                             VStack {
                                 Image(systemName: "calendar")
                                 Text("Schedule").font(.caption)
@@ -76,7 +81,7 @@ struct ContentView: View {
                         selectedTab = .todoview
                     } label: {
                         ZStack {
-                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .todoview ? 0.0 : selectedBuff))
                             VStack {
                                 Image(systemName: "checklist")
                                 Text("To Do's").font(.caption)
@@ -87,7 +92,7 @@ struct ContentView: View {
                         selectedTab = .calendar
                     } label: {
                         ZStack {
-                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                            RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .calendar ? 0.0 : selectedBuff))
                             VStack {
                                 Image(systemName: "calendar")
                                 Text("Schedule").font(.caption)
@@ -100,7 +105,7 @@ struct ContentView: View {
                     selectedTab = .personlist
                 } label: {
                     ZStack {
-                        RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                        RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .personlist ? 0.0 : selectedBuff))
                         VStack {
                             Image(systemName: "person.fill")
                             Text("People").font(.caption)
@@ -111,7 +116,7 @@ struct ContentView: View {
                     selectedTab = .goallist
                 } label: {
                     ZStack {
-                        RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                        RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .goallist ? 0.0 : selectedBuff))
                         VStack {
                             Image(systemName: "pencil.and.ruler.fill")
                             Text("Goals").font(.caption)
@@ -122,7 +127,7 @@ struct ContentView: View {
                     selectedTab = .office
                 } label: {
                     ZStack {
-                        RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity)
+                        RoundedRectangle(cornerRadius: cornerRadius).foregroundColor(tabColor).opacity(tabOpacity - (selectedTab == .office ? 0.0 : selectedBuff))
                         VStack {
                             Image(systemName: "books.vertical")
                             Text("Office").font(.caption)

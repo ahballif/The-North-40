@@ -76,7 +76,9 @@ extension N40Person {
         return title + " " + firstName + " " + lastName
     }
     
-    
+    public func isInGroup(_ group: N40Group) -> Bool {
+        return getGroups.contains(group)
+    }
     
 }
 

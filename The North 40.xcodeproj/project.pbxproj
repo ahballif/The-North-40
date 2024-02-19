@@ -61,6 +61,7 @@
 		07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9EAE42B2A21E800221C3E /* DashboardView.swift */; };
 		07A9EAE92B2D05EE00221C3E /* holidays.csv in Resources */ = {isa = PBXBuildFile; fileRef = 07A9EAE82B2D05EE00221C3E /* holidays.csv */; };
 		07C5601D2ADB1DA600F2EC88 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */; };
+		07D60CB62B6011CB0086BDBF /* PersonListView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D60CB52B6011CB0086BDBF /* PersonListView2.swift */; };
 		07FBD1FC2B28DAC70003B04C /* WeekCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */; };
 /* End PBXBuildFile section */
 
@@ -143,6 +144,7 @@
 		07A9EAE42B2A21E800221C3E /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		07A9EAE82B2D05EE00221C3E /* holidays.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = holidays.csv; sourceTree = "<group>"; };
 		07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactPicker.swift; path = "The North 40/ContactPicker.swift"; sourceTree = SOURCE_ROOT; };
+		07D60CB52B6011CB0086BDBF /* PersonListView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonListView2.swift; sourceTree = "<group>"; };
 		07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekCalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -309,6 +311,7 @@
 				07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */,
 				0711DED92A9A3E8A006C0005 /* TimelineView.swift */,
 				0768C77D2A89B2DE00E29EBD /* PersonListView.swift */,
+				07D60CB52B6011CB0086BDBF /* PersonListView2.swift */,
 				07241D262A9596B2009DE0E0 /* PersonDetailView.swift */,
 				0768C77F2A89B2F400E29EBD /* GoalListView.swift */,
 				076773722B348CC4009454A4 /* GoalListView2.swift */,
@@ -499,6 +502,7 @@
 				0711DF1D2AAA4635006C0005 /* EnvelopeTransferView.swift in Sources */,
 				0711DEFA2AA392BF006C0005 /* N40Envelope+CoreDataClass.swift in Sources */,
 				0768C7732A87188C00E29EBD /* N40Event+CoreDataProperties.swift in Sources */,
+				07D60CB62B6011CB0086BDBF /* PersonListView2.swift in Sources */,
 				0768C7052A81E15600E29EBD /* The_North_40.xcdatamodeld in Sources */,
 				079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */,
 				076773752B35F71F009454A4 /* ToDoView3.swift in Sources */,
@@ -660,7 +664,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -696,7 +700,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;

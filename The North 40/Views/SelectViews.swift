@@ -28,7 +28,7 @@ public struct SelectPeopleView: View {
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
     private var allGroups: FetchedResults<N40Group>
     
-    @State private var sortingAlphabetical = false
+    @State private var sortingAlphabetical = true
     
     var editEventView: EditEventView?
     var editGoalView: EditGoalView?
@@ -96,7 +96,7 @@ public struct SelectPeopleView: View {
                         if sortingAlphabetical {
                             
                             
-                            let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                            let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                 if $0.lastName != $1.lastName { // first, compare by last names
                                     return $0.lastName < $1.lastName
                                 } else if $0.firstName != $1.firstName { //see if comparing by first names works
@@ -113,7 +113,7 @@ public struct SelectPeopleView: View {
                                 }
                             }
                             ForEach(alphabet, id: \.self) { letter in
-                                let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                                let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                     if $0.lastName != $1.lastName { // first, compare by last names
                                         return $0.lastName < $1.lastName
                                     } else if $0.firstName != $1.firstName { //see if comparing by first names works
@@ -134,7 +134,7 @@ public struct SelectPeopleView: View {
                             
                         } else {
                             ForEach(allGroups) {group in
-                                let groupSet: [N40Person] = group.getPeople.filter{ $0.isArchived == isArchived && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                                let groupSet: [N40Person] = group.getPeople.filter{ (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                     if $0.lastName != $1.lastName { // first, compare by last names
                                         return $0.lastName < $1.lastName
                                     } else if $0.firstName != $1.firstName { //see if comparing by first names works
@@ -185,7 +185,7 @@ public struct SelectPeopleView: View {
                                     }
                                 }
                             }
-                            let ungroupedSet = fetchedPeople.reversed().filter { $0.isArchived == isArchived && $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
+                            let ungroupedSet = fetchedPeople.reversed().filter { $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
                                 if $0.lastName != $1.lastName { // first, compare by last names
                                     return $0.lastName < $1.lastName
                                 } else if $0.firstName != $1.firstName { //see if comparing by first names works

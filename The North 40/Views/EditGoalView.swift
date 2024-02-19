@@ -230,8 +230,9 @@ struct EditGoalView: View {
                 }
             }
             
-            newGoal.priorityIndex = getDefaultPriorityIndex()
-            
+            if editGoal == nil {
+                newGoal.priorityIndex = getDefaultPriorityIndex()
+            }
             
             // To save the new entity to the persistent store, call
             // save on the context
