@@ -226,7 +226,6 @@
 				0792D8CC2ACE5E3A0022D073 /* The North 40.entitlements */,
 				07180B042AC9BD36008DC9E0 /* The-North-40-Info.plist */,
 				07180B022AC874B7008DC9E0 /* ExportImportData.swift */,
-				07A9EAE42B2A21E800221C3E /* DashboardView.swift */,
 				079F068F2A8ED215009A01F5 /* Views */,
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
 				0768C6F82A81E15600E29EBD /* The_North_40App.swift */,
@@ -298,6 +297,7 @@
 		079F068F2A8ED215009A01F5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				07A9EAE42B2A21E800221C3E /* DashboardView.swift */,
 				075D63072B31FE83009905FA /* SelectViews.swift */,
 				079F06CC2A8F19B2009A01F5 /* EditEventView.swift */,
 				075FA06F2A94F2DD00E2E46A /* EditGoalView.swift */,
@@ -664,7 +664,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -700,7 +700,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;

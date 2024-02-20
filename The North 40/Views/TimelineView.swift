@@ -69,8 +69,8 @@ struct TimelineView: View {
             if selectedGoal != nil && UserDefaults.standard.bool(forKey: "showEventsInGoalColor") {
                 eventColor = selectedGoal!.color
             } else if selectedPerson != nil && UserDefaults.standard.bool(forKey: "showEventsWithPersonColor") {
-                if selectedPerson!.hasFavoriteColor {
-                    eventColor = selectedPerson!.favoriteColor
+                if eachEvent.getAttachedGoals.count > 0 {
+                    eventColor = eachEvent.getAttachedGoals.first?.color ?? eventColor
                 } else if !UserDefaults.standard.bool(forKey: "showNoGoalEventsGray") {
                     eventColor = eachEvent.color
                 }

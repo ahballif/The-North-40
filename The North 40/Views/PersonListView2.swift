@@ -13,10 +13,11 @@ struct PersonListView2: View {
     let alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W", "X","Y", "Z"]
     let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], predicate: NSPredicate(format: "isArchived == NO"), animation: .default)
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true), NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSPredicate(format: "isArchived == NO"), animation: .default)
     private var unarchivedPeople: FetchedResults<N40Person>
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], predicate: NSPredicate(format: "isArchived == YES"), animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true), NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], predicate: NSPredicate(format: "isArchived == YES"), animation: .default)
     private var archivedPeople: FetchedResults<N40Person>
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
@@ -39,23 +40,7 @@ struct PersonListView2: View {
             ZStack {
                 VStack {
                     //get the full list of people to show on this screen (and sort them) (and filter them)
-                    let allPeople = (archive ? archivedPeople.sorted {
-                        if $0.lastName != $1.lastName { // first, compare by last names
-                            return $0.lastName < $1.lastName
-                        } else if $0.firstName != $1.firstName { //see if comparing by first names works
-                            return $0.firstName < $1.firstName
-                        } else { // All other fields are tied, break ties by last name
-                            return $0.company < $1.company
-                        }
-                    } : unarchivedPeople.sorted {
-                        if $0.lastName != $1.lastName { // first, compare by last names
-                            return $0.lastName < $1.lastName
-                        } else if $0.firstName != $1.firstName { //see if comparing by first names works
-                            return $0.firstName < $1.firstName
-                        } else { // All other fields are tied, break ties by last name
-                            return $0.company < $1.company
-                        }
-                    }).filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                    let allPeople = (archive ? archivedPeople : unarchivedPeople).filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
                     
                     
                     HStack {

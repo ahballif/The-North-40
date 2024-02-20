@@ -22,13 +22,13 @@ public struct SelectPeopleView: View {
     let alphabetString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true)], animation: .default)
-    private var fetchedPeople: FetchedResults<N40Person>
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Person.lastName, ascending: true), NSSortDescriptor(keyPath: \N40Person.firstName, ascending: true)], animation: .default)
+    private var allPeople: FetchedResults<N40Person>
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Group.priorityIndex, ascending: false)], animation: .default)
     private var allGroups: FetchedResults<N40Group>
     
-    @State private var sortingAlphabetical = true
+    @State private var sortingAlphabetical = false
     
     var editEventView: EditEventView?
     var editGoalView: EditGoalView?
@@ -54,57 +54,31 @@ public struct SelectPeopleView: View {
     
     public var body: some View {
         
-        VStack {
-            HStack {
-                Button("Cancel") {
-                    dismiss()
-                }
-//                Text("Sort all alphabetically: ")
-//
-//                Toggle("sortAlphabetically", isOn: $sortingAlphabetical).labelsHidden()
-//
-                Spacer()
-                Button("Attach") {
-                    if editEventView != nil {
-                        editEventView!.setSelectedPeople(selectedPeople: selectedPeopleList)
-                    } else if editGoalView != nil {
-                        editGoalView!.setSelectedPeople(selectedPeople: selectedPeopleList)
-                    } else if editGroupView != nil {
-                        editGroupView!.setSelectedPeople(selectedPeople: selectedPeopleList)
-                    } else if editNoteView != nil {
-                        editNoteView!.setSelectedPeople(selectedPeople: selectedPeopleList)
-                    }
-                    dismiss()
-                }
-            }.padding()
-            NavigationStack {
-                VStack{
-//                    HStack {
-//
-//                    }.padding()
-//
-                    List{
-                        Section {
-                            Button {
-                                showingAddPersonSheet.toggle()
-                            } label: {
-                                Label("Create New Person", systemImage: "plus")
-                            }.sheet(isPresented: $showingAddPersonSheet) {
-                                EditPersonView()
-                            }
-                        }
-                        if sortingAlphabetical {
-                            
-                            
-                            let noLetterLastNames = fetchedPeople.reversed().filter { $0.lastName.uppercased().filter(alphabetString.contains) == "" && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
-                                if $0.lastName != $1.lastName { // first, compare by last names
-                                    return $0.lastName < $1.lastName
-                                } else if $0.firstName != $1.firstName { //see if comparing by first names works
-                                    return $0.firstName < $1.firstName
-                                } else { // All other fields are tied, break ties by last name
-                                    return $0.company < $1.company
+        
+        NavigationStack {
+            //                VStack{
+            //                    HStack {
+            //
+            //                    }.padding()
+            //
+            
+            
+            if sortingAlphabetical {
+                ScrollViewReader { scrollProxy in
+                    ZStack {
+                        List {
+                            Section { //add new person button
+                                Button {
+                                    showingAddPersonSheet.toggle()
+                                } label: {
+                                    Label("Create New Person", systemImage: "plus")
+                                }.sheet(isPresented: $showingAddPersonSheet) {
+                                    EditPersonView()
                                 }
                             }
+                            
+                            //First people who's last names don't have letters
+                            let noLetterLastNames = allPeople.filter{$0.lastName.uppercased().filter(alphabetString.contains) == "" }
                             if noLetterLastNames.count > 0 {
                                 Section(header: Text("*")) {
                                     ForEach(noLetterLastNames, id: \.self) { person in
@@ -112,16 +86,9 @@ public struct SelectPeopleView: View {
                                     }
                                 }
                             }
-                            ForEach(alphabet, id: \.self) { letter in
-                                let letterSet = fetchedPeople.reversed().filter { $0.lastName.hasPrefix(letter) && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
-                                    if $0.lastName != $1.lastName { // first, compare by last names
-                                        return $0.lastName < $1.lastName
-                                    } else if $0.firstName != $1.firstName { //see if comparing by first names works
-                                        return $0.firstName < $1.firstName
-                                    } else { // All other fields are tied, break ties by last name
-                                        return $0.company < $1.company
-                                    }
-                                }
+                            //Now go through the letters
+                            ForEach(alphabet, id: \.self) {letter in
+                                let letterSet = allPeople.filter {$0.lastName.hasPrefix(letter)}
                                 if (letterSet.count > 0) {
                                     Section(header: Text(letter)) {
                                         ForEach(letterSet, id: \.self) { person in
@@ -130,84 +97,94 @@ public struct SelectPeopleView: View {
                                     }
                                 }
                             }
-                            
-                            
-                        } else {
-                            ForEach(allGroups) {group in
-                                let groupSet: [N40Person] = group.getPeople.filter{ (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
-                                    if $0.lastName != $1.lastName { // first, compare by last names
-                                        return $0.lastName < $1.lastName
-                                    } else if $0.firstName != $1.firstName { //see if comparing by first names works
-                                        return $0.firstName < $1.firstName
-                                    } else { // All other fields are tied, break ties by last name
-                                        return $0.company < $1.company
-                                    }
-                                }
-                                if groupSet.count > 0 {
-                                    Section(header: Text(group.name)) {
-                                        //first a button to attach the whole group
-                                        
-                                        Button {
-//                                            if containsWholeGroup(groupSet: groupSet) {
-//                                                for eachPerson in groupSet {
-//                                                    let idx = selectedPeopleList.firstIndex(of: eachPerson)
-//                                                    if idx != nil {
-//                                                        selectedPeopleList.remove(at: idx!)
-//                                                    }
-//                                                }
-//                                            } else {
-//                                                for eachPerson in groupSet {
-//                                                    if !selectedPeopleList.contains(eachPerson) {
-//                                                        selectedPeopleList.append(eachPerson)
-//                                                    }
-//                                                }
-//                                            }
-                                            for eachPerson in groupSet {
-                                                if !selectedPeopleList.contains(eachPerson) {
-                                                    selectedPeopleList.append(eachPerson)
-                                                }
+                        }.listStyle(.sidebar)
+                            .padding(.horizontal, 3)
+                        
+                        
+                        //letter bar
+                        VStack {
+                            ForEach(alphabet, id: \.self) { letter in
+                                HStack {
+                                    Spacer()
+                                    Button(action: {
+                                        print("letter = \(letter)")
+                                        //need to figure out if there is a name in this section before I allow scrollto or it will crash
+                                        if allPeople.first(where: { $0.lastName.prefix(1) == letter }) != nil {
+                                            withAnimation {
+                                                scrollProxy.scrollTo(letter)
                                             }
-                                        } label: {
-//                                            if containsWholeGroup(groupSet: groupSet) {
-//                                                Label("Remove Entire Group", systemImage: "multiply")
-//                                                    .foregroundColor(.blue)
-//                                            } else {
-//                                                Label("Attach Entire Group", systemImage: "plus")
-//                                                    .foregroundColor(.blue)
-//                                            }
-                                            Label("Attach Entire Group", systemImage: "plus")
-                                                .foregroundColor(.blue)
                                         }
-                                        
-                                        ForEach(groupSet) {person in
-                                            personListItem(person: person)
-                                        }
-                                    }
+                                    }, label: {
+                                        Text(letter)
+                                            .font(.system(size: 12))
+                                            .padding(.trailing, 7)
+                                    })
                                 }
                             }
-                            let ungroupedSet = fetchedPeople.reversed().filter { $0.getGroups.count < 1 && (searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.sorted {
-                                if $0.lastName != $1.lastName { // first, compare by last names
-                                    return $0.lastName < $1.lastName
-                                } else if $0.firstName != $1.firstName { //see if comparing by first names works
-                                    return $0.firstName < $1.firstName
-                                } else { // All other fields are tied, break ties by last name
-                                    return $0.company < $1.company
-                                }
-                            }
-                            if ungroupedSet.count > 0 {
-                                Section(header: Text("Ungrouped People")) {
-                                    ForEach(ungroupedSet) {person in
-                                        personListItem(person: person)
-                                    }
-                                }
-                            }
-                            
                         }
-                    }.listStyle(.insetGrouped)
-                        .padding(.horizontal, 3)
+                    }
                 }
-            }.searchable(text: $searchText)
-        }
+            } else {
+                List {
+                    Section { //add new person button
+                        Button {
+                            showingAddPersonSheet.toggle()
+                        } label: {
+                            Label("Create New Person", systemImage: "plus")
+                        }.sheet(isPresented: $showingAddPersonSheet) {
+                            EditPersonView()
+                        }
+                    }
+                    
+                    //first go through the groups
+                    ForEach(allGroups) {group in
+                        let groupSet: [N40Person] = allPeople.filter{ $0.isInGroup(group)}
+                        if groupSet.count > 0 {
+                            Section(header: Text(group.name)) {
+                                ForEach(groupSet) {person in
+                                    personListItem(person: person)
+                                }
+                            }
+                        }
+                    }
+                    //now go through ungrouped people
+                    let ungroupedSet: [N40Person] = allPeople.filter{ $0.getGroups.count == 0}
+                    if ungroupedSet.count > 0 {
+                        Section(header: Text("Ungrouped People")) {
+                            ForEach(ungroupedSet) {person in
+                                personListItem(person: person)
+                            }
+                        }
+                    }
+                }.listStyle(.sidebar)
+            }
+            VStack{}
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Attach") {
+                            if editEventView != nil {
+                                editEventView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                            } else if editGoalView != nil {
+                                editGoalView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                            } else if editGroupView != nil {
+                                editGroupView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                            } else if editNoteView != nil {
+                                editNoteView!.setSelectedPeople(selectedPeople: selectedPeopleList)
+                            }
+                            dismiss()
+                        }
+                    }
+                    
+                }
+            
+        }.searchable(text: $searchText)
+            
+            
     }
     
     private func containsWholeGroup(groupSet: [N40Person]) -> Bool {

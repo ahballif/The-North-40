@@ -26,6 +26,8 @@ struct CalendarView: View {
     
     @State private var showingSearchSheet = false
     
+    @State private var showingEditEventSheet = false
+    
     
     var body: some View {
         //NavigationView {
@@ -92,10 +94,15 @@ struct CalendarView: View {
                     Text(selectedDay.dayOfWeek())
                         .lineLimit(1)
                     
-                    
-                    DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
-                        .labelsHidden()
-                    
+                    VStack{
+                        //This if statement is a little weird and I maybe won't keep it but it prevents the date picker from getting in the way of new sheets.
+                        if !showingEditEventSheet && !showingSearchSheet {
+                            DatePicker("Selected Day", selection: $selectedDay, displayedComponents: .date)
+                                .labelsHidden()
+                        } else {
+                            Text(selectedDay.dateOnlyToString()).padding(.leading, 10)
+                        }
+                    }.frame(height: 25)
                     
                     Spacer()
                     
@@ -109,7 +116,7 @@ struct CalendarView: View {
                     } label: {
                         Image(systemName: "chevron.right")
                     }
-                    
+                    Spacer()
                     Button("Today") {
                         selectedDay = Date()
                         
@@ -119,7 +126,7 @@ struct CalendarView: View {
                 
                 if showingCalendar {
                     ZStack {
-                        DailyPlanner(filter: selectedDay, showingInfoEvents: $showingInfoEvents, showingBackgroundEvents: $showingBackgroundEvents)
+                        DailyPlanner(filter: selectedDay, showingInfoEvents: $showingInfoEvents, showingBackgroundEvents: $showingBackgroundEvents, showingEditEventSheet: $showingEditEventSheet)
                             
                         
                         
@@ -171,8 +178,6 @@ struct AllDayList: View {
     @FetchRequest var fetchedAllDays: FetchedResults<N40Event>
     @FetchRequest var fetchedGoalsDueToday: FetchedResults<N40Goal>
     @FetchRequest var fetchedBirthdayBoys: FetchedResults<N40Person>
-    
-    @State private var showingEditEventSheet = false
     
     private var holidays: [Date: String]
     
@@ -602,7 +607,8 @@ struct DailyPlanner: View {
     
     @FetchRequest var fetchedEvents: FetchedResults<N40Event>
     
-    @State private var showingEditEventSheet = false
+    @Binding var showingEditEventSheet: Bool
+    
     @State private var selectedEditEvent: N40Event? = nil
     @State private var clickedOnTime = Date()
     
@@ -739,7 +745,7 @@ struct DailyPlanner: View {
             
     }
     
-    init (filter: Date, showingInfoEvents: Binding<Bool>? = nil, showingBackgroundEvents: Binding<Bool>? = nil) {
+    init (filter: Date, showingInfoEvents: Binding<Bool>? = nil, showingBackgroundEvents: Binding<Bool>? = nil, showingEditEventSheet: Binding<Bool>) {
         let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
         let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
         let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
@@ -754,7 +760,7 @@ struct DailyPlanner: View {
         self._showingRadarEvents = showingInfoEvents ?? Binding.constant(true)
         self._showingBackgroundEvents = showingBackgroundEvents ?? Binding.constant(true)
         
-        
+        self._showingEditEventSheet = showingEditEventSheet
         
     }
     
