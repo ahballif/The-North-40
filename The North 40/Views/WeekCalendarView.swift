@@ -320,7 +320,7 @@ struct WeeklyPlanner: View {
                 NavigationView {
                     
                     if selectedEditEvent == nil {
-                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
+                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime, autoFocus: UserDefaults.standard.bool(forKey: "autoFocusOnCalendarNewEvent"))
                             //no toolbar item if it's a new event
                     } else {
                         //An event was clicked
@@ -408,7 +408,7 @@ struct WeeklyPlanner: View {
             colorHex = event.color
         }
         
-        let numberOfColumns = event.getHighestEventIdx + 1
+        
         
         return GeometryReader {geometry in
             VStack {
@@ -521,9 +521,9 @@ struct WeeklyPlanner: View {
             .font(.caption)
             //.padding(.horizontal, 10)
             .frame(height: height, alignment: .top)
-            .frame(width: (geometry.size.width)/CGFloat(numberOfColumns), alignment: .leading)
+            .frame(width: (geometry.size.width)/CGFloat(event.numberOfColumns ?? 1), alignment: .leading)
             //.padding(.trailing, 5)
-            .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(numberOfColumns)) + (editModeEvent == event ? drawDragDayOffset : 0), y: offset + hourHeight/2 + (editModeEvent == event ? drawDragMinuteOffset : 0))
+            .offset(x: (CGFloat(event.renderIdx ?? 0)*(geometry.size.width)/CGFloat(event.numberOfColumns ?? 1)) + (editModeEvent == event ? drawDragDayOffset : 0), y: offset + hourHeight/2 + (editModeEvent == event ? drawDragMinuteOffset : 0))
             .opacity((event.status == N40Event.HAPPENED && event.eventType == N40Event.TODO_TYPE && UserDefaults.standard.bool(forKey: "tintCompletedTodos")) ? 0.3 : 1.0)
             
             .onTapGesture {
@@ -660,6 +660,7 @@ struct AllDayListWeek: View {
     
     @FetchRequest var fetchedAllDays: FetchedResults<N40Event>
     @FetchRequest var fetchedGoalsDueToday: FetchedResults<N40Goal>
+    @FetchRequest var fetchedGoalsFinishedToday: FetchedResults<N40Goal>
     @FetchRequest var fetchedBirthdayBoys: FetchedResults<N40Person>
     
     @State private var showingEditEventSheet = false
@@ -684,7 +685,7 @@ struct AllDayListWeek: View {
                 VStack(alignment: .leading) {
                     let thisDay: Date = (Calendar.current.date(byAdding: .day, value: dayIdx, to: filteredDay) ?? filteredDay)
                     let allDayEvents = fetchedAllDays.filter { $0.startDate >= thisDay.startOfDay && $0.startDate < thisDay.endOfDay }
-                    let goalsDueToday = fetchedGoalsDueToday.filter {$0.deadline >= thisDay.startOfDay && $0.deadline <= thisDay.endOfDay}
+                    let goalsDueToday = (fetchedGoalsDueToday.sorted(by: {$0.name < $1.name}) + fetchedGoalsFinishedToday.sorted(by: {$0.name < $1.name})).filter {$0.deadline >= thisDay.startOfDay && $0.deadline <= thisDay.endOfDay}
                     let birthdayBoysToday = fetchedBirthdayBoys.filter {isBirthdayToday(birthdayBoy: $0, today: thisDay)}
                     
                     if (allDayEvents.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + goalsDueToday.count ) > 3 { //+ fetchedBirthdayBoys.count
@@ -807,11 +808,18 @@ struct AllDayListWeek: View {
         
         _fetchedAllDays = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, allDayPredicate]))
         
-        let dueDatePredicateA = NSPredicate(format: "deadline >= %@", beginningOfWeek)
-        let dueDatePredicateB = NSPredicate(format: "deadline <= %@", endOfWeek)
+        let dueDatePredicateA = NSPredicate(format: "deadline >= %@", filter.startOfDay as NSDate)
+        let dueDatePredicateB = NSPredicate(format: "deadline <= %@", filter.endOfDay as NSDate)
         let hasDeadlinePredicate = NSPredicate(format: "hasDeadline == YES")
+        let isNotCompletedPredicate = NSPredicate(format: "isCompleted == NO")
         
-        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate]))
+    
+        let finishedDatePredicateA = NSPredicate(format: "dateCompleted >= %@", filter.startOfDay as NSDate)
+        let finishedDatePredicateB = NSPredicate(format: "dateCompleted <= %@", filter.endOfDay as NSDate)
+        let isCompletedPredicate = NSPredicate(format: "isCompleted == YES")
+        
+        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate, isNotCompletedPredicate]))
+        _fetchedGoalsFinishedToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [finishedDatePredicateA, finishedDatePredicateB, isCompletedPredicate]))
         
         
         //Birthdays
@@ -1029,7 +1037,11 @@ struct AllDayListWeek: View {
                     HStack {
         
 
-                        Text("Goal: \(goal.name) - \(goal.deadline.dateOnlyToString())").bold()
+                        if goal.isCompleted {
+                            Text("Goal: \(goal.name) completed \(goal.isCompleted ? goal.dateCompleted.dateOnlyToString() : goal.deadline.dateOnlyToString())").bold()
+                        } else {
+                            Text("Goal: \(goal.name) due \(goal.deadline.dateOnlyToString())").bold()
+                        }
                         Spacer()
                     }
                     .padding(.horizontal, 8)

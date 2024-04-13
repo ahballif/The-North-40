@@ -48,9 +48,13 @@ struct OfficeView: View {
                     NavigationLink(destination: PersonListView2(archive: true)) {
                         Label("Archived People", systemImage: "person.badge.clock")
                     }
+                    NavigationLink(destination: ColorSchemeView()) {
+                        Label("Color Schemes", systemImage: "paintpalette")
+                    }
                     NavigationLink(destination: SettingsView()) {
                         Label("Settings", systemImage: "gearshape.2")
                     }
+                    
                     Group {
                         NavigationLink(destination: AboutView()) {
                             Label {

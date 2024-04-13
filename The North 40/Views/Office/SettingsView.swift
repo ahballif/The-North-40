@@ -37,6 +37,8 @@ struct SettingsView: View {
     @State private var setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
     @State private var roundScheduleCompletedTodos = UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos")
     
+    @State private var autoFocusOnCalendarNewEvent = UserDefaults.standard.bool(forKey: "autoFocusOnCalendarNewEvent")
+    
     @State private var onlyScheduleUnscheduledTodos = UserDefaults.standard.bool(forKey: "onlyScheduleUnscheduledTodos")
     
     @State private var colorToDoList = UserDefaults.standard.bool(forKey: "colorToDoList")
@@ -48,11 +50,14 @@ struct SettingsView: View {
     @State private var importConfirm = false
     
     @State private var defaultColor: Color = (Color(hex: UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0)))
+    @State private var randomFromColorScheme: Bool = UserDefaults.standard.bool(forKey: "randomFromColorScheme")
     @State private var defaultEventDuration: Int = UserDefaults.standard.integer(forKey: "defaultEventDuration")
     
     @State private var addContactOnCall = UserDefaults.standard.bool(forKey: "addContactOnCall")
     @State private var repeatByEndDate = UserDefaults.standard.bool(forKey: "repeatByEndDate")
     @State private var tintCompletedTodos = UserDefaults.standard.bool(forKey: "tintCompletedTodos")
+    
+    @State private var showingColorPickerSheet = false
     
     var body: some View {
         VStack {
@@ -232,6 +237,17 @@ struct SettingsView: View {
                                 }
                             }).labelsHidden()
                         }
+                        
+                        HStack {
+                            Text("Auto Type on Calendar New Event: ")
+                            Spacer()
+                            Toggle("autoFocusOnCalendarNewEvent", isOn: $autoFocusOnCalendarNewEvent)
+                                .labelsHidden()
+                                .onChange(of: autoFocusOnCalendarNewEvent) {_ in
+                                    UserDefaults.standard.set(autoFocusOnCalendarNewEvent, forKey: "autoFocusOnCalendarNewEvent")
+                                }
+                        }
+                        
                         HStack {
                             Text("Calculate Repeat Based Off End Date: ")
                             Spacer()
@@ -254,14 +270,29 @@ struct SettingsView: View {
                                 .labelsHidden()
                         }
                         if !randomEventColor {
-                            HStack{
-                                Text("Default Event Color: ")
+                            HStack {
+                                Text("Random From First Color Scheme: ")
                                 Spacer()
-                                ColorPicker("ColorPicker", selection: $defaultColor, supportsOpacity: false)
-                                    .labelsHidden()
-                                    .onChange(of: defaultColor) {_ in
-                                        UserDefaults.standard.set(defaultColor.toHex() ?? "#FF7051", forKey: "defaultColor")
-                                    }
+                                Toggle("randomFromColorScheme", isOn: $randomFromColorScheme)
+                                    .onChange(of: randomFromColorScheme) {_ in
+                                        UserDefaults.standard.set(randomFromColorScheme, forKey: "randomFromColorScheme")
+                                    }.labelsHidden()
+                            }
+                            if !randomFromColorScheme {
+                                HStack{
+                                    Text("Default Event Color: ")
+                                    Spacer()
+                                    Button {
+                                        showingColorPickerSheet.toggle()
+                                    } label: {
+                                        Rectangle().frame(width:30, height: 20)
+                                            .foregroundColor(defaultColor)
+                                    }.sheet(isPresented: $showingColorPickerSheet) {
+                                        ColorPickerView(selectedColor: $defaultColor)
+                                    }.onChange(of: defaultColor) {_ in
+                                            UserDefaults.standard.set(defaultColor.toHex() ?? "#FF7051", forKey: "defaultColor")
+                                        }
+                                }
                             }
                         }
                         

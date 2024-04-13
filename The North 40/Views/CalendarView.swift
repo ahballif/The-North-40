@@ -115,8 +115,7 @@ struct CalendarView: View {
                         selectedDay = Calendar.current.date(byAdding: .day, value: 1, to: selectedDay) ?? selectedDay
                     } label: {
                         Image(systemName: "chevron.right")
-                    }
-                    Spacer()
+                    }.padding(.trailing)
                     Button("Today") {
                         selectedDay = Date()
                         
@@ -177,6 +176,7 @@ struct AllDayList: View {
     
     @FetchRequest var fetchedAllDays: FetchedResults<N40Event>
     @FetchRequest var fetchedGoalsDueToday: FetchedResults<N40Goal>
+    @FetchRequest var fetchedGoalsFinishedToday: FetchedResults<N40Goal>
     @FetchRequest var fetchedBirthdayBoys: FetchedResults<N40Person>
     
     private var holidays: [Date: String]
@@ -196,14 +196,15 @@ struct AllDayList: View {
     
     var body: some View {
         VStack {
-            if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + fetchedGoalsDueToday.count + fetchedBirthdayBoys.count) > 3 {
+            let allGoalsToday = fetchedGoalsDueToday.sorted(by: {$0.name < $1.name}) + fetchedGoalsFinishedToday.sorted(by: {$0.name < $1.name})
+            if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + allGoalsToday.count + fetchedBirthdayBoys.count) > 3 {
                 ScrollView {
                     ForEach(fetchedAllDays) { eachEvent in
                         if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
                             allDayEvent(eachEvent)
                         }
                     }
-                    ForEach(fetchedGoalsDueToday) { eachGoal in
+                    ForEach(allGoalsToday) { eachGoal in
                         dueGoal(eachGoal)
                     }
                     ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
@@ -237,7 +238,7 @@ struct AllDayList: View {
                             allDayEvent(eachEvent)
                         }
                     }
-                    ForEach(fetchedGoalsDueToday) { eachGoal in
+                    ForEach(allGoalsToday) { eachGoal in
                         dueGoal(eachGoal)
                     }
                     ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
@@ -311,8 +312,15 @@ struct AllDayList: View {
         let dueDatePredicateA = NSPredicate(format: "deadline >= %@", filter.startOfDay as NSDate)
         let dueDatePredicateB = NSPredicate(format: "deadline <= %@", filter.endOfDay as NSDate)
         let hasDeadlinePredicate = NSPredicate(format: "hasDeadline == YES")
+        let isNotCompletedPredicate = NSPredicate(format: "isCompleted == NO")
         
-        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate]))
+    
+        let finishedDatePredicateA = NSPredicate(format: "dateCompleted >= %@", filter.startOfDay as NSDate)
+        let finishedDatePredicateB = NSPredicate(format: "dateCompleted <= %@", filter.endOfDay as NSDate)
+        let isCompletedPredicate = NSPredicate(format: "isCompleted == YES")
+        
+        _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate, isNotCompletedPredicate]))
+        _fetchedGoalsFinishedToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [finishedDatePredicateA, finishedDatePredicateB, isCompletedPredicate]))
         
         let birthdayMonthPredicate = NSPredicate(format: "birthdayMonth == %i", Int16(filter.get(.month)))
         let birthdayDayPredicate = NSPredicate(format: "birthdayDay == %i", Int16(filter.get(.day)))
@@ -505,8 +513,11 @@ struct AllDayList: View {
                     
                     HStack {
         
-
-                        Text("Goal: \(goal.name) - \(goal.deadline.dateOnlyToString())").bold()
+                        if goal.isCompleted {
+                            Text("Goal: \(goal.name) completed \(goal.isCompleted ? goal.dateCompleted.dateOnlyToString() : goal.deadline.dateOnlyToString())").bold()
+                        } else {
+                            Text("Goal: \(goal.name) due \(goal.deadline.dateOnlyToString())").bold()
+                        }
                         Spacer()
                     }
                     .padding(.horizontal, 8)
@@ -726,8 +737,8 @@ struct DailyPlanner: View {
                 NavigationView {
                     
                     if selectedEditEvent == nil {
-                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime)
-                            //no toolbar item if it's a new event. 
+                        EditEventView(editEvent: nil, chosenStartDate: clickedOnTime, autoFocus: UserDefaults.standard.bool(forKey: "autoFocusOnCalendarNewEvent"))
+                            //no toolbar item if it's a new event.
                     } else {
                         //An event was clicked
                         EditEventView(editEvent: selectedEditEvent)
@@ -818,8 +829,6 @@ struct DailyPlanner: View {
             //draw with the original color
             colorHex = event.color
         }
-        
-        let numberOfColumns = event.getHighestEventIdx + 1
         
         return GeometryReader {geometry in
             //NavigationLink(destination: EditEventView(editEvent: event), label: {
@@ -933,10 +942,10 @@ struct DailyPlanner: View {
             .font(.caption)
             .padding(.horizontal, 4)
             .frame(height: height, alignment: .top)
-            .frame(width: (geometry.size.width-40)/CGFloat(numberOfColumns), alignment: .leading)
+            .frame(width: (geometry.size.width-40)/CGFloat(event.numberOfColumns ?? 1), alignment: .leading)
             //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
             .padding(.trailing, 30)
-            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2 + (editModeEvent == event ? drawDragMinuteOffset : 0.0))
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(event.numberOfColumns ?? 1)), y: offset + hourHeight/2 + (editModeEvent == event ? drawDragMinuteOffset : 0.0))
             .onTapGesture {
                 if editModeEvent == nil {
                     selectedEditEvent = event

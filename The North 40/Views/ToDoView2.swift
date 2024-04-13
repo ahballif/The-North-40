@@ -178,7 +178,7 @@ struct ToDoView2: View {
                                 .padding(30)
                         }
                         .sheet(isPresented: $showingEditEventSheet) {
-                            EditEventView(isScheduled: false, eventType: ["To-Do", "checklist"])
+                            EditEventView(isScheduled: false, eventType: ["To-Do", "checklist"], autoFocus: true)
                             //Here I passed in some default values that I know you would want probably want when making a to-do item
                             
                         }

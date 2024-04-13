@@ -271,13 +271,13 @@ struct EditNoteView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.51) {  /// Anything over 0.5 seems to work
                     if editNote == nil {
                         self.focusedField = .title
-                    } else {
-                        if title == "" {
-                            self.focusedField = .title
-                        } else {
-                            self.focusedField = .body
-                        }
-                    }
+                    } // else { //I didn't like having it auto focus when the note was already created
+//                        if title == "" {
+//                            self.focusedField = .title
+//                        } else {
+//                            self.focusedField = .body
+//                        }
+//                    }
                 }
             }
     }

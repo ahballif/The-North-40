@@ -14,10 +14,19 @@ struct The_North_40App: App {
 
     @State private var showingTutorialSheet = false
     
+    
+    //default color scheme
+    private let defaultColorSchemeString = "#053528,#06553d,#38795e,#c4a562,#ac8f4f"
+    private let defaultColorSchemeName = "North 40 Default"
+    
+    private let workingColorSchemeString = "#99de7c,#f7d84a,#7eaed9,#db747b,#f7ca86,#aeafb0,#c7a058"
+    private let workingColorSchemeName = "Working Colors"
+    
     init() {
         UserDefaults.standard.register(defaults: [
             "hourHeight": 100.0,
             "randomEventColor": false,
+            "randomFromColorScheme":true,
             "guessEventColor": true,
             "defaultContactMethod": 0,
             "defaultCalendarEventType": 1,
@@ -45,9 +54,46 @@ struct The_North_40App: App {
             "colorToDoList":true,
             "repeatByEndDate":true,
             "show7Days":true,
-            "onlyScheduleUnscheduledTodos":false
+            "onlyScheduleUnscheduledTodos":false,
+            "autoFocusOnCalendarNewEvent":true
         ])
         
+        
+        //if there are no color schemes, add the default one.
+        let fetchRequest: NSFetchRequest<N40ColorScheme> = N40ColorScheme.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "priorityIndex", ascending: true)]
+        
+        do {
+            // Peform Fetch Request
+            let fetchedColorSchemes = try persistenceController.container.viewContext.fetch(fetchRequest)
+            
+            if fetchedColorSchemes.count == 0 {
+                //add the color scheme
+                let newColorScheme1 = N40ColorScheme(context: persistenceController.container.viewContext)
+                newColorScheme1.colorsString = defaultColorSchemeString
+                newColorScheme1.name = defaultColorSchemeName
+                newColorScheme1.photo = nil
+                
+                let newColorScheme2 = N40ColorScheme(context: persistenceController.container.viewContext)
+                newColorScheme2.colorsString = workingColorSchemeString
+                newColorScheme2.name = workingColorSchemeName
+                newColorScheme2.photo = nil
+                newColorScheme2.priorityIndex = 2
+                
+                do {
+                    try persistenceController.container.viewContext.save()
+                }
+                catch {
+                    // Handle Error
+                    print("Error info: \(error)")
+                }
+            }
+        } catch let error as NSError {
+            print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+        }
+        
+            
+            
         
         
     }
@@ -62,6 +108,37 @@ struct The_North_40App: App {
                     if UserDefaults.standard.bool(forKey: "firstOpen") {
                         UserDefaults.standard.set(false, forKey: "firstOpen")
                         showingTutorialSheet.toggle()
+                        
+                        
+                        //if first open, add the color scheme
+                        let fetchRequest: NSFetchRequest<N40ColorScheme> = N40ColorScheme.fetchRequest()
+                        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "priorityIndex", ascending: true)]
+                        
+                        do {
+                            // Peform Fetch Request
+                            let fetchedColorSchemes = try persistenceController.container.viewContext.fetch(fetchRequest)
+                            
+                            if fetchedColorSchemes.count == 0 {
+                                //add the color scheme
+                                let newColorScheme = N40ColorScheme(context: persistenceController.container.viewContext)
+                                newColorScheme.colorsString = defaultColorSchemeString
+                                newColorScheme.name = defaultColorSchemeName
+                                newColorScheme.photo = nil
+                                
+                                do {
+                                    try persistenceController.container.viewContext.save()
+                                }
+                                catch {
+                                    // Handle Error
+                                    print("Error info: \(error)")
+                                }
+                            }
+                        } catch let error as NSError {
+                            print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+                        }
+                        
+                        
+                        
                     }
                 }.sheet(isPresented: $showingTutorialSheet) {
                     NavigationView {

@@ -27,7 +27,7 @@ struct EditEventView: View {
     
     @State private var repeatOnCompleteInDays = 0
     
-    @State private var neverEndingRepeat = false
+    @State private var neverEndingRepeat = true
     
     @State private var eventTitle = ""
     @State private var location = ""
@@ -84,10 +84,14 @@ struct EditEventView: View {
     
     @State private var showingSelectOnCalendarSheet = false
     
+    @State var autoFocus = false
     @FocusState private var focusedField: FocusField?
     enum FocusField: Hashable {
         case field
       }
+    
+    
+    @State var showingColorPickerSheet = false
     
     var body: some View {
         VStack {
@@ -148,7 +152,7 @@ struct EditEventView: View {
                         TextField("Event Title", text: $eventTitle)
                             .font(.title2)
                             .padding(.vertical,  5)
-                            .if(editEvent == nil) {view in
+                            .if(editEvent == nil && autoFocus) {view in
                                 view.focused($focusedField, equals: .field)
                             }
                             .onSubmit {
@@ -602,8 +606,15 @@ struct EditEventView: View {
                     }
                     Spacer()
                     Text("Color: ")
-                    ColorPicker("", selection: $selectedColor, supportsOpacity: false)
-                        .labelsHidden()
+                    
+                    Button {
+                        showingColorPickerSheet.toggle()
+                    } label: {
+                        Rectangle().frame(width:30, height: 20)
+                            .foregroundColor(selectedColor)
+                    }.sheet(isPresented: $showingColorPickerSheet) {
+                        ColorPickerView(selectedColor: $selectedColor)
+                    }
                     
                 }
                 
@@ -795,9 +806,15 @@ struct EditEventView: View {
                         }
                         if !isAlreadyRepeating && repeatOptionSelected != repeatOptions[0] && repeatOptionSelected != "On Complete" && UserDefaults.standard.bool(forKey: "repeatByEndDate") {
                             HStack {
-                                DatePicker(selection: $repeatUntil, in:Date.now..., displayedComponents: .date) {
-                                    Text("End on:")
-                                }.disabled(neverEndingRepeat)
+                                if !neverEndingRepeat {
+                                    DatePicker(selection: $repeatUntil, in:Date.now..., displayedComponents: .date) {
+                                        Text("End on:")
+                                    }
+                                    Spacer()
+                                } else {
+                                    Text("Repeating Forever")
+                                    Spacer()
+                                }
                                 Button(neverEndingRepeat ? "Finite Amount" : "Repeat Forever") {
                                     neverEndingRepeat.toggle()
                                 }
@@ -896,14 +913,40 @@ struct EditEventView: View {
             
             
         }
-        if UserDefaults.standard.bool(forKey: "randomEventColor") {
-            if editEvent != nil {
-                selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5)
-            } else {
-                selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
-            }
+        if editEvent != nil {
+            selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5)
         } else {
-            selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+            if UserDefaults.standard.bool(forKey: "randomEventColor") {
+                selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
+            } else if UserDefaults.standard.bool(forKey: "randomFromColorScheme") {
+                let fetchRequest: NSFetchRequest<N40ColorScheme> = N40ColorScheme.fetchRequest()
+                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "priorityIndex", ascending: true)]
+                
+                do {
+                    // Peform Fetch Request
+                    let fetchedColorSchemes = try viewContext.fetch(fetchRequest)
+                    
+                    if fetchedColorSchemes.count > 0 {
+                        let colorPalette = unpackColorsFromString(colorString: fetchedColorSchemes.first!.colorsString)
+                        if colorPalette.count > 0 {
+                            selectedColor = colorPalette.randomElement() ?? Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+                            // (the default selected color is the optional argument)
+                        } else {
+                            //just use the default selected color
+                            selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+                        }
+                    } else {
+                        //just use the default selected color
+                        selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+                    }
+                    
+                    
+                } catch let error as NSError {
+                    print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+                }
+            } else {
+                selectedColor = Color(hex: editEvent?.color ?? UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
+            }
         }
         
         repeatUntil = chosenStartDate
@@ -1097,7 +1140,7 @@ struct EditEventView: View {
                     //now we know what week of the month the event is in.
                     
                     
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") {
+                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                         while repeatsMade < numberOfRepeats {
                             
                             
@@ -1119,13 +1162,14 @@ struct EditEventView: View {
                             repeatsMade += 1
                         }
                     } else {
-                        while lastCreatedDate.startOfDay <= repeatUntil.startOfDay {
-                            if repeatDate != newEvent.startDate {
+                        while repeatDate.startOfDay <= repeatUntil.startOfDay {
+                            if repeatDate != lastCreatedDate {
                                 EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
+                                lastCreatedDate = repeatDate
                             }
                             
                             //While the next date is in the same month as the last created date
-                            while Calendar.current.component(.month, from: lastCreatedDate) == Calendar.current.component(.month, from: repeatDate) {
+                            while Calendar.current.component(.month, from: lastCreatedDate) >= Calendar.current.component(.month, from: repeatDate) {
                                 //add a week to the next date until it crosses over to the next month
                                 repeatDate = Calendar.current.date(byAdding: .day, value: 7, to: repeatDate) ?? repeatDate
                             }
@@ -1135,9 +1179,6 @@ struct EditEventView: View {
                             //now make it the right week of the month
                             repeatDate = Calendar.current.date(byAdding: .day, value: (weekOfMonth-1)*7, to: repeatDate) ?? repeatDate
                             
-                            
-                            
-                            lastCreatedDate = repeatDate
                         }
                     }
                      
@@ -1711,7 +1752,6 @@ fileprivate struct scheduleViewCanvas: View {
             colorHex = event.color
         }
         
-        let numberOfColumns = event.getHighestEventIdx + 1
         
         return GeometryReader {geometry in
             ZStack {
@@ -1818,9 +1858,9 @@ fileprivate struct scheduleViewCanvas: View {
             .font(.caption)
             .padding(.horizontal, 4)
             .frame(height: height, alignment: .top)
-            .frame(width: (geometry.size.width-40)/CGFloat(numberOfColumns), alignment: .leading)
+            .frame(width: (geometry.size.width-40)/CGFloat(event.numberOfColumns ?? 1), alignment: .leading)
             .padding(.trailing, 30)
-            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(numberOfColumns)), y: offset + hourHeight/2)
+            .offset(x: 30 + (CGFloat(event.renderIdx ?? 0)*(geometry.size.width-40)/CGFloat(event.numberOfColumns ?? 1)), y: offset + hourHeight/2)
             
         }
     }

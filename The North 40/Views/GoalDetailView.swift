@@ -393,7 +393,7 @@ struct GoalInfoView: View {
         selectedGoal.isCompleted = isCompleted
         if isCompleted {
             selectedGoal.dateCompleted = Date()
-            selectedGoal.deadline = Date()
+            //selectedGoal.deadline = Date() // I actually don't like changing the deadline when completing
         }
         
         do {

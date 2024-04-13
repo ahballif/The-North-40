@@ -16,17 +16,7 @@ public class N40Event: NSManagedObject {
     public var renderIdx: Int? //For showing on the calendar. It will be stored here to allow other events to look at each other.
     public var indicesOfOthers: [Int] = [] //an array containing the render indices of all the overlapping events.
     
-    public var getHighestEventIdx: Int {
-        //returns 0 if there are no overlapping events
-        var highest = 0
-        for index in (indicesOfOthers) {
-            //assuming overlappingEvents includes this event because of how it is assigned elsewhere. 
-            if index > highest {
-                highest = index
-            }
-        }
-        return highest
-    }
+    public var numberOfColumns: Int?
 }
 
 public class EventRenderCalculator {
@@ -47,25 +37,21 @@ public class EventRenderCalculator {
             eachEvent.indicesOfOthers = [] //start with it only overlapping with itself.
         }
                 
-        //now go through each one and determine if another event is overlapping with it.
+        //now go through each one and find the correct number of columns
         for eachEvent in allEvents {
+            var highestIndicesOfDirectOverlaps = 0
+            
             for eachOtherEvent in allEvents {
                 if doEventsOverlap(event1: eachEvent, event2: eachOtherEvent) {
-                    eachEvent.indicesOfOthers.append(eachOtherEvent.renderIdx ?? 0) //incase eachOtherEvent is not contained in eachOtherEvent.overlappingEvents
-                    eachEvent.indicesOfOthers += eachOtherEvent.indicesOfOthers //add the ones that this eachEvent cant see
-                    
-                    eachOtherEvent.indicesOfOthers.append(eachEvent.renderIdx ?? 0)
-                    eachOtherEvent.indicesOfOthers += eachEvent.indicesOfOthers
+                    if eachOtherEvent.renderIdx ?? 0 > highestIndicesOfDirectOverlaps {
+                        highestIndicesOfDirectOverlaps = eachOtherEvent.renderIdx ?? 0
+                    }
                 }
             }
+            
+            eachEvent.numberOfColumns = highestIndicesOfDirectOverlaps + 1
+            
         }
-        
-        //remove duplicates
-        for eachEvent in allEvents {
-            eachEvent.indicesOfOthers = Array(Set(eachEvent.indicesOfOthers))
-        }
-        
-        //now all events should have an array of all events that relate to them.
         
     }
 
@@ -167,51 +153,51 @@ public class EventRenderCalculator {
         
     }
 
-    private static func getHighestEventIndex (allEvents: [N40Event], from: Date, to: Date) -> Int {
-        
-        var relevantEvents: [N40Event] = []
-        
-        let refTo = Calendar.current.date(bySetting: .second, value: 0, of: to) ?? to
-        let refFrom = Calendar.current.date(bySetting: .second, value: 0, of: from) ?? from
-        
-        for eachEvent in allEvents {
-            
-            
-            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: getCellHeight(eachEvent), to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
-            let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
-            
-            
-            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate <= refTo) || (startDate < refFrom && endDate > refTo) || (startDate >= refFrom && endDate <= refTo) {
-                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after
-                relevantEvents.append(eachEvent)
-            }
-        }
-        
-        var greatestEventIndex = 0
-        //now find the greatestEventIndex
-        for eachRelevantEvent in relevantEvents {
-            if eachRelevantEvent.renderIdx ?? 0 > greatestEventIndex {
-                greatestEventIndex = eachRelevantEvent.renderIdx ?? greatestEventIndex
-            }
-        }
-        
-        return greatestEventIndex
-        
-    }
+//    private static func getHighestEventIndex (allEvents: [N40Event], from: Date, to: Date) -> Int {
+//        
+//        var relevantEvents: [N40Event] = []
+//        
+//        let refTo = Calendar.current.date(bySetting: .second, value: 0, of: to) ?? to
+//        let refFrom = Calendar.current.date(bySetting: .second, value: 0, of: from) ?? from
+//        
+//        for eachEvent in allEvents {
+//            
+//            
+//            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: getCellHeight(eachEvent), to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
+//            let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
+//            
+//            
+//            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate <= refTo) || (startDate < refFrom && endDate > refTo) || (startDate >= refFrom && endDate <= refTo) {
+//                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after
+//                relevantEvents.append(eachEvent)
+//            }
+//        }
+//        
+//        var greatestEventIndex = 0
+//        //now find the greatestEventIndex
+//        for eachRelevantEvent in relevantEvents {
+//            if eachRelevantEvent.renderIdx ?? 0 > greatestEventIndex {
+//                greatestEventIndex = eachRelevantEvent.renderIdx ?? greatestEventIndex
+//            }
+//        }
+//        
+//        return greatestEventIndex
+//        
+//    }
 
-    private static func getCellHeight(_ event: N40Event) -> Int {
-        //Returns the true cell height in minutes
-        //ex. if duration == 0, the cell still has some minimum width.
-        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
-        let testDuration = Int(event.duration) > Int(minDuration) ? Int(event.duration) : Int(minDuration)
-        return testDuration
-    }
+//    private static func getCellHeight(_ event: N40Event) -> Int {
+//        //Returns the true cell height in minutes
+//        //ex. if duration == 0, the cell still has some minimum width.
+//        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+//        let testDuration = Int(event.duration) > Int(minDuration) ? Int(event.duration) : Int(minDuration)
+//        return testDuration
+//    }
 
-    private static func getTestDuration(duration: Int) -> Int {
-        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
-        return Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
-        
-    }
+//    private static func getTestDuration(duration: Int) -> Int {
+//        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+//        return Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
+//        
+//    }
 
 }
 

@@ -30,6 +30,8 @@ struct EditGoalView: View {
     @State public var endGoals: [N40Goal] = []
     @State private var showingChooseParentGoalSheet = false
     
+    @State private var showingColorPickerSheet = false
+    
     @State private var selectedColor: Color = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 0.5) //start with a random color.
     
     @State var editGoal: N40Goal?
@@ -72,8 +74,14 @@ struct EditGoalView: View {
             HStack {
                 Spacer()
                 Text("Color: ")
-                ColorPicker("", selection: $selectedColor, supportsOpacity: false)
-                    .labelsHidden()
+                Button {
+                    showingColorPickerSheet.toggle()
+                } label: {
+                    Rectangle().frame(width:30, height: 20)
+                        .foregroundColor(selectedColor)
+                }.sheet(isPresented: $showingColorPickerSheet) {
+                    ColorPickerView(selectedColor: $selectedColor)
+                }
             }
             
             

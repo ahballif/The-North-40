@@ -44,6 +44,8 @@ struct EditPersonView: View {
     
     @State private var isPresentingDeleteConfirm = false
     
+    @State private var showingColorPickerSheet = false
+    
     @State private var showingContactPickerSheet = false
     @State private var selectedContact: CNContact? = nil
     
@@ -192,8 +194,15 @@ struct EditPersonView: View {
                             Label("Add Favorite Color", systemImage: "plus")
                         }
                     } else {
-                        ColorPicker("favoriteColor",selection: $favoriteColor, supportsOpacity: false)
-                            .labelsHidden()
+                        Button {
+                            showingColorPickerSheet.toggle()
+                        } label: {
+                            Rectangle().frame(width:30, height: 20)
+                                .foregroundColor(favoriteColor)
+                        }.sheet(isPresented: $showingColorPickerSheet) {
+                            ColorPickerView(selectedColor: $favoriteColor)
+                        }
+                        
                         Button(role: .destructive){
                             hasFavoriteColor = false
                         } label: {
@@ -475,19 +484,19 @@ public func formatPhoneNumber11(inputString: String) -> String {
 
 
 func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage? {
-    let size = image.size
+    //let size = image.size
     
-    let widthRatio  = targetSize.width  / size.width
-    let heightRatio = targetSize.height / size.height
-    
-    // Figure out what our orientation is, and use that to form the rectangle
-    var newSize: CGSize
-    if(widthRatio > heightRatio) {
-        newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
-    } else {
-        newSize = CGSize(width: size.width * widthRatio, height: size.height * widthRatio)
-    }
-    
+//    let widthRatio  = targetSize.width  / size.width
+//    let heightRatio = targetSize.height / size.height
+//    
+//    // Figure out what our orientation is, and use that to form the rectangle
+//    var newSize: CGSize
+//    if(widthRatio > heightRatio) {
+//        newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+//    } else {
+//        newSize = CGSize(width: size.width * widthRatio, height: size.height * widthRatio)
+//    }
+    let newSize = targetSize
     // This is the rect that we've calculated out and this is what is actually used below
     let rect = CGRect(origin: .zero, size: newSize)
     

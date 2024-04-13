@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22F66" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="23C71" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="N40ColorScheme" representedClassName="N40ColorScheme" syncable="YES">
+        <attribute name="colorsString" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString="Color Scheme"/>
+        <attribute name="photo" optional="YES" attributeType="Binary"/>
+        <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
     <entity name="N40Envelope" representedClassName="N40Envelope" syncable="YES">
         <attribute name="currentBalance" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="lastCalculation" attributeType="Date" defaultDateTimeInterval="-31597200" usesScalarValueType="NO"/>

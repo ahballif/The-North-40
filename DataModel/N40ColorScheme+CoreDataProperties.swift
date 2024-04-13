@@ -16,10 +16,11 @@ extension N40ColorScheme {
         return NSFetchRequest<N40ColorScheme>(entityName: "N40ColorScheme")
     }
 
-    @NSManaged public var name: String?
-    @NSManaged public var colorsString: String?
+    @NSManaged public var name: String
+    @NSManaged public var colorsString: String
     @NSManaged public var photo: Data?
     @NSManaged public var priorityIndex: Int16
+    
 
 }
 
