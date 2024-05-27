@@ -37,6 +37,11 @@ struct EditGoalView: View {
     @State var editGoal: N40Goal?
     @State public var parentGoal: N40Goal?
     
+    @FocusState private var focusedField: FocusField?
+    enum FocusField: Hashable {
+        case title, body
+    }
+    
     var body: some View {
         ScrollView {
             
@@ -55,6 +60,7 @@ struct EditGoalView: View {
             
             //Title of the event
             TextField("Goal Title", text: $name).font(.title2)
+                .focused($focusedField, equals: .title)
             
             TextEditor(text: $information)
                 .foregroundColor(self.information == placeholderString ? .secondary : .primary)
@@ -182,7 +188,14 @@ struct EditGoalView: View {
             
             
         }.padding()
-            .onAppear { populateFields() }
+            .onAppear { 
+                populateFields()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.51) {  /// Anything over 0.5 seems to work
+                    if editGoal == nil {
+                        self.focusedField = .title
+                    }
+                }
+            }
             .toolbar {
                 if (editGoal != nil) {
                     

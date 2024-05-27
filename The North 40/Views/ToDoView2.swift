@@ -36,6 +36,7 @@ struct ToDoView2: View {
     private var allGoals: FetchedResults<N40Goal>
     
     
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -178,7 +179,7 @@ struct ToDoView2: View {
                                 .padding(30)
                         }
                         .sheet(isPresented: $showingEditEventSheet) {
-                            EditEventView(isScheduled: false, eventType: ["To-Do", "checklist"], autoFocus: true)
+                            EditEventView(isScheduled: false, eventType: ["To-Do", "checklist"])
                             //Here I passed in some default values that I know you would want probably want when making a to-do item
                             
                         }
@@ -486,6 +487,9 @@ struct ToDoView2: View {
                                         view.foregroundColor(Color.red)
                                     }
                                 
+                            }
+                            if event.contactMethod != 0 {
+                                Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
                             }
                             //recurring event icon
                             if (event.recurringTag != "") {

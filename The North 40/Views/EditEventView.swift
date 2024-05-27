@@ -84,7 +84,7 @@ struct EditEventView: View {
     
     @State private var showingSelectOnCalendarSheet = false
     
-    @State var autoFocus = false
+    @State var autoFocus = true
     @FocusState private var focusedField: FocusField?
     enum FocusField: Hashable {
         case field
@@ -398,7 +398,7 @@ struct EditEventView: View {
                             }
                         }
                         
-                        if (!editEvent!.isRecurringEventLast(viewContext: viewContext)) {
+                        if (!editEvent!.isRecurringEventLast(viewContext: viewContext) && repeatOptionSelected != "On Complete") {
                             
                             Button {
                                 isPresentingRecurringDeleteConfirm.toggle()
@@ -499,6 +499,9 @@ struct EditEventView: View {
                     .onChange(of: chosenStartDate, perform: { (value) in
                         chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
                         allConfirmsFalse()
+                        
+                        // turn off all day if this is changed
+                        allDay = false
                     })
                     
 
@@ -512,6 +515,9 @@ struct EditEventView: View {
                             chosenEndDate = Calendar.current.date(byAdding: .minute, value: duration, to: chosenStartDate) ?? chosenStartDate
                         }
                         allConfirmsFalse()
+                        
+                        // turn off all day if this is changed
+                        allDay = false
                     })
                 
 
@@ -589,7 +595,7 @@ struct EditEventView: View {
                     Spacer()
                     if (location != "") {
                         Button(action: {
-                            guard let address = URL(string: "https://www.google.com/maps/place/\(location.replacingOccurrences(of: " ", with: "+"))") else { return }
+                            guard let address = URL(string: "http://maps.apple.com/?q=\(location.replacingOccurrences(of: " ", with: "+"))") else { return }
                             UIApplication.shared.open(address)
                         }) {
                             Label("", systemImage: "map.fill")
@@ -1223,10 +1229,13 @@ struct EditEventView: View {
                 }
                 
             }
-            
+            // remove repeat after days if it's been turned off
+            if repeatOptionSelected == repeatOptions[0] {
+                newEvent.repeatOnCompleteInDays = 0
+            }
             
             //duplicate the event if repeatOnCompleteInDays is greater than 0
-            if newEvent.repeatOnCompleteInDays > 0 && newEvent.status != N40Event.UNREPORTED && (eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE] || eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]) {
+            if newEvent.repeatOnCompleteInDays > 0 && newEvent.status != N40Event.UNREPORTED && (eventType == N40Event.EVENT_TYPE_OPTIONS[N40Event.TODO_TYPE] || eventType  == N40Event.EVENT_TYPE_OPTIONS[N40Event.REPORTABLE_TYPE]) {
                 for futureOccurance in newEvent.getFutureRecurringEvents(viewContext: viewContext) {
                     viewContext.delete(futureOccurance)
                 }

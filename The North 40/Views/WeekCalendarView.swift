@@ -808,14 +808,14 @@ struct AllDayListWeek: View {
         
         _fetchedAllDays = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [todayPredicateA, todayPredicateB, scheduledPredicate, allDayPredicate]))
         
-        let dueDatePredicateA = NSPredicate(format: "deadline >= %@", filter.startOfDay as NSDate)
-        let dueDatePredicateB = NSPredicate(format: "deadline <= %@", filter.endOfDay as NSDate)
+        let dueDatePredicateA = NSPredicate(format: "deadline >= %@", beginningOfWeek)
+        let dueDatePredicateB = NSPredicate(format: "deadline <= %@", endOfWeek)
         let hasDeadlinePredicate = NSPredicate(format: "hasDeadline == YES")
         let isNotCompletedPredicate = NSPredicate(format: "isCompleted == NO")
         
     
-        let finishedDatePredicateA = NSPredicate(format: "dateCompleted >= %@", filter.startOfDay as NSDate)
-        let finishedDatePredicateB = NSPredicate(format: "dateCompleted <= %@", filter.endOfDay as NSDate)
+        let finishedDatePredicateA = NSPredicate(format: "dateCompleted >= %@", beginningOfWeek)
+        let finishedDatePredicateB = NSPredicate(format: "dateCompleted <= %@", endOfWeek)
         let isCompletedPredicate = NSPredicate(format: "isCompleted == YES")
         
         _fetchedGoalsDueToday = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [dueDatePredicateA, dueDatePredicateB, hasDeadlinePredicate, isNotCompletedPredicate]))
