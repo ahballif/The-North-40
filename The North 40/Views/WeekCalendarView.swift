@@ -685,7 +685,7 @@ struct AllDayListWeek: View {
                 VStack(alignment: .leading) {
                     let thisDay: Date = (Calendar.current.date(byAdding: .day, value: dayIdx, to: filteredDay) ?? filteredDay)
                     let allDayEvents = fetchedAllDays.filter { $0.startDate >= thisDay.startOfDay && $0.startDate < thisDay.endOfDay }
-                    let goalsDueToday = (fetchedGoalsDueToday.sorted(by: {$0.name < $1.name}) + fetchedGoalsFinishedToday.sorted(by: {$0.name < $1.name})).filter {$0.deadline >= thisDay.startOfDay && $0.deadline <= thisDay.endOfDay}
+                    let goalsDueToday = (fetchedGoalsDueToday.sorted(by: {$0.name < $1.name})).filter {$0.deadline >= thisDay.startOfDay && $0.deadline <= thisDay.endOfDay} + (fetchedGoalsFinishedToday.sorted(by: {$0.name < $1.name})).filter {$0.dateCompleted >= thisDay.startOfDay && $0.dateCompleted <= thisDay.endOfDay}
                     let birthdayBoysToday = fetchedBirthdayBoys.filter {isBirthdayToday(birthdayBoy: $0, today: thisDay)}
                     
                     if (allDayEvents.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + goalsDueToday.count ) > 3 { //+ fetchedBirthdayBoys.count

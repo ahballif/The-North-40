@@ -227,41 +227,73 @@ public struct SelectGoalView: View {
     @Environment(\.dismiss) private var dismiss
     
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"), animation: .default)
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "isCompleted == NO"), NSPredicate(format: "isArchived == NO")]), animation: .default)
     private var fetchedGoals: FetchedResults<N40Goal>
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "isCompleted == NO"), NSPredicate(format: "isArchived == YES")]), animation: .default)
+    private var fetchedArchivedGoals: FetchedResults<N40Goal>
     
     var editEventView: EditEventView?
     var editGoalView: EditGoalView?
     var editGroupView: EditGroupView?
     var editNoteView: EditNoteView?
     
+    @State private var showingArchivedGoals = false
+    
     @State private var showingAddGoalSheet = false
     
     public var body: some View {
         ZStack {
             
-            List {
-                Button {
-                    showingAddGoalSheet.toggle()
-                } label: {
-                    Label("Create New Goal", systemImage: "plus")
-                }.sheet(isPresented: $showingAddGoalSheet) {
-                    EditGoalView()
-                }
-                ForEach(fetchedGoals.sorted(by: {$0.priorityIndex > $1.priorityIndex})) {goal in
-                    goalBoard(goal)
-                        .padding(.leading, goal.endGoalLayers == 3 ? 60 : goal.endGoalLayers == 2 ? 45 : goal.endGoalLayers == 1 ? 25 : 0)
-                }
-            }
+            
             VStack {
-                HStack {
-                    Spacer()
-                    Button("Close") {
-                        dismiss()
-                    }.padding()
-                        .buttonStyle(.borderedProminent)
+                ZStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            showingArchivedGoals.toggle()
+                        } label: {
+                            HStack {
+                                if showingArchivedGoals {
+                                    Label("Archived Goals", systemImage: "archivebox.fill")
+                                } else {
+                                    Label("Current Goals", systemImage: "archivebox")
+                                }
+                                Image(systemName: "chevron.up.chevron.down")
+                            }.padding()
+                        }
+                        Spacer()
+                        
+                    }
+                    HStack{
+                        Spacer()
+                        Button("Close") {
+                            dismiss()
+                        }.padding()
+                            .buttonStyle(.borderedProminent)
+                    }
                 }
-                Spacer()
+                
+                List {
+                    Button {
+                        showingAddGoalSheet.toggle()
+                    } label: {
+                        Label("Create New Goal", systemImage: "plus")
+                    }.sheet(isPresented: $showingAddGoalSheet) {
+                        EditGoalView()
+                    }
+                    if showingArchivedGoals {
+                        ForEach(fetchedArchivedGoals.sorted(by: {$0.priorityIndex > $1.priorityIndex})) {goal in
+                            goalBoard(goal)
+                                .padding(.leading, goal.endGoalLayers == 3 ? 60 : goal.endGoalLayers == 2 ? 45 : goal.endGoalLayers == 1 ? 25 : 0)
+                        }
+                    } else {
+                        ForEach(fetchedGoals.sorted(by: {$0.priorityIndex > $1.priorityIndex})) {goal in
+                            goalBoard(goal)
+                                .padding(.leading, goal.endGoalLayers == 3 ? 60 : goal.endGoalLayers == 2 ? 45 : goal.endGoalLayers == 1 ? 25 : 0)
+                        }
+                    }
+                }
             }
         }
     }

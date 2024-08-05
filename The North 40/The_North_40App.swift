@@ -55,7 +55,8 @@ struct The_North_40App: App {
             "repeatByEndDate":true,
             "show7Days":true,
             "onlyScheduleUnscheduledTodos":false,
-            "autoFocusOnCalendarNewEvent":true
+            "autoFocusOnCalendarNewEvent":true,
+            "showingAgenda":false
         ])
         
         

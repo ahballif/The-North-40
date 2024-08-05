@@ -14,9 +14,13 @@ struct GoalListView2: View {
     @State private var showingEditGoalSheet = false // for creating goals
     @State private var showingVisionSheet = false
     @State private var showingCompletedGoalsSheet = false
+    @State private var showingArchivedGoalsSheet = false
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSPredicate(format: "isCompleted == NO"))
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "isCompleted == NO"), NSPredicate(format: "isArchived == NO")]) )
     private var currentGoals: FetchedResults<N40Goal>
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.name, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "isCompleted == NO"), NSPredicate(format: "isArchived == YES")]) )
+    private var archivedGoals: FetchedResults<N40Goal>
     
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Goal.dateCompleted, ascending: false)], predicate: NSPredicate(format: "isCompleted == YES"))
     private var completedGoals: FetchedResults<N40Goal>
@@ -39,6 +43,20 @@ struct GoalListView2: View {
                     ForEach(currentGoals.sorted(by: {$0.priorityIndex > $1.priorityIndex})) {goal in
                         goalBoard(goal)
                             .padding(.leading, goal.endGoalLayers == 3 ? 60 : goal.endGoalLayers == 2 ? 45 : goal.endGoalLayers == 1 ? 25 : 0)
+                            .contextMenu {
+                                Button("Archive") {
+                                    goal.isArchived = true
+                                    withAnimation {
+                                        recalculatePriorityIndices()
+                                    }
+                                    //Don't need to save because the recalculate function does that
+//                                    do {
+//                                        try viewContext.save()
+//                                    } catch {
+//                                        // handle error
+//                                    }
+                                }
+                            }
                     }.onMove(perform: move)
                     
                 }.scrollContentBackground(.hidden)
@@ -70,6 +88,41 @@ struct GoalListView2: View {
                 //.navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            showingArchivedGoalsSheet.toggle()
+                        } label: {
+                            Image(systemName: "archivebox")
+                        }.sheet(isPresented: $showingArchivedGoalsSheet) {
+                            NavigationStack {
+                                List {
+                                    ForEach(archivedGoals.sorted(by: {$0.name.uppercased() < $1.name.uppercased()})) {goal in
+                                        goalBoard(goal)
+                                            .contextMenu {
+                                                Button("Unarchive") {
+                                                    goal.isArchived = false
+                                                    withAnimation {
+                                                        recalculatePriorityIndices()
+                                                    }
+                                                    //Don't need to save because the recalculate function does that
+//                                                    do {
+//                                                        try viewContext.save()
+//                                                    } catch {
+//                                                        // handle error
+//                                                    }
+                                                }
+                                            }
+                                    }
+                                }.scrollContentBackground(.hidden)
+                                    .listStyle(.plain)
+                                    .navigationTitle(Text("Archived Goals"))
+                                    .navigationBarTitleDisplayMode(.inline)
+                                    .toolbar {
+                                        Button("Close") {
+                                            showingArchivedGoalsSheet = false
+                                        }
+                                    }
+                            }
+                        }
                         Button {
                             showingCompletedGoalsSheet.toggle()
                         } label: {
@@ -111,46 +164,58 @@ struct GoalListView2: View {
     
     func move(from source: IndexSet, to destination: Int) {
         withAnimation {
-            var setOfGoals: [N40Goal] = []
-            for eachGoal in currentGoals {
-                setOfGoals.append(eachGoal)
-            }
-            setOfGoals = setOfGoals.sorted {$0.priorityIndex > $1.priorityIndex}
-            
-            
+            recalculatePriorityIndices(moving: true, source: source, destination: destination)
+        }
+    }
+    
+    private func recalculatePriorityIndices(moving: Bool = false, source: IndexSet = IndexSet(), destination: Int = 0) {
+        
+        var setOfGoals: [N40Goal] = []
+        for eachGoal in currentGoals {
+            setOfGoals.append(eachGoal)
+        }
+        setOfGoals = setOfGoals.sorted {$0.priorityIndex > $1.priorityIndex}
+        
+        if moving {
             setOfGoals.move(fromOffsets: source, toOffset: destination)
-            
-            var currentPriorityIndex = Int16(setOfGoals.count)
-            for goal in setOfGoals {
-                //set the priority indices based on goal parent relationship .
-                if goal.getEndGoals.count == 0 { //only goes 4 layers deep
-                    //This is an end goal.
-                    goal.priorityIndex = currentPriorityIndex
-                    currentPriorityIndex -= 1
-                    
-                    for subGoal in goal.getSubGoals {
+        }
+        
+        var currentPriorityIndex = Int16(setOfGoals.count)
+        for goal in setOfGoals {
+            //set the priority indices based on goal parent relationship .
+            if goal.getEndGoals.count == 0 { //only goes 4 layers deep
+                //This is an end goal.
+                goal.priorityIndex = currentPriorityIndex
+                currentPriorityIndex -= 1
+                
+                for subGoal in goal.getSubGoals {
+                    if setOfGoals.contains(subGoal) {
                         subGoal.priorityIndex = currentPriorityIndex
                         currentPriorityIndex -= 1
                         
                         for subSubGoal in subGoal.getSubGoals {
-                            subSubGoal.priorityIndex = currentPriorityIndex
-                            currentPriorityIndex -= 1
-                            
-                            for subSubSubGoal in subSubGoal.getSubGoals {
-                                subSubSubGoal.priorityIndex = currentPriorityIndex
+                            if setOfGoals.contains(subSubGoal) {
+                                subSubGoal.priorityIndex = currentPriorityIndex
                                 currentPriorityIndex -= 1
+                                
+                                for subSubSubGoal in subSubGoal.getSubGoals {
+                                    if setOfGoals.contains(subSubSubGoal) {
+                                        subSubSubGoal.priorityIndex = currentPriorityIndex
+                                        currentPriorityIndex -= 1
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            
-            do {
-                try viewContext.save()
-            } catch {
-                // Handle Error
-                print("Error info: \(error)")
-            }
+        }
+        
+        do {
+            try viewContext.save()
+        } catch {
+            // Handle Error
+            print("Error info: \(error)")
         }
     }
     
@@ -213,6 +278,7 @@ struct GoalListView2: View {
                         .frame(height: 50.0)
                     VStack{
                         HStack{
+                            //Text(String(goal.priorityIndex))
                             Text(goal.name)
                             Spacer()
                         }

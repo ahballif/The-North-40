@@ -65,6 +65,10 @@
 		07A9EAE92B2D05EE00221C3E /* holidays.csv in Resources */ = {isa = PBXBuildFile; fileRef = 07A9EAE82B2D05EE00221C3E /* holidays.csv */; };
 		07C5601D2ADB1DA600F2EC88 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */; };
 		07D60CB62B6011CB0086BDBF /* PersonListView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D60CB52B6011CB0086BDBF /* PersonListView2.swift */; };
+		07DD3CED2C04C5FD001C204E /* IndicatorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CEC2C04C5FD001C204E /* IndicatorsView.swift */; };
+		07DD3CF42C04CA6D001C204E /* N40Indicator+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CF22C04CA6D001C204E /* N40Indicator+CoreDataClass.swift */; };
+		07DD3CF52C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CF32C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift */; };
+		07DD3CF72C04CE2B001C204E /* EditIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CF62C04CE2B001C204E /* EditIndicatorView.swift */; };
 		07FBD1FC2B28DAC70003B04C /* WeekCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */; };
 /* End PBXBuildFile section */
 
@@ -151,6 +155,10 @@
 		07A9EAE82B2D05EE00221C3E /* holidays.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = holidays.csv; sourceTree = "<group>"; };
 		07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactPicker.swift; path = "The North 40/ContactPicker.swift"; sourceTree = SOURCE_ROOT; };
 		07D60CB52B6011CB0086BDBF /* PersonListView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonListView2.swift; sourceTree = "<group>"; };
+		07DD3CEC2C04C5FD001C204E /* IndicatorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorsView.swift; sourceTree = "<group>"; };
+		07DD3CF22C04CA6D001C204E /* N40Indicator+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Indicator+CoreDataClass.swift"; sourceTree = "<group>"; };
+		07DD3CF32C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40Indicator+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		07DD3CF62C04CE2B001C204E /* EditIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditIndicatorView.swift; sourceTree = "<group>"; };
 		07FBD1FB2B28DAC70003B04C /* WeekCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekCalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -189,6 +197,8 @@
 				0711DF1E2AAA463A006C0005 /* Finances */,
 				0711DEE52A9D3947006C0005 /* NotesView.swift */,
 				0711DEE82A9E4DE6006C0005 /* SettingsView.swift */,
+				07DD3CEC2C04C5FD001C204E /* IndicatorsView.swift */,
+				07DD3CF62C04CE2B001C204E /* EditIndicatorView.swift */,
 			);
 			path = Office;
 			sourceTree = "<group>";
@@ -272,6 +282,8 @@
 			children = (
 				0768C7032A81E15600E29EBD /* The_North_40.xcdatamodeld */,
 				0768C7012A81E15600E29EBD /* Persistence.swift */,
+				07DD3CF22C04CA6D001C204E /* N40Indicator+CoreDataClass.swift */,
+				07DD3CF32C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift */,
 				0768C7682A87188C00E29EBD /* N40Person+CoreDataClass.swift */,
 				0768C7692A87188C00E29EBD /* N40Person+CoreDataProperties.swift */,
 				0768C76E2A87188C00E29EBD /* N40Goal+CoreDataClass.swift */,
@@ -467,6 +479,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07DD3CF72C04CE2B001C204E /* EditIndicatorView.swift in Sources */,
 				0711DEDC2A9A434B006C0005 /* GoalDetailView.swift in Sources */,
 				07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */,
 				0768C7022A81E15600E29EBD /* Persistence.swift in Sources */,
@@ -483,11 +496,14 @@
 				075D63082B31FE83009905FA /* SelectViews.swift in Sources */,
 				0768C7772A87188C00E29EBD /* N40Goal+CoreDataProperties.swift in Sources */,
 				075FA0702A94F2DD00E2E46A /* EditGoalView.swift in Sources */,
+				07DD3CED2C04C5FD001C204E /* IndicatorsView.swift in Sources */,
 				07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */,
 				07815AFE2AD3A5FD00606B5C /* GoalTipsView.swift in Sources */,
 				0711DF032AA39D77006C0005 /* EditTransactionView.swift in Sources */,
 				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
 				07361BBB2BC9E3AE00BA388B /* ColorSchemeView.swift in Sources */,
+				07DD3CF52C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift in Sources */,
+				07DD3CF42C04CA6D001C204E /* N40Indicator+CoreDataClass.swift in Sources */,
 				07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */,
 				0768C7822A89B4E900E29EBD /* CalendarView.swift in Sources */,
 				0768C7712A87188C00E29EBD /* N40Person+CoreDataProperties.swift in Sources */,
@@ -676,7 +692,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 44;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -696,7 +712,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -712,7 +728,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 44;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -732,7 +748,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -38,9 +38,11 @@
         <attribute name="deadline" attributeType="Date" defaultDateTimeInterval="315537915600" usesScalarValueType="NO"/>
         <attribute name="hasDeadline" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="information" attributeType="String" defaultValueString=""/>
+        <attribute name="isArchived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="isCompleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="attachedIndicators" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Indicator" inverseName="attachedGoals" inverseEntity="N40Indicator"/>
         <relationship name="attachedNotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Note" inverseName="attachedGoals" inverseEntity="N40Note"/>
         <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="attachedGoals" inverseEntity="N40Person"/>
         <relationship name="endGoals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="subGoals" inverseEntity="N40Goal"/>
@@ -54,6 +56,16 @@
         <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="goals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="groups" inverseEntity="N40Goal"/>
         <relationship name="people" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="groups" inverseEntity="N40Person"/>
+    </entity>
+    <entity name="N40Indicator" representedClassName="N40Indicator" syncable="YES">
+        <attribute name="achieved" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="color" attributeType="String" defaultValueString="#b30567"/>
+        <attribute name="dataString" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="target" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="targetDate" attributeType="Date" defaultDateTimeInterval="-31568760" usesScalarValueType="NO"/>
+        <relationship name="attachedGoals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="attachedIndicators" inverseEntity="N40Goal"/>
+        <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="attachedIndicators" inverseEntity="N40Person"/>
     </entity>
     <entity name="N40Note" representedClassName="N40Note" syncable="YES">
         <attribute name="archived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -85,6 +97,7 @@
         <attribute name="socialMedia2" attributeType="String" defaultValueString=""/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
         <relationship name="attachedGoals" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Goal" inverseName="attachedPeople" inverseEntity="N40Goal"/>
+        <relationship name="attachedIndicators" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Indicator" inverseName="attachedPeople" inverseEntity="N40Indicator"/>
         <relationship name="attachedNotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Note" inverseName="attachedPeople" inverseEntity="N40Note"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Group" inverseName="people" inverseEntity="N40Group"/>
         <relationship name="timelineEvents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Event" inverseName="attachedPeople" inverseEntity="N40Event"/>

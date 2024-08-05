@@ -25,6 +25,7 @@ extension N40Goal {
     @NSManaged public var isCompleted: Bool
     @NSManaged public var color: String
     @NSManaged public var priorityIndex: Int16 // 0 is lowest priority. 
+    @NSManaged public var isArchived: Bool
     
     @NSManaged public var subGoals: NSSet?
     @NSManaged public var endGoals: NSSet?
@@ -33,6 +34,7 @@ extension N40Goal {
     @NSManaged public var timelineEvents: NSSet?
     @NSManaged public var attachedNotes: NSSet?
     @NSManaged public var attachedPeople: NSSet?
+    @NSManaged public var attachedIndicators: NSSet?
     
     
     public var getGroups: [N40Group] {

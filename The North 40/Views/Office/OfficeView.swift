@@ -27,6 +27,9 @@ struct OfficeView: View {
                     NavigationLink(destination: NotesView()) {
                         Label("Notes", systemImage: "note.text")
                     }
+//                    NavigationLink(destination: IndicatorsView()) {
+//                        Label("Indicators", systemImage: "chart.xyaxis.line")
+//                    }
                     NavigationLink(destination: FinanceView()) {
                         Label("Budget and Finances", systemImage: "creditcard.and.123")
                     }

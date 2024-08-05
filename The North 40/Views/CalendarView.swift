@@ -18,7 +18,7 @@ struct CalendarView: View {
     
     @State private var selectedDay = Date()
 
-    @State private var showingCalendar = true
+    @State private var showingCalendar = !UserDefaults.standard.bool(forKey: "showingAgenda")
     
     //@State private var showingInfoEvents = UserDefaults.standard.bool(forKey: "showingInfoEvents")
     @State private var showingInfoEvents = true
@@ -78,6 +78,7 @@ struct CalendarView: View {
                         
                         Button {
                             showingCalendar.toggle()
+                            UserDefaults.standard.set(!showingCalendar, forKey: "showingAgenda")
                         } label: {
                             if showingCalendar {
                                 Image(systemName: "list.bullet.rectangle")
@@ -514,7 +515,7 @@ struct AllDayList: View {
                     HStack {
         
                         if goal.isCompleted {
-                            Text("Goal: \(goal.name) completed \(goal.isCompleted ? goal.dateCompleted.dateOnlyToString() : goal.deadline.dateOnlyToString())").bold()
+                            Text("Goal: \(goal.name) completed \( goal.dateCompleted.dateOnlyToString())").bold()
                         } else {
                             Text("Goal: \(goal.name) due \(goal.deadline.dateOnlyToString())").bold()
                         }
@@ -534,6 +535,7 @@ struct AllDayList: View {
                 showingDetailSheet = true
             }
     }
+    
     
     func birthdayBoyCell(_ person: N40Person) -> some View {
         

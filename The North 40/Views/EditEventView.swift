@@ -501,7 +501,7 @@ struct EditEventView: View {
                         allConfirmsFalse()
                         
                         // turn off all day if this is changed
-                        allDay = false
+                        // allDay = false // This didn't work because it changed the all day to off every time you just open the edit screen
                     })
                     
 
@@ -517,7 +517,7 @@ struct EditEventView: View {
                         allConfirmsFalse()
                         
                         // turn off all day if this is changed
-                        allDay = false
+                        // allDay = false // This didn't work because it changed the all day to off every time you just open the edit screen
                     })
                 
 

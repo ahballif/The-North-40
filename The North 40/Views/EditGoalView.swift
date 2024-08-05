@@ -332,7 +332,7 @@ struct EditGoalView: View {
     private func getDefaultPriorityIndex () -> Int16 {
         let fetchGoalsRequest: NSFetchRequest<N40Goal> = N40Goal.fetchRequest()
         fetchGoalsRequest.sortDescriptors = [NSSortDescriptor(keyPath: \N40Goal.priorityIndex, ascending: false)]
-        fetchGoalsRequest.predicate = NSPredicate(format: "isCompleted == NO")
+        fetchGoalsRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "isCompleted == NO"), NSPredicate(format: "isArchived == NO")])
         
         var answer = 0
         
