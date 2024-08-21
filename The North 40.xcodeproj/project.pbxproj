@@ -59,6 +59,7 @@
 		07815AFA2AD384C400606B5C /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07815AF92AD384C400606B5C /* AboutView.swift */; };
 		07815AFC2AD392FD00606B5C /* TutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07815AFB2AD392FD00606B5C /* TutorialView.swift */; };
 		07815AFE2AD3A5FD00606B5C /* GoalTipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07815AFD2AD3A5FD00606B5C /* GoalTipsView.swift */; };
+		0795AF0F2C751583006FC720 /* SharingWithCalendarTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0795AF0E2C751583006FC720 /* SharingWithCalendarTools.swift */; };
 		079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F068D2A8ED14A009A01F5 /* ToDoView.swift */; };
 		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
 		07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9EAE42B2A21E800221C3E /* DashboardView.swift */; };
@@ -149,6 +150,7 @@
 		07815AFB2AD392FD00606B5C /* TutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialView.swift; sourceTree = "<group>"; };
 		07815AFD2AD3A5FD00606B5C /* GoalTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalTipsView.swift; sourceTree = "<group>"; };
 		0792D8CC2ACE5E3A0022D073 /* The North 40.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "The North 40.entitlements"; sourceTree = "<group>"; };
+		0795AF0E2C751583006FC720 /* SharingWithCalendarTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingWithCalendarTools.swift; sourceTree = "<group>"; };
 		079F068D2A8ED14A009A01F5 /* ToDoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoView.swift; sourceTree = "<group>"; };
 		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
 		07A9EAE42B2A21E800221C3E /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -242,6 +244,7 @@
 				0792D8CC2ACE5E3A0022D073 /* The North 40.entitlements */,
 				07180B042AC9BD36008DC9E0 /* The-North-40-Info.plist */,
 				07180B022AC874B7008DC9E0 /* ExportImportData.swift */,
+				0795AF0E2C751583006FC720 /* SharingWithCalendarTools.swift */,
 				079F068F2A8ED215009A01F5 /* Views */,
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
 				0768C6F82A81E15600E29EBD /* The_North_40App.swift */,
@@ -502,6 +505,7 @@
 				0711DF032AA39D77006C0005 /* EditTransactionView.swift in Sources */,
 				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
 				07361BBB2BC9E3AE00BA388B /* ColorSchemeView.swift in Sources */,
+				0795AF0F2C751583006FC720 /* SharingWithCalendarTools.swift in Sources */,
 				07DD3CF52C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift in Sources */,
 				07DD3CF42C04CA6D001C204E /* N40Indicator+CoreDataClass.swift in Sources */,
 				07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */,
@@ -700,6 +704,7 @@
 				INFOPLIST_FILE = "The-North-40-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "North 40";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Permission to access calendar for synching with Apple Calendar app. ";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -736,6 +741,7 @@
 				INFOPLIST_FILE = "The-North-40-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "North 40";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Permission to access calendar for synching with Apple Calendar app. ";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

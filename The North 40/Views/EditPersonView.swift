@@ -54,6 +54,8 @@ struct EditPersonView: View {
     @State private var photoData: Data?
     private let photoWidth = 512
     
+    @State private var makeCalendarForThisPerson = false
+    
     @State private var selectedGroups: [N40Group] = []
     @State private var removeFromGroup: [N40Group] = []
     
@@ -210,6 +212,8 @@ struct EditPersonView: View {
                         }
                     }
                 }.padding()
+                
+                Toggle("Show person-specific calendar in Apple Calendar", isOn: $makeCalendarForThisPerson)
                 
                 VStack {
                     HStack {
@@ -390,6 +394,8 @@ struct EditPersonView: View {
             newPerson.socialMedia1 = socialMedia1
             newPerson.socialMedia2 = socialMedia2
             
+            newPerson.sharedToCalendar = makeCalendarForThisPerson
+            
             newPerson.hasFavoriteColor = hasFavoriteColor
             newPerson.favoriteColor = favoriteColor.toHex() ?? "#FF7051"
             
@@ -438,6 +444,8 @@ struct EditPersonView: View {
         email2 = editPerson?.email2 ?? ""
         socialMedia1 = editPerson?.socialMedia1 ?? ""
         socialMedia2 = editPerson?.socialMedia2 ?? ""
+        
+        makeCalendarForThisPerson = editPerson?.sharedToCalendar ?? false
         
         hasFavoriteColor = editPerson?.hasFavoriteColor ?? false
         favoriteColor = Color(hex: editPerson?.favoriteColor ?? "#FF7051") ?? Color.red

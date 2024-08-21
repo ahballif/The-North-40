@@ -365,5 +365,129 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "The North 40/SharingWithCalendarTools.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "166"
+            endingLineNumber = "166"
+            landmarkName = "updateEventOnEKStore(_:eventStore:viewContext:oldEventDate:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580 - d3f6bc6bc6757b3b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "The_North_40.updateEventOnEKStore(_: The_North_40.N40Event, eventStore: __C.EKEventStore, viewContext: __C.NSManagedObjectContext, oldEventDate: Swift.Optional&lt;Foundation.Date&gt;) -&gt; ()"
+                  moduleName = "The North 40"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/addisonballif/Documents/Xcode/The%20North%2040/The%20North%2040/SharingWithCalendarTools.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "163"
+                  endingLineNumber = "163"
+                  offsetFromSymbolStart = "3088">
+               </Location>
+               <Location
+                  uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580 - d3f6bc6bc6757b3b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "The_North_40.updateEventOnEKStore(_: The_North_40.N40Event, eventStore: __C.EKEventStore, viewContext: __C.NSManagedObjectContext, oldEventDate: Swift.Optional&lt;Foundation.Date&gt;) -&gt; ()"
+                  moduleName = "The North 40"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/addisonballif/Documents/Xcode/The%20North%2040/The%20North%2040/SharingWithCalendarTools.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "163"
+                  endingLineNumber = "163"
+                  offsetFromSymbolStart = "3224">
+               </Location>
+               <Location
+                  uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580 - d3f6bc6bc6757cb6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "The_North_40.updateEventOnEKStore(_: The_North_40.N40Event, eventStore: __C.EKEventStore, viewContext: __C.NSManagedObjectContext, oldEventDate: Swift.Optional&lt;Foundation.Date&gt;) -&gt; ()"
+                  moduleName = "The North 40"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/addisonballif/Documents/Xcode/The%20North%2040/The%20North%2040/SharingWithCalendarTools.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "144"
+                  endingLineNumber = "144"
+                  offsetFromSymbolStart = "3144">
+               </Location>
+               <Location
+                  uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580 - d3f6bc6bc6757cb6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "The_North_40.updateEventOnEKStore(_: The_North_40.N40Event, eventStore: __C.EKEventStore, viewContext: __C.NSManagedObjectContext, oldEventDate: Swift.Optional&lt;Foundation.Date&gt;) -&gt; ()"
+                  moduleName = "The North 40"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/addisonballif/Documents/Xcode/The%20North%2040/The%20North%2040/SharingWithCalendarTools.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "144"
+                  endingLineNumber = "144"
+                  offsetFromSymbolStart = "3284">
+               </Location>
+               <Location
+                  uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580 - d3f6bc6bc6757cb6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "The_North_40.updateEventOnEKStore(_: The_North_40.N40Event, eventStore: __C.EKEventStore, viewContext: __C.NSManagedObjectContext, oldEventDate: Swift.Optional&lt;Foundation.Date&gt;) -&gt; ()"
+                  moduleName = "The North 40"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/addisonballif/Documents/Xcode/The%20North%2040/The%20North%2040/SharingWithCalendarTools.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "144"
+                  endingLineNumber = "144"
+                  offsetFromSymbolStart = "3136">
+               </Location>
+               <Location
+                  uuid = "BB92C399-0752-4C26-91B9-FCE3AA0C7580 - d3f6bc6bc6757cb6"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "The_North_40.updateEventOnEKStore(_: The_North_40.N40Event, eventStore: __C.EKEventStore, viewContext: __C.NSManagedObjectContext, oldEventDate: Swift.Optional&lt;Foundation.Date&gt;) -&gt; ()"
+                  moduleName = "The North 40"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/addisonballif/Documents/Xcode/The%20North%2040/The%20North%2040/SharingWithCalendarTools.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "144"
+                  endingLineNumber = "144"
+                  offsetFromSymbolStart = "3276">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9C6ECC9A-E8DF-4A5C-BE62-BD610C98F6E3"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "The North 40/Views/EditEventView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1238"
+            endingLineNumber = "1238"
+            landmarkName = "saveEvent(saveAsCopy:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

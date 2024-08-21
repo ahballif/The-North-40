@@ -31,6 +31,7 @@ extension N40Event {
     @NSManaged public var allDay: Bool
     @NSManaged public var bucketlist: Bool
     @NSManaged public var repeatOnCompleteInDays: Int16
+    @NSManaged public var sharedWithCalendar: String
     
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?

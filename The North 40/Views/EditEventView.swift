@@ -7,11 +7,13 @@
 
 import SwiftUI
 import CoreData
+import EventKit
 
 struct EditEventView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
+    private static let NEVER_ENDING_REPEAT_LENGTH = 3 // years
     
     @State public var editEvent: N40Event?
     
@@ -65,6 +67,8 @@ struct EditEventView: View {
     @State private var isShowingEditAllConfirm: Bool = false
     
     @State private var repeatUntil: Date = Date()
+    
+    @State private var showOnCalendar: Bool = false
     
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -296,6 +300,14 @@ struct EditEventView: View {
                         eventDetailControls()
                     }
                     
+                    VStack {
+                        HStack {
+                            Text("Share Event to Calendar")
+                            Spacer()
+                            Toggle("shareToCalendar", isOn: $showOnCalendar).labelsHidden()
+                        }.padding()
+                    }
+                    
                     
                     VStack {
                         HStack{
@@ -408,7 +420,7 @@ struct EditEventView: View {
                                                  isPresented: $isPresentingRecurringDeleteConfirm) {
                                 Button("Just this event", role: .destructive) {
                                     
-                                    deleteEvent()
+                                    deleteThisEvent()
                                     
                                     dismiss()
                                     
@@ -449,7 +461,7 @@ struct EditEventView: View {
                             }.confirmationDialog("Delete this event?",
                                                  isPresented: $isPresentingConfirm) {
                                 Button("Delete", role: .destructive) {
-                                    deleteEvent()
+                                    deleteThisEvent()
                                     
                                     dismiss()
                                     
@@ -834,12 +846,15 @@ struct EditEventView: View {
     
     
     
-    public func attachPerson(addPerson: N40Person) {
-        //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
-        if (!attachedPeople.contains(addPerson)) {
-            attachedPeople.append(addPerson)
-        }
-    }
+//    public func attachPerson(addPerson: N40Person) {
+//        //attaches a person to the attachedPeople array. (Used by the SelectPeopleView
+//        if (!attachedPeople.contains(addPerson)) {
+//            attachedPeople.append(addPerson)
+//            if addPerson.sharedToCalendar {
+//                showOnCalendar = true
+//            }
+//        }
+//    }
     
     public func removePerson(removedPerson: N40Person) {
         //removes a person from the attachedPeople array. (Used by the button on each list item)
@@ -852,11 +867,22 @@ struct EditEventView: View {
     public func setSelectedPeople(selectedPeople: [N40Person]) {
         //just resets the list to a new value
         attachedPeople = selectedPeople
+        for attachedPerson in attachedPeople {
+            if attachedPerson.sharedToCalendar {
+                showOnCalendar = true
+                break
+            }
+        }
     }
     
     public func attachGoal (addGoal: N40Goal)  {
         //attaches a goal to the attachedGoal array.
-        attachedGoals.append(addGoal)
+        if (!attachedGoals.contains(addGoal)) {
+            attachedGoals.append(addGoal)
+            if addGoal.sharedToCalendar {
+                showOnCalendar = true
+            }
+        }
     }
     public func removeGoal (removedGoal: N40Goal) {
         let idx = attachedGoals.firstIndex(of: removedGoal) ?? -1
@@ -893,6 +919,8 @@ struct EditEventView: View {
             } else if editEvent!.recurringTag != "" {
                 isAlreadyRepeating = true
             }
+            
+            showOnCalendar = editEvent?.sharedWithCalendar != ""
             
             attachedPeople = []
             attachedGoals = []
@@ -1004,6 +1032,8 @@ struct EditEventView: View {
                 newEvent.name = defaultName
             }
             
+            let oldEventDate = newEvent.startDate
+            
             newEvent.startDate = self.chosenStartDate
             newEvent.isScheduled = self.isScheduled
             newEvent.duration = Int16(self.duration)
@@ -1044,6 +1074,77 @@ struct EditEventView: View {
             }
             
             
+            // Share it calendar if it needs to be shared
+            if newEvent.sharedWithCalendar != "" && !showOnCalendar {
+                // This means that the switch was turned off and we need to delete the event, and remove the UUID tag
+                let eventTag = newEvent.sharedWithCalendar
+                let eventStore = EKEventStore()
+                eventStore.requestAccess(to: .event) { (granted, error) in
+                    if granted {
+                        print("Access granted")
+                        
+                        // It has already been shared, so fetch and delete it
+                        let calendars = getN40RelatedCalendars(viewContext: viewContext, eventStore: eventStore)
+                        
+                        
+                        let predicate = eventStore.predicateForEvents(withStart: Calendar.current.date(byAdding: .day, value: -1, to: oldEventDate) ?? oldEventDate, end: Calendar.current.date(byAdding: .day, value: 2, to: oldEventDate) ?? oldEventDate, calendars: calendars)
+                            
+                        let fetchedEKEvents = eventStore.events(matching: predicate).filter { event in
+                            return event.notes?.contains(eventTag) == true
+                        }
+                        
+                        // delete them
+                        for event in fetchedEKEvents {
+                            do {
+                                try eventStore.remove(event, span: .thisEvent, commit: true)
+                                print("Event deleted successfully.")
+                            } catch {
+                                print("Failed to delete event: \(error.localizedDescription)")
+                            }
+                        }
+                    } else {
+                        print("Access denied")
+                        if let error = error {
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
+                }
+                
+                // remove the tag
+                newEvent.sharedWithCalendar = ""
+                
+            } else if showOnCalendar {
+                
+                if newEvent.sharedWithCalendar == "" {
+                    // First time being shared to give it a tag.
+                    //   It's important that this line gets done earlier and not in the query thread because
+                    //   creating the duplicates needs this part and it might not be done in time for duplicates
+                    //   if its put inside the query thread.
+                    newEvent.sharedWithCalendar = UUID().uuidString
+                }
+                    
+                let eventStore = EKEventStore()
+                eventStore.requestAccess(to: .event) { (granted, error) in
+                    if granted {
+                        print("Access granted")
+                        // Proceed to fetch and filter events
+                        if newEvent.sharedWithCalendar != "" {
+                            updateEventOnEKStore(newEvent, eventStore: eventStore, viewContext: viewContext)
+                        } else {
+                            // It hasn't been shared so we need to make a calendar event
+                            makeNewCalendarEventToEKStore(newEvent, eventStore: eventStore, viewContext: viewContext)
+                        }
+                    } else {
+                        print("Access denied")
+                        if let error = error {
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
+            
+            
+            
             if saveAsCopy {
                 //don't repeat the duplicate (unless a new repeat options was selected)
                 newEvent.recurringTag = ""
@@ -1053,171 +1154,64 @@ struct EditEventView: View {
                 }
             }
             
-            //Making recurring events
+            
             if repeatOptionSelected != repeatOptions[0] && repeatOptionSelected != "On Complete" {
+                //Making recurring events
+                makeRecurringEvents(newEvent: newEvent)
                 
-                newEvent.repeatOnCompleteInDays = 0
-                if newEvent.recurringTag == "" {
-                    let recurringTag = UUID().uuidString
-                    newEvent.recurringTag = recurringTag
-                }
-                if repeatOptionSelected == "Every Day" {
-                    //Repeat Daily
-                    if neverEndingRepeat {numberOfRepeats = 12*10} //repeat for 10 years
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
-                        if numberOfRepeats > 1 {
-                            for i in 1...numberOfRepeats*30 {
-                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
-                            }
-                        }
-                    } else {
-                        var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 1, to: newEvent.startDate) ?? newEvent.startDate
-                        while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
-                            nextRepeatDay = Calendar.current.date(byAdding: .day, value: 1, to: nextRepeatDay) ?? nextRepeatDay
-                        }
-                    }
-                } else if repeatOptionSelected == "Every Week" {
-                    //Repeat Weekly
-                    if neverEndingRepeat {numberOfRepeats = 52*10} //repeat for 10 years
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
-                        if numberOfRepeats > 1 {
-                            for i in 1...numberOfRepeats-1 {
-                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
-                            }
-                        }
-                    } else {
-                        var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 7, to: newEvent.startDate) ?? newEvent.startDate
-                        while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
-                            nextRepeatDay = Calendar.current.date(byAdding: .day, value: 7, to: nextRepeatDay) ?? nextRepeatDay
-                        }
-                    }
-                } else if repeatOptionSelected == "Every Two Weeks" {
-                    if neverEndingRepeat {numberOfRepeats = 26*10} //repeat for 10 years
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
-                        if numberOfRepeats > 1 {
-                            for i in 1...numberOfRepeats-1 {
-                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
-                            }
-                        }
-                    } else {
-                        var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 14, to: newEvent.startDate) ?? newEvent.startDate
-                        while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
-                            nextRepeatDay = Calendar.current.date(byAdding: .day, value: 14, to: nextRepeatDay) ?? nextRepeatDay
-                        }
-                    }
-                } else if repeatOptionSelected == "Monthly (Day of Month)" {
-                    //Repeat Monthly
-                    if neverEndingRepeat {numberOfRepeats = 12*10} //repeat for 10 years
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
-                        if numberOfRepeats > 1 {
-                            for i in 1...numberOfRepeats-1 {
-                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
-                            }
-                        }
-                    } else {
-                        var nextRepeatDay = Calendar.current.date(byAdding: .month, value: 1, to: newEvent.startDate) ?? newEvent.startDate
-                        while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
-                            nextRepeatDay = Calendar.current.date(byAdding: .month, value: 1, to: nextRepeatDay) ?? nextRepeatDay
-                        }
-                    }
-                } else if repeatOptionSelected == "Monthly (Week of Month)" {
-                    // Repeat monthly keeping the day of week
-                    if neverEndingRepeat {numberOfRepeats = 12*10} //repeat for 10 years
+                
+                // Now if this event was shared we need to share the duplicates also
+                // This loop only gets ran to make the recurring events, so all the EK stuff is just to make events
+                if newEvent.sharedWithCalendar != "" {
+                    // first fetch all the duplicates we just made
                     
-                    var repeatsMade = 1 // the first is the original event.
+                    let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
                     
-                    var repeatDate = newEvent.startDate
-                    var lastCreatedDate = newEvent.startDate
+                    let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+                    let isFuturePredicate = NSPredicate(format: "startDate > %@", (newEvent.startDate as CVarArg)) //will NOT include this event
+                    let sameTagPredicate = NSPredicate(format: "recurringTag == %@", newEvent.recurringTag)
                     
-                    //determine the week of month
-                    var weekOfMonth = 1
-                    var indexWeek = Calendar.current.date(byAdding: .day, value: -7, to: newEvent.startDate)!
+                    let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+                    fetchRequest.predicate = compoundPredicate
                     
-                    while Calendar.current.component(.month, from: newEvent.startDate) == Calendar.current.component(.month, from: indexWeek) {
+                    do {
+                        // Peform Fetch Request
+                        let fetchedEvents = try viewContext.fetch(fetchRequest)
                         
-                        weekOfMonth += 1
-                        indexWeek = Calendar.current.date(byAdding: .day, value: -7, to: indexWeek)!
-                        //subtract a week and see if it's still in the month
-                    }
-                    //now we know what week of the month the event is in.
-                    
-                    
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
-                        while repeatsMade < numberOfRepeats {
-                            
-                            
-                            //While the next date is in the same month as the last created date
-                            while Calendar.current.component(.month, from: lastCreatedDate) == Calendar.current.component(.month, from: repeatDate) {
-                                //add a week to the next date until it crosses over to the next month
-                                repeatDate = Calendar.current.date(byAdding: .day, value: 7, to: repeatDate) ?? repeatDate
-                            }
-                            //Now the repeat date should be in the next month,
-                            // ex. if doing first sunday of the month, it should be the next first sunday
-                            
-                            //now make it the right week of the month
-                            repeatDate = Calendar.current.date(byAdding: .day, value: (weekOfMonth-1)*7, to: repeatDate) ?? repeatDate
-                            
-                            
-                            
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
-                            lastCreatedDate = repeatDate
-                            repeatsMade += 1
-                        }
-                    } else {
-                        while repeatDate.startOfDay <= repeatUntil.startOfDay {
-                            if repeatDate != lastCreatedDate {
-                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
-                                lastCreatedDate = repeatDate
-                            }
-                            
-                            //While the next date is in the same month as the last created date
-                            while Calendar.current.component(.month, from: lastCreatedDate) >= Calendar.current.component(.month, from: repeatDate) {
-                                //add a week to the next date until it crosses over to the next month
-                                repeatDate = Calendar.current.date(byAdding: .day, value: 7, to: repeatDate) ?? repeatDate
-                            }
-                            //Now the repeat date should be in the next month,
-                            // ex. if doing first sunday of the month, it should be the next first sunday
-                            
-                            //now make it the right week of the month
-                            repeatDate = Calendar.current.date(byAdding: .day, value: (weekOfMonth-1)*7, to: repeatDate) ?? repeatDate
-                            
-                        }
-                    }
-                     
-                } else if repeatOptionSelected == "Yearly" {
-                    //Repeat Yearly
-                    if neverEndingRepeat {numberOfRepeats = 50} //repeat for 50 years
-                    if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
-                        if numberOfRepeats > 1 {
-                            for i in 1...numberOfRepeats-1 {
-                                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                        // then get into the store
+                        let eventStore = EKEventStore()
+                        eventStore.requestAccess(to: .event) { (granted, error) in
+                            if granted {
+                                
+                                // now loop through them and make the stuff
+                                fetchedEvents.forEach { recurringEvent in
+                                    // make sure it has a tag
+                                    recurringEvent.sharedWithCalendar = UUID().uuidString
+                                    
+                                    makeNewCalendarEventToEKStore(recurringEvent, eventStore: eventStore, viewContext: viewContext)
+                                }
+                                
+                                // save on the context
+                                do {
+                                    try viewContext.save()
+                                }
+                                catch {
+                                    // Handle Error
+                                    print("Error info: \(error)")
+                                    
+                                }
+                                
+                            } else {
+                                print("Access denied")
+                                if let error = error {
+                                    print("Error: \(error.localizedDescription)")
+                                }
+                                
+                                // It didn't work so just don't do anything i guess
                             }
                         }
-                    } else {
-                        var nextRepeatDay = Calendar.current.date(byAdding: .year, value: 1, to: newEvent.startDate) ?? newEvent.startDate
-                        while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
-                            nextRepeatDay = Calendar.current.date(byAdding: .year, value: 1, to: nextRepeatDay) ?? nextRepeatDay
-                        }
-                    }
-                } else if repeatOptionSelected == "On Days:" {
-                    //Repeat on days
-                    if neverEndingRepeat {numberOfRepeats = 52*10} //repeat for 10 years
-                    if (!UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat) {
-                        repeatUntil = Calendar.current.date(byAdding: .day, value: 7*(numberOfRepeats) - 1, to: newEvent.startDate) ?? newEvent.startDate
-                    }
-                    
-                    var lastCreatedDay = Calendar.current.date(byAdding: .day, value: 1, to: newEvent.startDate) ?? newEvent.startDate
-                    while lastCreatedDay.startOfDay <= repeatUntil.startOfDay {
-                        if (lastCreatedDay.dayOfWeek() == "Monday" && repeatMonday) || (lastCreatedDay.dayOfWeek() == "Tuesday" && repeatTuesday) || (lastCreatedDay.dayOfWeek() == "Wednesday" && repeatWednesday) || (lastCreatedDay.dayOfWeek() == "Thursday" && repeatThursday) || (lastCreatedDay.dayOfWeek() == "Friday" && repeatFriday) || (lastCreatedDay.dayOfWeek() == "Saturday" && repeatSaturday) || (lastCreatedDay.dayOfWeek() == "Sunday" && repeatSunday) {
-                            //the day matches a day that should be repeated
-                            EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: lastCreatedDay, vc: viewContext)
-                        }
-                        lastCreatedDay = Calendar.current.date(byAdding: .day, value: 1, to: lastCreatedDay) ?? lastCreatedDay
+                    } catch let error as NSError {
+                        print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
                     }
                 }
                 
@@ -1240,7 +1234,13 @@ struct EditEventView: View {
                     viewContext.delete(futureOccurance)
                 }
                 EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: Int(newEvent.repeatOnCompleteInDays), to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                
+                // Make that duplicate on calendar if needed
+                
             }
+             
+            
+            
             
                         
             // To save the new entity to the persistent store, call
@@ -1254,21 +1254,255 @@ struct EditEventView: View {
                 
             }
             
+           
+            
         }
         
     }
     
-    private func deleteEvent() {
-        if (editEvent != nil) {
-            viewContext.delete(editEvent!)
+    private func makeRecurringEvents(newEvent: N40Event) {
+        
+        
+        
+        newEvent.repeatOnCompleteInDays = 0
+        if newEvent.recurringTag == "" {
+            let recurringTag = UUID().uuidString
+            newEvent.recurringTag = recurringTag
+        }
+        if repeatOptionSelected == "Every Day" {
+            //Repeat Daily
+            if neverEndingRepeat {numberOfRepeats = 12*EditEventView.NEVER_ENDING_REPEAT_LENGTH}
+            if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
+                if numberOfRepeats > 1 {
+                    for i in 1...numberOfRepeats*30 {
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                    }
+                }
+            } else {
+                var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 1, to: newEvent.startDate) ?? newEvent.startDate
+                while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    nextRepeatDay = Calendar.current.date(byAdding: .day, value: 1, to: nextRepeatDay) ?? nextRepeatDay
+                }
+            }
+        } else if repeatOptionSelected == "Every Week" {
+            //Repeat Weekly
+            if neverEndingRepeat {numberOfRepeats = 52*EditEventView.NEVER_ENDING_REPEAT_LENGTH}
+            if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
+                if numberOfRepeats > 1 {
+                    for i in 1...numberOfRepeats-1 {
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                    }
+                }
+            } else {
+                var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 7, to: newEvent.startDate) ?? newEvent.startDate
+                while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    nextRepeatDay = Calendar.current.date(byAdding: .day, value: 7, to: nextRepeatDay) ?? nextRepeatDay
+                }
+            }
+        } else if repeatOptionSelected == "Every Two Weeks" {
+            if neverEndingRepeat {numberOfRepeats = 26*EditEventView.NEVER_ENDING_REPEAT_LENGTH}
+            if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
+                if numberOfRepeats > 1 {
+                    for i in 1...numberOfRepeats-1 {
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                    }
+                }
+            } else {
+                var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 14, to: newEvent.startDate) ?? newEvent.startDate
+                while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    nextRepeatDay = Calendar.current.date(byAdding: .day, value: 14, to: nextRepeatDay) ?? nextRepeatDay
+                }
+            }
+        } else if repeatOptionSelected == "Monthly (Day of Month)" {
+            //Repeat Monthly
+            if neverEndingRepeat {numberOfRepeats = 12*EditEventView.NEVER_ENDING_REPEAT_LENGTH}
+            if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
+                if numberOfRepeats > 1 {
+                    for i in 1...numberOfRepeats-1 {
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                    }
+                }
+            } else {
+                var nextRepeatDay = Calendar.current.date(byAdding: .month, value: 1, to: newEvent.startDate) ?? newEvent.startDate
+                while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    nextRepeatDay = Calendar.current.date(byAdding: .month, value: 1, to: nextRepeatDay) ?? nextRepeatDay
+                }
+            }
+        } else if repeatOptionSelected == "Monthly (Week of Month)" {
+            // Repeat monthly keeping the day of week
+            if neverEndingRepeat {numberOfRepeats = 12*EditEventView.NEVER_ENDING_REPEAT_LENGTH}
             
-            do {
-                try viewContext.save()
+            var repeatsMade = 1 // the first is the original event.
+            
+            var repeatDate = newEvent.startDate
+            var lastCreatedDate = newEvent.startDate
+            
+            //determine the week of month
+            var weekOfMonth = 1
+            var indexWeek = Calendar.current.date(byAdding: .day, value: -7, to: newEvent.startDate)!
+            
+            while Calendar.current.component(.month, from: newEvent.startDate) == Calendar.current.component(.month, from: indexWeek) {
+                
+                weekOfMonth += 1
+                indexWeek = Calendar.current.date(byAdding: .day, value: -7, to: indexWeek)!
+                //subtract a week and see if it's still in the month
             }
-            catch {
-                // Handle Error
-                print("Error info: \(error)")
+            //now we know what week of the month the event is in.
+            
+            
+            if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
+                while repeatsMade < numberOfRepeats {
+                    
+                    
+                    //While the next date is in the same month as the last created date
+                    while Calendar.current.component(.month, from: lastCreatedDate) == Calendar.current.component(.month, from: repeatDate) {
+                        //add a week to the next date until it crosses over to the next month
+                        repeatDate = Calendar.current.date(byAdding: .day, value: 7, to: repeatDate) ?? repeatDate
+                    }
+                    //Now the repeat date should be in the next month,
+                    // ex. if doing first sunday of the month, it should be the next first sunday
+                    
+                    //now make it the right week of the month
+                    repeatDate = Calendar.current.date(byAdding: .day, value: (weekOfMonth-1)*7, to: repeatDate) ?? repeatDate
+                    
+                    
+                    
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
+                    lastCreatedDate = repeatDate
+                    repeatsMade += 1
+                }
+            } else {
+                while repeatDate.startOfDay <= repeatUntil.startOfDay {
+                    if repeatDate != lastCreatedDate {
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
+                        lastCreatedDate = repeatDate
+                    }
+                    
+                    //While the next date is in the same month as the last created date
+                    while Calendar.current.component(.month, from: lastCreatedDate) >= Calendar.current.component(.month, from: repeatDate) {
+                        //add a week to the next date until it crosses over to the next month
+                        repeatDate = Calendar.current.date(byAdding: .day, value: 7, to: repeatDate) ?? repeatDate
+                    }
+                    //Now the repeat date should be in the next month,
+                    // ex. if doing first sunday of the month, it should be the next first sunday
+                    
+                    //now make it the right week of the month
+                    repeatDate = Calendar.current.date(byAdding: .day, value: (weekOfMonth-1)*7, to: repeatDate) ?? repeatDate
+                    
+                }
             }
+             
+        } else if repeatOptionSelected == "Yearly" {
+            //Repeat Yearly
+            if neverEndingRepeat {numberOfRepeats = 50} //repeat for 50 years
+            if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
+                if numberOfRepeats > 1 {
+                    for i in 1...numberOfRepeats-1 {
+                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                    }
+                }
+            } else {
+                var nextRepeatDay = Calendar.current.date(byAdding: .year, value: 1, to: newEvent.startDate) ?? newEvent.startDate
+                while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    nextRepeatDay = Calendar.current.date(byAdding: .year, value: 1, to: nextRepeatDay) ?? nextRepeatDay
+                }
+            }
+        } else if repeatOptionSelected == "On Days:" {
+            //Repeat on days
+            if neverEndingRepeat {numberOfRepeats = 52*EditEventView.NEVER_ENDING_REPEAT_LENGTH}
+            if (!UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat) {
+                repeatUntil = Calendar.current.date(byAdding: .day, value: 7*(numberOfRepeats) - 1, to: newEvent.startDate) ?? newEvent.startDate
+            }
+            
+            var lastCreatedDay = Calendar.current.date(byAdding: .day, value: 1, to: newEvent.startDate) ?? newEvent.startDate
+            while lastCreatedDay.startOfDay <= repeatUntil.startOfDay {
+                if (lastCreatedDay.dayOfWeek() == "Monday" && repeatMonday) || (lastCreatedDay.dayOfWeek() == "Tuesday" && repeatTuesday) || (lastCreatedDay.dayOfWeek() == "Wednesday" && repeatWednesday) || (lastCreatedDay.dayOfWeek() == "Thursday" && repeatThursday) || (lastCreatedDay.dayOfWeek() == "Friday" && repeatFriday) || (lastCreatedDay.dayOfWeek() == "Saturday" && repeatSaturday) || (lastCreatedDay.dayOfWeek() == "Sunday" && repeatSunday) {
+                    //the day matches a day that should be repeated
+                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: lastCreatedDay, vc: viewContext)
+                }
+                lastCreatedDay = Calendar.current.date(byAdding: .day, value: 1, to: lastCreatedDay) ?? lastCreatedDay
+            }
+        }
+    }
+    
+    
+    private func deleteEventInCoreDataAndCalendar(_ event: N40Event) {
+        
+        let oldEventDate = event.startDate
+        let eventTag = event.sharedWithCalendar
+        
+        // first see if there is an event in calendar that needs to get deleted also
+        if event.sharedWithCalendar != "" {
+            // We also need to delete the calendar copy
+            let eventStore = EKEventStore()
+            eventStore.requestAccess(to: .event) { (granted, error) in
+                if granted {
+                    
+                    // It has already been shared, so fetch and delete it
+                    let calendars = getN40RelatedCalendars(viewContext: viewContext, eventStore: eventStore)
+                    
+                    let predicate = eventStore.predicateForEvents(withStart: Calendar.current.date(byAdding: .day, value: -1, to: oldEventDate) ?? oldEventDate, end: Calendar.current.date(byAdding: .day, value: 2, to: oldEventDate) ?? oldEventDate, calendars: calendars)
+                    
+                    let fetchedEKEvents = eventStore.events(matching: predicate).filter { event in
+                        return event.notes?.contains(eventTag) == true
+                    }
+                    
+                    // delete them
+                    for event in fetchedEKEvents {
+                        do {
+                            try eventStore.remove(event, span: .thisEvent, commit: true)
+                            print("Event deleted successfully.")
+                        } catch {
+                            print("Failed to delete event: \(error.localizedDescription)")
+                        }
+                    }
+                        
+                    
+                    // after deleting we can delete the event
+                    deleteEventInCoreData(event)
+
+                    
+                } else {
+                    print("Access denied")
+                    if let error = error {
+                        print("Error: \(error.localizedDescription)")
+                    }
+                    
+                    // It didn't work so just delete it anyway
+                    deleteEventInCoreData(event)
+                }
+            }
+        } else {
+            // It isn't shared so just delete it in coredata
+            deleteEventInCoreData(event)
+        }
+        
+        
+        
+    }
+    
+    private func deleteEventInCoreData(_ event: N40Event) {
+        //now delete the event in coredata
+        viewContext.delete(editEvent!)
+        
+        do {
+            try viewContext.save()
+        }
+        catch {
+            // Handle Error
+            print("Error info: \(error)")
+        }
+    }
+    
+    private func deleteThisEvent() {
+        if (editEvent != nil) {
+            
+            deleteEventInCoreDataAndCalendar(editEvent!)
         } else {
             print("Cannot delete event because it has not been created yet. ")
         }
@@ -1276,6 +1510,8 @@ struct EditEventView: View {
     
     private func deleteAllRecurringEvents(includeThisEvent: Bool = true) {
         if editEvent != nil {
+            
+            
             let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
             
             let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
@@ -1289,20 +1525,114 @@ struct EditEventView: View {
                 // Peform Fetch Request
                 let fetchedEvents = try viewContext.fetch(fetchRequest)
                 
+                // first lets do a quick check to see if it needs to be done in an EKShare query
+                var needsEKquery = false
                 fetchedEvents.forEach { recurringEvent in
-                    viewContext.delete(recurringEvent)
+                    if recurringEvent.sharedWithCalendar != "" {
+                        needsEKquery = true
+                    }
                 }
                 
-                // To save the entities to the persistent store, call
-                // save on the context
-                do {
-                    try viewContext.save()
+                if needsEKquery {
+                    let eventStore = EKEventStore()
+                    eventStore.requestAccess(to: .event) { (granted, error) in
+                        if granted {
+                            
+                            // now we can loop through and if it's shared to calendar, delete it there too
+                            
+                            fetchedEvents.forEach { recurringEvent in
+                                
+                                // first see if there is an event in calendar that needs to get deleted also
+                                if recurringEvent.sharedWithCalendar != "" {
+                                    // We also need to delete the calendar copy
+                                    
+                                    let oldEventDate = recurringEvent.startDate
+                                    let eventTag = recurringEvent.sharedWithCalendar
+                                    
+                                    
+                                    // It has already been shared, so fetch and delete it
+                                    let calendars = getN40RelatedCalendars(viewContext: viewContext, eventStore: eventStore)
+                                    let predicate = eventStore.predicateForEvents(withStart: Calendar.current.date(byAdding: .day, value: -1, to: oldEventDate) ?? oldEventDate, end: Calendar.current.date(byAdding: .day, value: 2, to: oldEventDate) ?? oldEventDate, calendars: calendars)
+                                        
+                                    let fetchedEKEvents = eventStore.events(matching: predicate).filter { event in
+                                        return event.notes?.contains(eventTag) == true
+                                    }
+                                    
+                                    // delete them
+                                    for event in fetchedEKEvents {
+                                        do {
+                                            try eventStore.remove(event, span: .thisEvent, commit: true)
+                                            print("Event deleted successfully.")
+                                        } catch {
+                                            print("Failed to delete event: \(error.localizedDescription)")
+                                        }
+                                    }
+                                        
+                                    // now that it has been used to delete the calendar copy, we can delete it in coredata
+                                    viewContext.delete(recurringEvent)
+
+                                } else {
+                                    // just delete the event in coredata
+                                    viewContext.delete(recurringEvent)
+                                }
+                                
+                                
+                                
+                            }
+                            
+                            // To save the entities to the persistent store, call
+                            // save on the context
+                            do {
+                                try viewContext.save()
+                            }
+                            catch {
+                                // Handle Error
+                                print("Error info: \(error)")
+                                
+                            }
+                            
+                            
+                        } else {
+                            print("Access denied")
+                            if let error = error {
+                                print("Error: \(error.localizedDescription)")
+                            }
+                            
+                            // it didn't work so just do it normally
+                            fetchedEvents.forEach { recurringEvent in
+                                viewContext.delete(recurringEvent)
+                            }
+                            // save on the context
+                            do {
+                                try viewContext.save()
+                            }
+                            catch {
+                                // Handle Error
+                                print("Error info: \(error)")
+                                
+                            }
+                        }
+                        
+                        
+                    }
+                } else {
+                    // Nothing is shared to calendar so just do it normally
+                    fetchedEvents.forEach { recurringEvent in
+                        viewContext.delete(recurringEvent)
+                    }
+                    // save on the context
+                    do {
+                        try viewContext.save()
+                    }
+                    catch {
+                        // Handle Error
+                        print("Error info: \(error)")
+                        
+                    }
                 }
-                catch {
-                    // Handle Error
-                    print("Error info: \(error)")
-                    
-                }
+                
+                
+                
                 
                 
             } catch let error as NSError {
@@ -1313,8 +1643,13 @@ struct EditEventView: View {
         }
     }
     
+    
+    
     private func saveAllRecurringEvents() {
         if editEvent != nil {
+            
+
+            // Now do stuff
             let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
             
             let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
@@ -1328,72 +1663,123 @@ struct EditEventView: View {
                 // Peform Fetch Request
                 let fetchedEvents = try viewContext.fetch(fetchRequest)
                 
-                fetchedEvents.forEach { recurringEvent in
-                    
-                    withAnimation {
-                        
-                        recurringEvent.name = self.eventTitle
-                        if (self.eventTitle == "") {
-                            //This is where we would add up the attached people to figure out an event title name.
+                // if it's shared, we want the iteration done inside the EKEventStore quere so it doesn't make a new quere for each loop.
+                if editEvent!.sharedWithCalendar != "" || showOnCalendar {
+                    let eventStore = EKEventStore()
+                    eventStore.requestAccess(to: .event) { (granted, error) in
+                        if granted {
                             
-                            //placeholder:
-                            recurringEvent.name = "Do Something"
-                        }
-                        
-                        recurringEvent.duration = Int16(self.duration)
-                        
-                        //only saves time info
-                        let hour = Calendar.current.component(.hour, from: chosenStartDate)
-                        let minute = Calendar.current.component(.minute, from: chosenStartDate)
-                        recurringEvent.startDate = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: recurringEvent.startDate) ?? recurringEvent.startDate
-                        
-                        recurringEvent.allDay = self.allDay
-                        
-                        recurringEvent.location = self.location
-                        recurringEvent.information = self.information
-                        
-                        //wont save status
-                        //or summary
-                        
-                        //finds the index representing the correct contact method and event type
-                        recurringEvent.contactMethod = Int16(N40Event.CONTACT_OPTIONS.firstIndex(of: contactMethod) ?? 0)
-                        recurringEvent.eventType = Int16(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
-                        
-                        
-                        recurringEvent.color = selectedColor.toHex() ?? "#FF7051"
-                        
-                        
-                        //We need to remove all the people and goals before we reattach any.
-                        let alreadyAttachedPeople = recurringEvent.getAttachedPeople
-                        let alreadyAttachedGoals = recurringEvent.getAttachedGoals
-                        
-                        alreadyAttachedPeople.forEach {person in
-                            recurringEvent.removeFromAttachedPeople(person)
-                        }
-                        alreadyAttachedGoals.forEach {goal in
-                            recurringEvent.removeFromAttachedGoals(goal)
-                        }
-                        
-                        
-                        //Now add back only the ones that are selected.
-                        attachedPeople.forEach {person in
-                            recurringEvent.addToAttachedPeople(person)
-                        }
-                        attachedGoals.forEach {goal in
-                            recurringEvent.addToAttachedGoals(goal)
+                            // now we can iterate through
+                            fetchedEvents.forEach { recurringEvent in
+                                
+                                let oldEventDate = recurringEvent.startDate
+                                saveSpecificRecurringEventInCoreData(recurringEvent)
+                                
+                                
+                            
+                                if recurringEvent.sharedWithCalendar != "" && !showOnCalendar {
+                                    // This means that the switch was turned off and we need to delete the event, and remove the UUID tag
+                                    
+                            
+                                    // It has already been shared, so fetch and delete it
+                                    let calendars = getN40RelatedCalendars(viewContext: viewContext, eventStore: eventStore)
+                                    
+                                    let predicate = eventStore.predicateForEvents(withStart: Calendar.current.date(byAdding: .day, value: -1, to: oldEventDate) ?? oldEventDate, end: Calendar.current.date(byAdding: .day, value: 2, to: oldEventDate) ?? oldEventDate, calendars: calendars)
+                                    
+                                    let fetchedEKEvents = eventStore.events(matching: predicate).filter { event in
+                                        return event.notes?.contains(recurringEvent.sharedWithCalendar) == true
+                                    }
+                                    
+                                    // delete them
+                                    for event in fetchedEKEvents {
+                                        do {
+                                            try eventStore.remove(event, span: .thisEvent, commit: true)
+                                            print("Event deleted successfully.")
+                                        } catch {
+                                            print("Failed to delete event: \(error.localizedDescription)")
+                                        }
+                                    }
+                                    
+                                    // remove the tag
+                                    recurringEvent.sharedWithCalendar = ""
+                                   
+                                } else if showOnCalendar {
+                                    // This means that the switch is on so it either needs a tag or it just needs to be updated
+                            
+                                    if recurringEvent.sharedWithCalendar != "" {
+                                        updateEventOnEKStore(recurringEvent, eventStore: eventStore, viewContext: viewContext)
+                                        
+                                    } else {
+                                        // It hasn't been shared so we need to make a calendar event
+                                        recurringEvent.sharedWithCalendar = UUID().uuidString
+                                        
+                                        makeNewCalendarEventToEKStore(recurringEvent, eventStore: eventStore, viewContext: viewContext)
+                                    }
+                                }
+                                
+                            }
+                            
+                            // To save the entities to the persistent store, call
+                            // save on the context
+                            do {
+                                try viewContext.save()
+                            }
+                            catch {
+                                // Handle Error
+                                print("Error info: \(error)")
+                            }
+                            
+                            
+                        } else {
+                            print("Access denied")
+                            if let error = error {
+                                print("Error: \(error.localizedDescription)")
+                            }
+                            
+                            // The share didn't work so just do it normally
+                            fetchedEvents.forEach { recurringEvent in
+                                
+                                saveSpecificRecurringEventInCoreData(recurringEvent)
+                                
+                            }
+                            
+                            // To save the entities to the persistent store, call
+                            // save on the context
+                            do {
+                                try viewContext.save()
+                            }
+                            catch {
+                                // Handle Error
+                                print("Error info: \(error)")
+                            }
                         }
                     }
+                } else {
+                    // Don't do shared stuff, just go through without it
+                    
+                    fetchedEvents.forEach { recurringEvent in
+                        
+                        saveSpecificRecurringEventInCoreData(recurringEvent)
+                        
+                    }
+                    
+                    // To save the entities to the persistent store, call
+                    // save on the context
+                    do {
+                        try viewContext.save()
+                    }
+                    catch {
+                        // Handle Error
+                        print("Error info: \(error)")
+                    }
+                    
+                    
                 }
                 
-                // To save the entities to the persistent store, call
-                // save on the context
-                do {
-                    try viewContext.save()
-                }
-                catch {
-                    // Handle Error
-                    print("Error info: \(error)")
-                }
+                
+                
+                
+                // now make the duplicate events on the calendar
                 
                 
             } catch let error as NSError {
@@ -1402,6 +1788,64 @@ struct EditEventView: View {
         } else {
             print("Cannot save updates to the other recurring events because they have not been created yet. ")
         }
+    }
+    
+    
+    
+    private func saveSpecificRecurringEventInCoreData(_ recurringEvent: N40Event) {
+        
+        recurringEvent.name = self.eventTitle
+        if (self.eventTitle == "") {
+            //This is where we would add up the attached people to figure out an event title name.
+            
+            //placeholder:
+            recurringEvent.name = "Do Something"
+        }
+        
+        recurringEvent.duration = Int16(self.duration)
+        
+        
+        //only saves time info
+        let hour = Calendar.current.component(.hour, from: chosenStartDate)
+        let minute = Calendar.current.component(.minute, from: chosenStartDate)
+        recurringEvent.startDate = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: recurringEvent.startDate) ?? recurringEvent.startDate
+        
+        recurringEvent.allDay = self.allDay
+        
+        recurringEvent.location = self.location
+        recurringEvent.information = self.information
+        
+        //wont save status
+        //or summary
+        
+        //finds the index representing the correct contact method and event type
+        recurringEvent.contactMethod = Int16(N40Event.CONTACT_OPTIONS.firstIndex(of: contactMethod) ?? 0)
+        recurringEvent.eventType = Int16(N40Event.EVENT_TYPE_OPTIONS.firstIndex(of: eventType) ?? 1) //Make 1 the default for now
+        
+        
+        recurringEvent.color = selectedColor.toHex() ?? "#FF7051"
+        
+        
+        //We need to remove all the people and goals before we reattach any.
+        let alreadyAttachedPeople = recurringEvent.getAttachedPeople
+        let alreadyAttachedGoals = recurringEvent.getAttachedGoals
+        
+        alreadyAttachedPeople.forEach {person in
+            recurringEvent.removeFromAttachedPeople(person)
+        }
+        alreadyAttachedGoals.forEach {goal in
+            recurringEvent.removeFromAttachedGoals(goal)
+        }
+        
+        
+        //Now add back only the ones that are selected.
+        attachedPeople.forEach {person in
+            recurringEvent.addToAttachedPeople(person)
+        }
+        attachedGoals.forEach {goal in
+            recurringEvent.addToAttachedGoals(goal)
+        }
+        
     }
     
     public static func duplicateN40Event(originalEvent: N40Event, newStartDate: Date, vc: NSManagedObjectContext) {
@@ -1428,6 +1872,8 @@ struct EditEventView: View {
             newEvent.addToAttachedGoals(goal)
         }
         
+        
+        
         do {
             try vc.save()
         }
@@ -1442,6 +1888,8 @@ struct EditEventView: View {
     public func setDate(date: Date) {
         chosenStartDate = date
     }
+    
+    
     
         
 }
@@ -1888,6 +2336,4 @@ fileprivate struct scheduleViewCanvas: View {
     
     
 }
-
-
 

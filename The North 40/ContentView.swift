@@ -28,7 +28,6 @@ struct ContentView: View {
     private let cornerRadius = 10.0
     private let tabOpacity = 0.6
     private let selectedBuff = 0.2
-    @State private var tabColor = Color(red: 3.0/255.0, green: 110.0/255.0, blue: 20.0/255.0)
     
     
     var body: some View {

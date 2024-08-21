@@ -40,6 +40,7 @@ extension N40Person {
     @NSManaged public var attachedNotes: NSSet?
     @NSManaged public var attachedGoals: NSSet?
     @NSManaged public var attachedIndicators: NSSet?
+    @NSManaged public var sharedToCalendar: Bool
 
     @NSManaged public var favoriteColor: String
     @NSManaged public var hasFavoriteColor: Bool

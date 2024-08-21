@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import EventKit
 
 public let DEFAULT_EVENT_COLOR = Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0))
 
@@ -992,6 +993,26 @@ struct DailyPlanner: View {
                                     try viewContext.save()
                                 } catch {
                                     // handle error
+                                }
+                                
+                                // update the calendar app copy if needed
+                                if event.sharedWithCalendar != "" {
+                                    
+                                    let eventStore = EKEventStore()
+                                    eventStore.requestAccess(to: .event) { (granted, error) in
+                                        if granted {
+                                            print("Access granted")
+                                            
+                                            updateEventOnEKStore(event, eventStore: eventStore, viewContext: viewContext)
+                                            
+                                            
+                                        } else {
+                                            print("Access denied")
+                                            if let error = error {
+                                                print("Error: \(error.localizedDescription)")
+                                            }
+                                        }
+                                    }
                                 }
                                 
                             }

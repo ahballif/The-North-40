@@ -4,6 +4,8 @@
 <dict>
 	<key>ITSEncryptionExportComplianceCode</key>
 	<string>NO</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Permission to access calendar for synching with Apple Calendar app. </string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

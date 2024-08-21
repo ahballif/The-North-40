@@ -26,6 +26,7 @@ extension N40Goal {
     @NSManaged public var color: String
     @NSManaged public var priorityIndex: Int16 // 0 is lowest priority. 
     @NSManaged public var isArchived: Bool
+    @NSManaged public var sharedToCalendar: Bool
     
     @NSManaged public var subGoals: NSSet?
     @NSManaged public var endGoals: NSSet?

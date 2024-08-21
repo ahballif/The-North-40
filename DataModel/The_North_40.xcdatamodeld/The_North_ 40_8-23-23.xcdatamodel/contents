@@ -25,6 +25,7 @@
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
         <attribute name="repeatOnCompleteInDays" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sharedWithCalendar" attributeType="String" defaultValueString=""/>
         <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="315537915600" usesScalarValueType="NO"/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="summary" attributeType="String" defaultValueString=""/>
@@ -42,6 +43,7 @@
         <attribute name="isCompleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <attribute name="priorityIndex" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sharedToCalendar" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="attachedIndicators" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Indicator" inverseName="attachedGoals" inverseEntity="N40Indicator"/>
         <relationship name="attachedNotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Note" inverseName="attachedGoals" inverseEntity="N40Note"/>
         <relationship name="attachedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="N40Person" inverseName="attachedGoals" inverseEntity="N40Person"/>
@@ -93,6 +95,7 @@
         <attribute name="phoneNumber1" attributeType="String" defaultValueString=""/>
         <attribute name="phoneNumber2" attributeType="String" defaultValueString=""/>
         <attribute name="photo" optional="YES" attributeType="Binary"/>
+        <attribute name="sharedToCalendar" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="socialMedia1" attributeType="String" defaultValueString=""/>
         <attribute name="socialMedia2" attributeType="String" defaultValueString=""/>
         <attribute name="title" attributeType="String" defaultValueString=""/>

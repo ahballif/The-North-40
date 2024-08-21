@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import EventKit
 
 fileprivate extension Date {
     func dayNumberOfWeek() -> Int? {
@@ -575,6 +576,26 @@ struct WeeklyPlanner: View {
                                 try viewContext.save()
                             } catch {
                                 // handle error
+                            }
+                            
+                            // update the calendar app copy if needed
+                            if event.sharedWithCalendar != "" {
+                                
+                                let eventStore = EKEventStore()
+                                eventStore.requestAccess(to: .event) { (granted, error) in
+                                    if granted {
+                                        print("Access granted")
+                                        
+                                        updateEventOnEKStore(event, eventStore: eventStore, viewContext: viewContext)
+                                        
+                                        
+                                    } else {
+                                        print("Access denied")
+                                        if let error = error {
+                                            print("Error: \(error.localizedDescription)")
+                                        }
+                                    }
+                                }
                             }
                             
                             

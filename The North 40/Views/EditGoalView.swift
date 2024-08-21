@@ -37,6 +37,8 @@ struct EditGoalView: View {
     @State var editGoal: N40Goal?
     @State public var parentGoal: N40Goal?
     
+    @State private var showOnCalendar = false
+    
     @FocusState private var focusedField: FocusField?
     enum FocusField: Hashable {
         case title, body
@@ -90,6 +92,7 @@ struct EditGoalView: View {
                 }
             }
             
+            Toggle("Make goal-specific calendar in Apple Calendar", isOn: $showOnCalendar)
             
             VStack {
                 HStack{
@@ -242,6 +245,8 @@ struct EditGoalView: View {
             
             newGoal.color = selectedColor.toHex() ?? "#40BF50"
             
+            newGoal.sharedToCalendar = showOnCalendar
+            
             for goal in newGoal.getEndGoals {
                 newGoal.removeFromEndGoals(goal)
             }
@@ -283,6 +288,8 @@ struct EditGoalView: View {
         } else {
             selectedColor = Color(hue: Double.random(in: 0.0...1.0), saturation: 1.0, brightness: 1.0)
         }
+        
+        showOnCalendar = editGoal?.sharedToCalendar ?? false
         
         endGoals = []
         for endGoal in editGoal?.getEndGoals ?? [] {
