@@ -8,6 +8,8 @@
 import SwiftUI
 import CoreData
 import UniformTypeIdentifiers
+import EventKit
+import EventKitUI
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -58,6 +60,11 @@ struct SettingsView: View {
     @State private var tintCompletedTodos = UserDefaults.standard.bool(forKey: "tintCompletedTodos")
     
     @State private var showingColorPickerSheet = false
+    
+    @State private var showCalendarChooser = false
+    @State private var selectedCalendarsString = UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? ""
+        
+    @State private var shareAllEventsToCalendar: Bool = UserDefaults.standard.bool(forKey: "shareEverythingToCalendar")
     
     var body: some View {
         VStack {
@@ -152,6 +159,33 @@ struct SettingsView: View {
                                     UserDefaults.standard.set(show7Days, forKey: "show7Days")
                                 }
                         }
+                        Toggle("Share all events to Apple Calendar app by default.", isOn: $shareAllEventsToCalendar)
+                            .onChange(of: shareAllEventsToCalendar) {_ in
+                                UserDefaults.standard.set(shareAllEventsToCalendar, forKey: "shareEverythingToCalendar")
+                            }
+                        VStack {
+                            
+                            HStack {
+                                
+                                Button(action: {
+                                    showCalendarChooser.toggle()
+                                }) {
+                                    Text("Show calendars from Calendar App: ")
+                                }
+                                .sheet(isPresented: $showCalendarChooser) {
+                                    CalendarChooserView()
+                                }
+                                Spacer()
+                            }
+                            HStack {
+                                caption("Calendars selected: " + selectedCalendarsString).onChange(of: showCalendarChooser) {_ in
+                                    selectedCalendarsString = UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? ""
+                                }
+                                Spacer()
+                            }
+                            caption("Note: North 40 can share events with the Apple Calendar app, and can display events that are in Apple Calendars, but changes made to North 40 events in Apple Calendars will not be updated in North 40. Please update North 40 events in the North 40 app. ")
+                        }
+                        
                     }
                     VStack {
                         Text("To-Do List Settings").font(.title3).padding()
@@ -575,7 +609,33 @@ fileprivate func readFile(fileURL: URL) -> String {
     return text
 }
 
+fileprivate func calendarListToString(calendarList: [EKCalendar]) -> String {
+    var calendarString = ""
+    var first = true
+    for eachCalendar in calendarList {
+        if !first {
+            calendarString += ", "
+        }
+        calendarString += eachCalendar.title
+        first = false
+    }
+    return calendarString
+}
 
+func stringToCalendarList(calendarString: String = UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? "", eventStore: EKEventStore) -> [EKCalendar] {
+    var calendars: [EKCalendar] = []
+    let trimmedComponents = calendarString
+        .split(separator: ", ")
+        
+    
+    for eachName in trimmedComponents {
+        if let eachCalendar = getCalendarByTitle(title: String(eachName), eventStore: eventStore) {
+            calendars.append(eachCalendar)
+        }
+    }
+    
+    return calendars
+}
 
 
 struct AcknowledgmentsView: View {
@@ -587,6 +647,52 @@ struct AcknowledgmentsView: View {
                 Text("Sven Tiigi for YouTubePlayerView").font(.title2)
                 Text("The MIT License (MIT)\n\nCopyright (c) 2023 Sven Tiigi\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. \n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.")
             }.padding()
+        }
+    }
+}
+
+
+struct CalendarChooserView: UIViewControllerRepresentable {
+    
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let eventStore = EKEventStore()
+        let chooser = EKCalendarChooser(selectionStyle: .multiple,
+                                        displayStyle: .allCalendars,
+                                        entityType: .event,
+                                        eventStore: eventStore)
+        
+        chooser.showsDoneButton = true
+        chooser.showsCancelButton = true
+        chooser.delegate = context.coordinator
+        
+        //select the ones that have already been selected
+        chooser.selectedCalendars = Set(stringToCalendarList(eventStore: eventStore))
+        
+        return UINavigationController(rootViewController: chooser)
+    }
+    
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
+    
+    class Coordinator: NSObject, EKCalendarChooserDelegate {
+        var parent: CalendarChooserView
+        
+        init(_ parent: CalendarChooserView) {
+            self.parent = parent
+        }
+        
+        func calendarChooserDidFinish(_ calendarChooser: EKCalendarChooser) {
+            let selectedCalendars = calendarChooser.selectedCalendars.map { $0 }
+            UserDefaults.standard.set(calendarListToString(calendarList: selectedCalendars), forKey: "selectedAppCalendars" )
+            calendarChooser.dismiss(animated: true, completion: nil)
+        }
+        
+        func calendarChooserDidCancel(_ calendarChooser: EKCalendarChooser) {
+            calendarChooser.dismiss(animated: true, completion: nil)
         }
     }
 }

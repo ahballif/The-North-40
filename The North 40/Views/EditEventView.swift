@@ -68,7 +68,7 @@ struct EditEventView: View {
     
     @State private var repeatUntil: Date = Date()
     
-    @State private var showOnCalendar: Bool = false
+    @State private var showOnCalendar: Bool = UserDefaults.standard.bool(forKey: "shareEverythingToCalendar")
     
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -1165,54 +1165,7 @@ struct EditEventView: View {
                 if newEvent.sharedWithCalendar != "" {
                     // first fetch all the duplicates we just made
                     
-                    let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
-                    
-                    let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
-                    let isFuturePredicate = NSPredicate(format: "startDate > %@", (newEvent.startDate as CVarArg)) //will NOT include this event
-                    let sameTagPredicate = NSPredicate(format: "recurringTag == %@", newEvent.recurringTag)
-                    
-                    let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
-                    fetchRequest.predicate = compoundPredicate
-                    
-                    do {
-                        // Peform Fetch Request
-                        let fetchedEvents = try viewContext.fetch(fetchRequest)
-                        
-                        // then get into the store
-                        let eventStore = EKEventStore()
-                        eventStore.requestAccess(to: .event) { (granted, error) in
-                            if granted {
-                                
-                                // now loop through them and make the stuff
-                                fetchedEvents.forEach { recurringEvent in
-                                    // make sure it has a tag
-                                    recurringEvent.sharedWithCalendar = UUID().uuidString
-                                    
-                                    makeNewCalendarEventToEKStore(recurringEvent, eventStore: eventStore, viewContext: viewContext)
-                                }
-                                
-                                // save on the context
-                                do {
-                                    try viewContext.save()
-                                }
-                                catch {
-                                    // Handle Error
-                                    print("Error info: \(error)")
-                                    
-                                }
-                                
-                            } else {
-                                print("Access denied")
-                                if let error = error {
-                                    print("Error: \(error.localizedDescription)")
-                                }
-                                
-                                // It didn't work so just don't do anything i guess
-                            }
-                        }
-                    } catch let error as NSError {
-                        print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
-                    }
+                    EditEventView.makeRecurringEventsOnEK(newEvent: newEvent, vc: viewContext)
                 }
                 
             } else if repeatOptionSelected == "On Complete" {
@@ -1236,6 +1189,9 @@ struct EditEventView: View {
                 EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: Int(newEvent.repeatOnCompleteInDays), to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                 
                 // Make that duplicate on calendar if needed
+                if newEvent.sharedWithCalendar != "" {
+                    EditEventView.makeRecurringEventsOnEK(newEvent: newEvent, vc: viewContext)
+                }
                 
             }
              
@@ -1258,6 +1214,57 @@ struct EditEventView: View {
             
         }
         
+    }
+    
+    public static func makeRecurringEventsOnEK(newEvent: N40Event, vc: NSManagedObjectContext) {
+        let fetchRequest: NSFetchRequest<N40Event> = N40Event.fetchRequest()
+        
+        let isScheduledPredicate = NSPredicate(format: "isScheduled = %d", true)
+        let isFuturePredicate = NSPredicate(format: "startDate > %@", (newEvent.startDate as CVarArg)) //will NOT include this event
+        let sameTagPredicate = NSPredicate(format: "recurringTag == %@", newEvent.recurringTag)
+        
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: [isScheduledPredicate, isFuturePredicate, sameTagPredicate])
+        fetchRequest.predicate = compoundPredicate
+        
+        do {
+            // Peform Fetch Request
+            let fetchedEvents = try vc.fetch(fetchRequest)
+            
+            // then get into the store
+            let eventStore = EKEventStore()
+            eventStore.requestAccess(to: .event) { (granted, error) in
+                if granted {
+                    
+                    // now loop through them and make the stuff
+                    fetchedEvents.forEach { recurringEvent in
+                        // make sure it has a tag
+                        recurringEvent.sharedWithCalendar = UUID().uuidString
+                        
+                        makeNewCalendarEventToEKStore(recurringEvent, eventStore: eventStore, viewContext: vc)
+                    }
+                    
+                    // save on the context
+                    do {
+                        try vc.save()
+                    }
+                    catch {
+                        // Handle Error
+                        print("Error info: \(error)")
+                        
+                    }
+                    
+                } else {
+                    print("Access denied")
+                    if let error = error {
+                        print("Error: \(error.localizedDescription)")
+                    }
+                    
+                    // It didn't work so just don't do anything i guess
+                }
+            }
+        } catch let error as NSError {
+            print("Couldn't fetch other recurring events. \(error), \(error.userInfo)")
+        }
     }
     
     private func makeRecurringEvents(newEvent: N40Event) {

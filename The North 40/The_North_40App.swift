@@ -56,7 +56,10 @@ struct The_North_40App: App {
             "show7Days":true,
             "onlyScheduleUnscheduledTodos":false,
             "autoFocusOnCalendarNewEvent":true,
-            "showingAgenda":false
+            "showingAgenda":false,
+            "selectedAppCalendars":"",
+            "showingSharedEvents":true,
+            "shareEverythingToCalendar":false
         ])
         
         

@@ -653,6 +653,11 @@ struct WeeklyPlanner: View {
                     viewContext.delete(futureOccurance)
                 }
                 EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                
+                // Make that duplicate on calendar if needed
+                if toDo.sharedWithCalendar != "" {
+                    EditEventView.makeRecurringEventsOnEK(newEvent: toDo, vc: viewContext)
+                }
             }
             
         } else {
@@ -1140,6 +1145,11 @@ struct AllDayListWeek: View {
                             viewContext.delete(futureOccurance)
                         }
                         EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                        
+                        // Make that duplicate on calendar if needed
+                        if toDo.sharedWithCalendar != "" {
+                            EditEventView.makeRecurringEventsOnEK(newEvent: toDo, vc: viewContext)
+                        }
                     }
                     
                     do {

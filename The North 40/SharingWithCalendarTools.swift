@@ -55,12 +55,12 @@ public func confirmGoalCalendar(goal: N40Goal, viewContext: NSManagedObjectConte
 
 public func confirmPersonCalendar(person: N40Person, viewContext: NSManagedObjectContext, eventStore: EKEventStore) {
     // check to see if there is a North 40 calendar, and if there isn't, make one
-    if (eventStore.calendars(for: .event).filter { $0.title == "With \(person.getFullName)" }.count == 0) {
+    if (eventStore.calendars(for: .event).filter { $0.title == "With \(person.getFullName.trimmingCharacters(in: .whitespacesAndNewlines))" }.count == 0) {
         
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
         
         // Set the calendar properties
-        newCalendar.title = "With \(person.getFullName)"
+        newCalendar.title = "With \(person.getFullName.trimmingCharacters(in: .whitespacesAndNewlines))"
         newCalendar.source = eventStore.defaultCalendarForNewEvents?.source
         if person.hasFavoriteColor {
             newCalendar.cgColor = (Color(hex: person.favoriteColor) ?? getCalendarDefaultColor(viewContext: viewContext)).toCGColor()
@@ -130,6 +130,7 @@ func makeNewCalendarEventToEKStore(_ event: N40Event, eventStore: EKEventStore, 
         newEKEvent.endDate = Calendar.current.date(byAdding: .minute, value: Int(event.duration), to: event.startDate) ?? event.startDate
         newEKEvent.notes = event.sharedWithCalendar //  the tag that we use to keep it synced
         newEKEvent.calendar = eachCalendar
+        newEKEvent.isAllDay = event.allDay
         
         // save the new event
         do {
@@ -186,6 +187,7 @@ func updateEventOnEKStore (_ event: N40Event, eventStore: EKEventStore, viewCont
                 fetchedEKEvent.startDate = event.startDate
                 fetchedEKEvent.endDate = Calendar.current.date(byAdding: .minute, value: Int(event.duration), to: event.startDate) ?? event.startDate
                 fetchedEKEvent.notes = event.sharedWithCalendar //  the tag that we use to keep it synced
+                fetchedEKEvent.isAllDay = event.allDay
                 
                 // save the new event
                 do {
@@ -257,7 +259,7 @@ func getN40RelatedCalendars(viewContext: NSManagedObjectContext, eventStore: EKE
     do {
         let fetchedPeople = try viewContext.fetch(fetchRequest2)
         for fetchedPerson in fetchedPeople {
-            n40Names.append("With \(fetchedPerson.getFullName)")
+            n40Names.append("With \(fetchedPerson.getFullName.trimmingCharacters(in: .whitespacesAndNewlines))")
         }
     } catch let error as NSError {
         print("Couldn't fetch color scheme. \(error), \(error.userInfo)")
@@ -275,6 +277,7 @@ func getN40RelatedCalendars(viewContext: NSManagedObjectContext, eventStore: EKE
         
     return n40Calendars
 }
+
 
 fileprivate func getEventCalendars(_ event: N40Event, viewContext: NSManagedObjectContext, eventStore: EKEventStore) -> [EKCalendar] {
     
@@ -294,7 +297,7 @@ fileprivate func getEventCalendars(_ event: N40Event, viewContext: NSManagedObje
     for eachPerson in event.getAttachedPeople {
         if eachPerson.sharedToCalendar {
             confirmPersonCalendar(person: eachPerson, viewContext: viewContext, eventStore: eventStore)
-            if let personCalendar = getCalendarByTitle(title: "With \(eachPerson.getFullName)", eventStore: eventStore) {
+            if let personCalendar = getCalendarByTitle(title: "With \(eachPerson.getFullName.trimmingCharacters(in: .whitespacesAndNewlines))", eventStore: eventStore) {
                 calendarsToAttachTo.append(personCalendar)
             }
         }

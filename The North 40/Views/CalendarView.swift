@@ -21,13 +21,16 @@ struct CalendarView: View {
 
     @State private var showingCalendar = !UserDefaults.standard.bool(forKey: "showingAgenda")
     
+    
     //@State private var showingInfoEvents = UserDefaults.standard.bool(forKey: "showingInfoEvents")
     @State private var showingInfoEvents = true
     @State private var showingBackgroundEvents = true
+    @State private var showingSharedEvents: Bool = UserDefaults.standard.bool(forKey: "showingSharedEvents")
     
     @State private var showingSearchSheet = false
     
     @State private var showingEditEventSheet = false
+    
     
     
     var body: some View {
@@ -67,6 +70,24 @@ struct CalendarView: View {
                                         .foregroundColor(((colorScheme == .dark) ? .black : .white))
                                     Image(systemName: "line.diagonal")
                                         .scaleEffect(x: -1.2, y: 1.2)
+                                }
+                            }
+                        }
+                        if UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? "" != "" {
+                            Button {
+                                showingSharedEvents.toggle()
+                                UserDefaults.standard.set(showingSharedEvents, forKey: "showingSharedEvents")
+                            } label: {
+                                ZStack {
+                                    Image(systemName: "calendar.badge.exclamationmark")
+                                    
+                                    if !showingSharedEvents {
+                                        Image(systemName: "line.diagonal")
+                                            .scaleEffect(x: -1.5, y: 1.5)
+                                            .foregroundColor(((colorScheme == .dark) ? .black : .white))
+                                        Image(systemName: "line.diagonal")
+                                            .scaleEffect(x: -1.2, y: 1.2)
+                                    }
                                 }
                             }
                         }
@@ -127,13 +148,13 @@ struct CalendarView: View {
                 
                 if showingCalendar {
                     ZStack {
-                        DailyPlanner(filter: selectedDay, showingInfoEvents: $showingInfoEvents, showingBackgroundEvents: $showingBackgroundEvents, showingEditEventSheet: $showingEditEventSheet)
+                        DailyPlanner(filter: selectedDay, showingInfoEvents: $showingInfoEvents, showingBackgroundEvents: $showingBackgroundEvents, showingSharedCalendarEvents: $showingSharedEvents, showingEditEventSheet: $showingEditEventSheet)
                             
                         
                         
                         
                         VStack {
-                            AllDayList(filter: selectedDay)
+                            AllDayList(filter: selectedDay, showingSharedAppEvents: $showingSharedEvents)
                                 .environment(\.managedObjectContext, viewContext)
                                 .background(((colorScheme == .dark) ? .black : .white))
                             Spacer()
@@ -196,77 +217,96 @@ struct AllDayList: View {
     @State private var selectedGoal: N40Goal? = nil
     @State private var selectedBirthdayBoy: N40Person? = nil
     
+    // stuff for showing in the background
+    @State private var sharedCalendarEvents: [EKEvent] = []
+    @Binding var showingSharedEvents: Bool
+    
+    
     var body: some View {
         VStack {
             let allGoalsToday = fetchedGoalsDueToday.sorted(by: {$0.name < $1.name}) + fetchedGoalsFinishedToday.sorted(by: {$0.name < $1.name})
-            if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + allGoalsToday.count + fetchedBirthdayBoys.count) > 3 {
-                ScrollView {
-                    ForEach(fetchedAllDays) { eachEvent in
-                        if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
-                            allDayEvent(eachEvent)
-                        }
-                    }
-                    ForEach(allGoalsToday) { eachGoal in
-                        dueGoal(eachGoal)
-                    }
-                    ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
-                        birthdayBoyCell(eachBirthdayBoy)
-                    }
-                    if holidays[filteredDay.startOfDay] != nil && UserDefaults.standard.bool(forKey: "showHolidays") {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(.gray)
-                                .opacity(0.0001)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(((colorScheme == .dark) ? .white : .black), lineWidth: 2)
-                                        .opacity(0.5)
-                                )
-                            
-                            HStack {
-                                Text(holidays[filteredDay.startOfDay]!).bold()
-                                Spacer()
+            VStack {
+                if (fetchedAllDays.filter({ $0.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos")}).count + allGoalsToday.count + fetchedBirthdayBoys.count + sharedCalendarEvents.count*(showingSharedEvents ? 1 : 0)) > 3 {
+                    ScrollView {
+                        ForEach(fetchedAllDays) { eachEvent in
+                            if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
+                                allDayEvent(eachEvent)
                             }
-                            .padding(.horizontal, 8)
-                        }.font(.caption)
-                            .frame(height: allEventHeight)
-                    }
-                }.frame(height: 4*allEventHeight)
-            } else {
-                VStack {
-                    ForEach(fetchedAllDays) { eachEvent in
-                        if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
-                            allDayEvent(eachEvent)
                         }
-                    }
-                    ForEach(allGoalsToday) { eachGoal in
-                        dueGoal(eachGoal)
-                    }
-                    ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
-                        birthdayBoyCell(eachBirthdayBoy)
-                    }
-                    if holidays[filteredDay.startOfDay] != nil && UserDefaults.standard.bool(forKey: "showHolidays") {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(.gray)
-                                .opacity(0.0001)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(((colorScheme == .dark) ? .white : .black), lineWidth: 2)
-                                        .opacity(0.5)
-                                )
-                            
-                            HStack {
-                                Text(holidays[filteredDay.startOfDay]!).bold()
-                                Spacer()
+                        ForEach(allGoalsToday) { eachGoal in
+                            dueGoal(eachGoal)
+                        }
+                        ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
+                            birthdayBoyCell(eachBirthdayBoy)
+                        }
+                        if holidays[filteredDay.startOfDay] != nil && UserDefaults.standard.bool(forKey: "showHolidays") {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.gray)
+                                    .opacity(0.0001)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(((colorScheme == .dark) ? .white : .black), lineWidth: 2)
+                                            .opacity(0.5)
+                                    )
+                                
+                                HStack {
+                                    Text(holidays[filteredDay.startOfDay]!).bold()
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 8)
+                            }.font(.caption)
+                                .frame(height: allEventHeight)
+                        }
+                        if showingSharedEvents {
+                            ForEach(sharedCalendarEvents, id: \.self) { eachSharedEvent in
+                                sharedAllDayEvent(eachSharedEvent)
                             }
-                            .padding(.horizontal, 8)
-                        }.font(.caption)
-                            .frame(height: allEventHeight)
+                        }
+                    }.frame(height: 4*allEventHeight)
+                } else {
+                    VStack {
+                        ForEach(fetchedAllDays) { eachEvent in
+                            if eachEvent.eventType != N40Event.TODO_TYPE || UserDefaults.standard.bool(forKey: "showAllDayTodos") {
+                                allDayEvent(eachEvent)
+                            }
+                        }
+                        ForEach(allGoalsToday) { eachGoal in
+                            dueGoal(eachGoal)
+                        }
+                        ForEach(fetchedBirthdayBoys) { eachBirthdayBoy in
+                            birthdayBoyCell(eachBirthdayBoy)
+                        }
+                        if holidays[filteredDay.startOfDay] != nil && UserDefaults.standard.bool(forKey: "showHolidays") {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.gray)
+                                    .opacity(0.0001)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(((colorScheme == .dark) ? .white : .black), lineWidth: 2)
+                                            .opacity(0.5)
+                                    )
+                                
+                                HStack {
+                                    Text(holidays[filteredDay.startOfDay]!).bold()
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 8)
+                            }.font(.caption)
+                                .frame(height: allEventHeight)
+                        }
+                        if showingSharedEvents {
+                            ForEach(sharedCalendarEvents, id: \.self) { eachSharedEvent in
+                                sharedAllDayEvent(eachSharedEvent)
+                            }
+                        }
                     }
                 }
+            }.onChange(of: filteredDay) { newValue in
+                updateSharedEvents(dateOfFocus: newValue)
             }
         }.sheet(isPresented: $showingDetailSheet) { [detailShowing, selectedEvent, selectedBirthdayBoy, selectedGoal] in
             NavigationView {
@@ -301,7 +341,41 @@ struct AllDayList: View {
         }
     }
     
-    init (filter: Date) {
+    private func updateSharedEvents(dateOfFocus: Date) {
+        
+        // update the shared calendar stuff
+        if UserDefaults.standard.string(forKey: "sharedAppCalendars") != "" {
+            let eventStore = EKEventStore()
+            eventStore.requestAccess(to: .event) { (granted, error) in
+                if granted {
+                    
+                    let sharedCalendars = stringToCalendarList(eventStore: eventStore)
+                    
+                    // Now get all the non-all day events in this calendar.
+                    
+                    let startOfDay = dateOfFocus.startOfDay
+                    let endOfDay = dateOfFocus.endOfDay
+                    
+                    // Create a predicate to fetch events for the specific calendar within the time range
+                    let predicate = eventStore.predicateForEvents(withStart: startOfDay, end: endOfDay, calendars: sharedCalendars)
+                    
+                    // Fetch the events
+                    sharedCalendarEvents = eventStore.events(matching: predicate).filter { $0.isAllDay }
+                    for eachEvent in sharedCalendarEvents {
+                        let _ = eachEvent.calendar // for some reason you have to use the calendar field or else it gets forgotten and set to (null)
+                    }
+                    
+                } else {
+                    print("Access denied")
+                    if let error = error {
+                        print("Error: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+    }
+    
+    init (filter: Date, showingSharedAppEvents: Binding<Bool>? = nil) {
         let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
         let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
         let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
@@ -357,6 +431,8 @@ struct AllDayList: View {
             }
         }
         self.holidays = rawHolidays
+        
+        self._showingSharedEvents = showingSharedAppEvents ?? Binding.constant(true)
         
     }
     
@@ -499,6 +575,52 @@ struct AllDayList: View {
         
     }
     
+    func sharedAllDayEvent(_ event: EKEvent) -> some View {
+        //all events is used for wrapping around other events.
+        
+        //get color for event cell
+        let eventColor: Color = Color(cgColor: event.calendar.cgColor)
+        
+        
+
+        return VStack {
+                
+                ZStack {
+                    
+                    //Change background rectangle based on event type
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(eventColor)
+                        .opacity(0.15)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(eventColor, lineWidth: 1)
+                                .opacity(0.5)
+                        )
+                
+
+                    
+                    HStack {
+                        
+                        Spacer()
+                        Text(event.title)
+                            .bold()
+                            .foregroundStyle(eventColor)
+                            
+                        
+                    }
+                    .padding(.horizontal, 8)
+                        
+                }
+                
+            }
+            .buttonStyle(.plain)
+            .font(.caption)
+            .frame(height: allEventHeight)
+            
+        
+    }
+    
     func dueGoal(_ goal: N40Goal) -> some View {
         //all events is used for wrapping around other events.
         
@@ -593,6 +715,11 @@ struct AllDayList: View {
                             viewContext.delete(futureOccurance)
                         }
                         EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                        
+                        // Make that duplicate on calendar if needed
+                        if toDo.sharedWithCalendar != "" {
+                            EditEventView.makeRecurringEventsOnEK(newEvent: toDo, vc: viewContext)
+                        }
                     }
                     
                     do {
@@ -634,6 +761,7 @@ struct DailyPlanner: View {
     
     @Binding var showingRadarEvents: Bool
     @Binding var showingBackgroundEvents: Bool
+    @Binding var showingSharedCalendarEvents: Bool
     
     @GestureState var press = false
     
@@ -643,6 +771,11 @@ struct DailyPlanner: View {
     
     @State private var editModeEvent: N40Event? = nil
     @State private var drawDragMinuteOffset: CGFloat = 0.0
+    
+    // stuff for showing in the background
+    @State private var sharedCalendarEvents: [EKEvent] = []
+    @State private var sharedEventLocations: [Date: [String]] = [:]
+    
     
     var body: some View {
         
@@ -694,6 +827,13 @@ struct DailyPlanner: View {
                         
                     }
                     
+                    if showingSharedCalendarEvents {
+                        ForEach(sharedCalendarEvents, id: \.self) { event in
+                            sharedCalendarEventCell(event, eventLocations: sharedEventLocations)
+                        }
+                    }
+                    
+                    
                         
                     let radarEvents = fetchedEvents.reversed().filter({ $0.eventType == N40Event.INFORMATION_TYPE })
                     
@@ -730,6 +870,10 @@ struct DailyPlanner: View {
                 //.gesture(magnification)
                 .onAppear {
                     value.scrollTo(Int(Date().get(.hour)))
+                    
+                }
+                .onChange(of: filteredDay) { newValue in
+                    updateSharedEvents(dateOfFocus: newValue)
                 }
                 
             }.scrollDisabled(editModeEvent != nil)
@@ -759,7 +903,55 @@ struct DailyPlanner: View {
             
     }
     
-    init (filter: Date, showingInfoEvents: Binding<Bool>? = nil, showingBackgroundEvents: Binding<Bool>? = nil, showingEditEventSheet: Binding<Bool>) {
+    private func updateSharedEvents(dateOfFocus: Date) {
+        // update the shared calendar stuff
+        if UserDefaults.standard.string(forKey: "sharedAppCalendars") != "" {
+            let eventStore = EKEventStore()
+            eventStore.requestAccess(to: .event) { (granted, error) in
+                if granted {
+                    
+                    let sharedCalendars = stringToCalendarList(eventStore: eventStore)
+                    
+                    // Now get all the non-all day events in this calendar.
+                    
+                    print(filteredDay)
+                    let startOfDay = dateOfFocus.startOfDay
+                    let endOfDay = dateOfFocus.endOfDay
+                    
+                    // Create a predicate to fetch events for the specific calendar within the time range
+                    let predicate = eventStore.predicateForEvents(withStart: startOfDay, end: endOfDay, calendars: sharedCalendars)
+                    
+                    // Fetch the events
+                    sharedCalendarEvents = eventStore.events(matching: predicate).filter { !$0.isAllDay }
+                    
+                    
+                    // Now make location values so events don't overlap on the screen
+                    sharedEventLocations = [:]
+                    for eachEvent in sharedCalendarEvents {
+                        let _ = eachEvent.calendar // for some reason you have to use the calendar field or else it gets forgotten and set to (null)
+                        
+                        let eventIdentifier: String = eachEvent.title
+                        
+                        if sharedEventLocations[eachEvent.startDate] == nil {
+                            sharedEventLocations.updateValue([eventIdentifier], forKey: eachEvent.startDate)
+                        } else {
+                            sharedEventLocations[eachEvent.startDate]!.append(eventIdentifier)
+                        }
+                        
+                        //print(sharedEventLocations)
+                    }
+                    
+                } else {
+                    print("Access denied")
+                    if let error = error {
+                        print("Error: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+    }
+    
+    init (filter: Date, showingInfoEvents: Binding<Bool>? = nil, showingBackgroundEvents: Binding<Bool>? = nil, showingSharedCalendarEvents: Binding<Bool>? = nil, showingEditEventSheet: Binding<Bool>) {
         let todayPredicateA = NSPredicate(format: "startDate >= %@", filter.startOfDay as NSDate)
         let todayPredicateB = NSPredicate(format: "startDate < %@", filter.endOfDay as NSDate)
         let scheduledPredicate = NSPredicate(format: "isScheduled == YES")
@@ -773,8 +965,10 @@ struct DailyPlanner: View {
         
         self._showingRadarEvents = showingInfoEvents ?? Binding.constant(true)
         self._showingBackgroundEvents = showingBackgroundEvents ?? Binding.constant(true)
+        self._showingSharedCalendarEvents = showingSharedCalendarEvents ?? Binding.constant(true)
         
         self._showingEditEventSheet = showingEditEventSheet
+        
         
     }
     
@@ -1022,6 +1216,79 @@ struct DailyPlanner: View {
         }
     }
     
+    func sharedCalendarEventCell(_ event: EKEvent, eventLocations: [Date:[String]]) -> some View {
+        //all events is used for wrapping around other events.
+        
+        
+        // Calculate the difference in seconds and then convert to minutes
+        let timeInterval = event.endDate.timeIntervalSince(event.startDate)
+        let duration = timeInterval / 60
+        
+        var height = Double(duration) / 60 * hourHeight
+        if (height < DailyPlanner.minimumEventHeight) {
+            height = DailyPlanner.minimumEventHeight
+        }
+        
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: event.startDate)
+        let minute = calendar.component(.minute, from: event.startDate)
+        let offset = Double(hour) * (hourHeight) + Double(minute)/60  * hourHeight
+        
+        let eventColor: Color = Color(cgColor: event.calendar.cgColor)
+        
+        let numColumns: Int = (eventLocations[event.startDate] ?? [""]).count
+        let locationInColumn: Int = (eventLocations[event.startDate] ?? [event.title]).firstIndex(of: event.title) ?? 1
+        
+        return GeometryReader {geometry in
+            //NavigationLink(destination: EditEventView(editEvent: event), label: {
+            VStack{
+                ZStack {
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(eventColor)
+                        .opacity(0.15)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(eventColor, lineWidth: 1)
+                                .opacity(0.5)
+                        )
+                    //If this is an information event, don't show the title if theres another non-information event at the same time.
+                    if !((fetchedEvents.filter{ $0.startDate == event.startDate}.count) > 0) {
+                        
+                        HStack {
+                            Spacer()
+                            Text(event.startDate.formatted(.dateTime.hour().minute()))
+                                .foregroundStyle(eventColor)
+                            Text(event.title)
+                                .foregroundStyle(eventColor)
+                                .bold()
+                                .lineLimit(0)
+                        }
+                        .offset(y: (DailyPlanner.minimumEventHeight-height)/2)
+                        .padding(.horizontal, 8)
+                        
+                    }
+                    
+                    
+                    
+                    
+                }
+                
+            }
+            .buttonStyle(.plain)
+            .font(.caption)
+            .padding(.horizontal, 4)
+            .frame(height: height, alignment: .top)
+            .frame(width: (geometry.size.width-40)/CGFloat(numColumns), alignment: .leading)
+            //.frame(width: (geometry.size.width-40)/CGFloat(getHighestEventIndex(allEvents: allEvents, from: event.startDate, to: Calendar.current.date(byAdding: .minute, value: getTestDuration(duration: Int(event.duration)), to: event.startDate) ?? event.startDate)), alignment: .leading)
+            .padding(.trailing, 30)
+            .offset(x: 30 + (geometry.size.width-40)/CGFloat(numColumns)*CGFloat(locationInColumn), y: offset + hourHeight/2 )
+            
+            
+        }
+    }
+    
     
     
     
@@ -1069,6 +1336,11 @@ struct DailyPlanner: View {
                     viewContext.delete(futureOccurance)
                 }
                 EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                
+                // Make that duplicate on calendar if needed
+                if toDo.sharedWithCalendar != "" {
+                    EditEventView.makeRecurringEventsOnEK(newEvent: toDo, vc: viewContext)
+                }
             }
             
         } else {
@@ -1083,31 +1355,10 @@ struct DailyPlanner: View {
         }
     }
     
-    
-    
-//    //Read from iCal
-    //(Doesn't work in current version of XCode)
-//    func getEventsFromUserCalendar() {
-//        // Create an event store
-//        let store = EKEventStore()
-//
-//        // Request full access
-//        guard try await store.requestFullAccessToEvents() else { return }
-//
-//        // Create a predicate
-//        guard let interval = Calendar.current.dateInterval(of: .month, for: Date()) else { return }
-//        let predicate = store.predicateForEvents(withStart: interval.start,
-//                                                 end: interval.end,
-//                                                 calendars: nil)
-//
-//        // Fetch the events
-//        let events = store.events(matching: predicate)
-//
-//        let sortedEvents = events.sorted { $0.compareStartDate(with: $1) == .orderedAscending }
-//    }
-//
+
     
 }
+
 
 struct SearchSheet: View {
     @Environment(\.managedObjectContext) private var viewContext
