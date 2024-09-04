@@ -344,7 +344,7 @@ struct AllDayList: View {
     private func updateSharedEvents(dateOfFocus: Date) {
         
         // update the shared calendar stuff
-        if UserDefaults.standard.string(forKey: "sharedAppCalendars") != "" {
+        if UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? "" != "" {
             let eventStore = EKEventStore()
             eventStore.requestAccess(to: .event) { (granted, error) in
                 if granted {
@@ -714,7 +714,7 @@ struct AllDayList: View {
                         for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
                             viewContext.delete(futureOccurance)
                         }
-                        EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
                         
                         // Make that duplicate on calendar if needed
                         if toDo.sharedWithCalendar != "" {
@@ -755,7 +755,7 @@ struct DailyPlanner: View {
     
     
     @State private var hourHeight = UserDefaults.standard.double(forKey: "hourHeight")
-    public static let minimumEventHeight = 25.0
+    public static let minimumEventHeight = 25.0 
     
     private var filteredDay: Date
     
@@ -905,7 +905,7 @@ struct DailyPlanner: View {
     
     private func updateSharedEvents(dateOfFocus: Date) {
         // update the shared calendar stuff
-        if UserDefaults.standard.string(forKey: "sharedAppCalendars") != "" {
+        if UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? "" != "" {
             let eventStore = EKEventStore()
             eventStore.requestAccess(to: .event) { (granted, error) in
                 if granted {
@@ -1335,7 +1335,7 @@ struct DailyPlanner: View {
                 for futureOccurance in toDo.getFutureRecurringEvents(viewContext: viewContext) {
                     viewContext.delete(futureOccurance)
                 }
-                EditEventView.duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
+                duplicateN40Event(originalEvent: toDo, newStartDate: Calendar.current.date(byAdding: .day, value: Int(toDo.repeatOnCompleteInDays), to: toDo.startDate) ?? toDo.startDate, vc: viewContext)
                 
                 // Make that duplicate on calendar if needed
                 if toDo.sharedWithCalendar != "" {
@@ -1519,90 +1519,6 @@ struct SearchSheet: View {
 }
 
 
-extension Date {
-    var startOfDay: Date {
-        return Calendar.current.startOfDay(for: self)
-    }
-    
-    var endOfDay: Date {
-        var components = DateComponents()
-        components.day = 1
-        components.second = -1
-        return Calendar.current.date(byAdding: components, to: startOfDay)!
-    }
-    
-    var startOfWeek: Date {
-        Calendar.current.dateComponents([.calendar, .yearForWeekOfYear, .weekOfYear], from: self).date!
-    }
-    
-    var endOfWeek: Date {
-        var components = DateComponents()
-        components.weekOfYear = 1
-        components.second = -1
-        return Calendar.current.date(byAdding: components, to: startOfWeek)!
-    }
-    
-    var startOfMonth: Date {
-        let components = Calendar.current.dateComponents([.year, .month], from: startOfDay)
-        return Calendar.current.date(from: components)!
-    }
-    
-    var endOfMonth: Date {
-        var components = DateComponents()
-        components.month = 1
-        components.second = -1
-        return Calendar.current.date(byAdding: components, to: startOfMonth)!
-    }
-    
-    
-    var zeroSeconds: Date {
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: self)
-        return calendar.date(from: dateComponents) ?? self
-    }
-    
-    func dayOfWeek() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE"
-        return dateFormatter.string(from: self).capitalized
-        // or use capitalized(with: locale) if you want
-    }
-    
-    func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
-        return calendar.dateComponents(Set(components), from: self)
-    }
-
-    func get(_ component: Calendar.Component, calendar: Calendar = Calendar.current) -> Int {
-        return calendar.component(component, from: self)
-    }
-    
-    func dateOnlyToString () -> String {
-        // Create Date Formatter
-        let dateFormatter = DateFormatter()
-
-        // Set Date Format
-        dateFormatter.dateFormat = "MMM d, y"
-
-        // Convert Date to String
-        return dateFormatter.string(from: self)
-    }
-    
-    func dateAndTimeToString() -> String {
-        // Create Date Formatter
-        let dateFormatter = DateFormatter()
-
-        // Set Date Format
-        dateFormatter.dateFormat = "MMM d, y - hh:mm a"
-
-        // Convert Date to String
-        return dateFormatter.string(from: self)
-    }
-    
-    // End of day = Start of tomorrow minus 1 second
-    // End of week = Start of next week minus 1 second
-    // End of month = Start of next month minus 1 second
-    
-}
 
 
 

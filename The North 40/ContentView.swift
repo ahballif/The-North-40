@@ -13,10 +13,10 @@ struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
     
 
-    //To show the unreported icon
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "status == %i", N40Event.UNREPORTED), NSPredicate(format: "eventType == %i", N40Event.REPORTABLE_TYPE), NSPredicate(format: "startDate < %@", Date() as NSDate)]))
-    private var fetchedUnreporteds: FetchedResults<N40Event>
-    
+//    //To show the unreported icon
+//    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40Event.startDate, ascending: true)], predicate: NSCompoundPredicate(type: .and, subpredicates: [NSPredicate(format: "status == %i", N40Event.UNREPORTED), NSPredicate(format: "eventType == %i", N40Event.REPORTABLE_TYPE), NSPredicate(format: "startDate < %@", Date() as NSDate)]))
+//    private var fetchedUnreporteds: FetchedResults<N40Event>
+//    
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \N40ColorScheme.priorityIndex, ascending: true)], predicate: NSPredicate(format: "priorityIndex == 0"))
     private var fetchedColorScheme: FetchedResults<N40ColorScheme>
     
@@ -160,8 +160,6 @@ private let itemFormatter: DateFormatter = {
     formatter.timeStyle = .medium
     return formatter
 }()
-
-
 
 class RefreshView: ObservableObject {
     @Published var updater: Bool = false

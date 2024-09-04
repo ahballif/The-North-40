@@ -64,6 +64,47 @@
 		079F06CD2A8F19B2009A01F5 /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F06CC2A8F19B2009A01F5 /* EditEventView.swift */; };
 		07A9EAE52B2A21E800221C3E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A9EAE42B2A21E800221C3E /* DashboardView.swift */; };
 		07A9EAE92B2D05EE00221C3E /* holidays.csv in Resources */ = {isa = PBXBuildFile; fileRef = 07A9EAE82B2D05EE00221C3E /* holidays.csv */; };
+		07BA3E922C87591F00097ABB /* North40WatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3E912C87591F00097ABB /* North40WatchApp.swift */; };
+		07BA3E962C87592000097ABB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 07BA3E952C87592000097ABB /* Assets.xcassets */; };
+		07BA3E992C87592000097ABB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 07BA3E982C87592000097ABB /* Preview Assets.xcassets */; };
+		07BA3EA32C87592100097ABB /* North40Watch_Watch_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EA22C87592100097ABB /* North40Watch_Watch_AppTests.swift */; };
+		07BA3EAD2C87592100097ABB /* North40Watch_Watch_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EAC2C87592100097ABB /* North40Watch_Watch_AppUITests.swift */; };
+		07BA3EAF2C87592100097ABB /* North40Watch_Watch_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EAE2C87592100097ABB /* North40Watch_Watch_AppUITestsLaunchTests.swift */; };
+		07BA3EB22C87592100097ABB /* North40Watch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 07BA3E8F2C87591F00097ABB /* North40Watch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		07BA3EBD2C8759BF00097ABB /* The_North_40.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7032A81E15600E29EBD /* The_North_40.xcdatamodeld */; };
+		07BA3EBE2C8759C500097ABB /* N40Envelope+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEF72AA392BF006C0005 /* N40Envelope+CoreDataProperties.swift */; };
+		07BA3EBF2C8759C500097ABB /* N40Transaction+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEF82AA392BF006C0005 /* N40Transaction+CoreDataClass.swift */; };
+		07BA3EC02C8759C500097ABB /* N40ColorScheme+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07361BC02BC9EAD400BA388B /* N40ColorScheme+CoreDataClass.swift */; };
+		07BA3EC12C8759C500097ABB /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7012A81E15600E29EBD /* Persistence.swift */; };
+		07BA3EC22C8759C500097ABB /* N40Person+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7692A87188C00E29EBD /* N40Person+CoreDataProperties.swift */; };
+		07BA3EC32C8759C500097ABB /* N40Goal+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76E2A87188C00E29EBD /* N40Goal+CoreDataClass.swift */; };
+		07BA3EC42C8759C500097ABB /* N40Group+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76C2A87188C00E29EBD /* N40Group+CoreDataClass.swift */; };
+		07BA3EC52C8759C500097ABB /* N40Envelope+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEF62AA392BF006C0005 /* N40Envelope+CoreDataClass.swift */; };
+		07BA3EC62C8759C500097ABB /* N40Person+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C7682A87188C00E29EBD /* N40Person+CoreDataClass.swift */; };
+		07BA3EC72C8759C500097ABB /* N40Event+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76B2A87188C00E29EBD /* N40Event+CoreDataProperties.swift */; };
+		07BA3EC82C8759C500097ABB /* N40Note+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEE12A9D371C006C0005 /* N40Note+CoreDataClass.swift */; };
+		07BA3EC92C8759C500097ABB /* N40Goal+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76F2A87188C00E29EBD /* N40Goal+CoreDataProperties.swift */; };
+		07BA3ECA2C8759C500097ABB /* N40Event+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76A2A87188C00E29EBD /* N40Event+CoreDataClass.swift */; };
+		07BA3ECB2C8759C500097ABB /* N40Indicator+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CF22C04CA6D001C204E /* N40Indicator+CoreDataClass.swift */; };
+		07BA3ECC2C8759C500097ABB /* N40Group+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0768C76D2A87188C00E29EBD /* N40Group+CoreDataProperties.swift */; };
+		07BA3ECD2C8759C500097ABB /* N40Note+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEE22A9D371C006C0005 /* N40Note+CoreDataProperties.swift */; };
+		07BA3ECE2C8759C500097ABB /* N40Transaction+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0711DEF92AA392BF006C0005 /* N40Transaction+CoreDataProperties.swift */; };
+		07BA3ECF2C8759C500097ABB /* N40ColorScheme+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07361BC12BC9EAD400BA388B /* N40ColorScheme+CoreDataProperties.swift */; };
+		07BA3ED02C8759C500097ABB /* N40Indicator+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CF32C04CA6D001C204E /* N40Indicator+CoreDataProperties.swift */; };
+		07BA3ED32C875A5300097ABB /* holidays.csv in Resources */ = {isa = PBXBuildFile; fileRef = 07A9EAE82B2D05EE00221C3E /* holidays.csv */; };
+		07BA3ED92C875F3800097ABB /* GlobalExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3ED82C875F3800097ABB /* GlobalExtensions.swift */; };
+		07BA3EDA2C875F4500097ABB /* GlobalExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3ED82C875F3800097ABB /* GlobalExtensions.swift */; };
+		07BA3EDC2C87608200097ABB /* ContentViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EDB2C87608200097ABB /* ContentViewWatch.swift */; };
+		07BA3EE12C87677300097ABB /* DailyPlannerWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EE02C87677300097ABB /* DailyPlannerWatch.swift */; };
+		07BA3EE32C876FC500097ABB /* MoreSharedFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EE22C876FC500097ABB /* MoreSharedFunctions.swift */; };
+		07BA3EE42C876FCC00097ABB /* MoreSharedFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EE22C876FC500097ABB /* MoreSharedFunctions.swift */; };
+		07BA3EE92C877ED500097ABB /* EditEventViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EE82C877ED500097ABB /* EditEventViewWatch.swift */; };
+		07BA3EEC2C87949C00097ABB /* ColorSchemeViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EEB2C87949C00097ABB /* ColorSchemeViewWatch.swift */; };
+		07BA3EEE2C88008C00097ABB /* ToDoViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EED2C88008C00097ABB /* ToDoViewWatch.swift */; };
+		07BA3EF12C88DCE600097ABB /* PersonListViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EF02C88DCE600097ABB /* PersonListViewWatch.swift */; };
+		07BA3EF32C88DDE900097ABB /* PersonViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EF22C88DDE900097ABB /* PersonViewWatch.swift */; };
+		07BA3EF52C88E79400097ABB /* GoalListViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EF42C88E79400097ABB /* GoalListViewWatch.swift */; };
+		07BA3EF72C88E79D00097ABB /* GoalViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BA3EF62C88E79D00097ABB /* GoalViewWatch.swift */; };
 		07C5601D2ADB1DA600F2EC88 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */; };
 		07D60CB62B6011CB0086BDBF /* PersonListView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07D60CB52B6011CB0086BDBF /* PersonListView2.swift */; };
 		07DD3CED2C04C5FD001C204E /* IndicatorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DD3CEC2C04C5FD001C204E /* IndicatorsView.swift */; };
@@ -88,7 +129,42 @@
 			remoteGlobalIDString = 0768C6F42A81E15600E29EBD;
 			remoteInfo = "The North 40";
 		};
+		07BA3E9F2C87592000097ABB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0768C6ED2A81E15500E29EBD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 07BA3E8E2C87591F00097ABB;
+			remoteInfo = "North40Watch Watch App";
+		};
+		07BA3EA92C87592100097ABB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0768C6ED2A81E15500E29EBD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 07BA3E8E2C87591F00097ABB;
+			remoteInfo = "North40Watch Watch App";
+		};
+		07BA3EB02C87592100097ABB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0768C6ED2A81E15500E29EBD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 07BA3E8E2C87591F00097ABB;
+			remoteInfo = "North40Watch Watch App";
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		07BA3EB32C87592100097ABB /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				07BA3EB22C87592100097ABB /* North40Watch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0711DED92A9A3E8A006C0005 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
@@ -155,6 +231,28 @@
 		079F06CC2A8F19B2009A01F5 /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
 		07A9EAE42B2A21E800221C3E /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		07A9EAE82B2D05EE00221C3E /* holidays.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = holidays.csv; sourceTree = "<group>"; };
+		07BA3E8F2C87591F00097ABB /* North40Watch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "North40Watch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		07BA3E912C87591F00097ABB /* North40WatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = North40WatchApp.swift; sourceTree = "<group>"; };
+		07BA3E952C87592000097ABB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		07BA3E982C87592000097ABB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		07BA3E9E2C87592000097ABB /* North40Watch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "North40Watch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		07BA3EA22C87592100097ABB /* North40Watch_Watch_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = North40Watch_Watch_AppTests.swift; sourceTree = "<group>"; };
+		07BA3EA82C87592100097ABB /* North40Watch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "North40Watch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		07BA3EAC2C87592100097ABB /* North40Watch_Watch_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = North40Watch_Watch_AppUITests.swift; sourceTree = "<group>"; };
+		07BA3EAE2C87592100097ABB /* North40Watch_Watch_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = North40Watch_Watch_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		07BA3ED42C875CFE00097ABB /* North40Watch Watch App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "North40Watch Watch App.entitlements"; sourceTree = "<group>"; };
+		07BA3ED52C875D1B00097ABB /* North40Watch-Watch-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "North40Watch-Watch-App-Info.plist"; sourceTree = SOURCE_ROOT; };
+		07BA3ED82C875F3800097ABB /* GlobalExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalExtensions.swift; sourceTree = "<group>"; };
+		07BA3EDB2C87608200097ABB /* ContentViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EE02C87677300097ABB /* DailyPlannerWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPlannerWatch.swift; sourceTree = "<group>"; };
+		07BA3EE22C876FC500097ABB /* MoreSharedFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreSharedFunctions.swift; sourceTree = "<group>"; };
+		07BA3EE82C877ED500097ABB /* EditEventViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EEB2C87949C00097ABB /* ColorSchemeViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSchemeViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EED2C88008C00097ABB /* ToDoViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EF02C88DCE600097ABB /* PersonListViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonListViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EF22C88DDE900097ABB /* PersonViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EF42C88E79400097ABB /* GoalListViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalListViewWatch.swift; sourceTree = "<group>"; };
+		07BA3EF62C88E79D00097ABB /* GoalViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalViewWatch.swift; sourceTree = "<group>"; };
 		07C5601C2ADB1DA600F2EC88 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactPicker.swift; path = "The North 40/ContactPicker.swift"; sourceTree = SOURCE_ROOT; };
 		07D60CB52B6011CB0086BDBF /* PersonListView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonListView2.swift; sourceTree = "<group>"; };
 		07DD3CEC2C04C5FD001C204E /* IndicatorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorsView.swift; sourceTree = "<group>"; };
@@ -181,6 +279,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0768C7122A81E15600E29EBD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3E8C2C87591F00097ABB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3E9B2C87592000097ABB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3EA52C87592100097ABB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -223,6 +342,9 @@
 				0768C6F72A81E15600E29EBD /* The North 40 */,
 				0768C70E2A81E15600E29EBD /* The North 40Tests */,
 				0768C7182A81E15600E29EBD /* The North 40UITests */,
+				07BA3E902C87591F00097ABB /* North40Watch Watch App */,
+				07BA3EA12C87592100097ABB /* North40Watch Watch AppTests */,
+				07BA3EAB2C87592100097ABB /* North40Watch Watch AppUITests */,
 				0768C6F62A81E15600E29EBD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -233,6 +355,9 @@
 				0768C6F52A81E15600E29EBD /* The North 40.app */,
 				0768C70B2A81E15600E29EBD /* The North 40Tests.xctest */,
 				0768C7152A81E15600E29EBD /* The North 40UITests.xctest */,
+				07BA3E8F2C87591F00097ABB /* North40Watch Watch App.app */,
+				07BA3E9E2C87592000097ABB /* North40Watch Watch AppTests.xctest */,
+				07BA3EA82C87592100097ABB /* North40Watch Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -245,6 +370,8 @@
 				07180B042AC9BD36008DC9E0 /* The-North-40-Info.plist */,
 				07180B022AC874B7008DC9E0 /* ExportImportData.swift */,
 				0795AF0E2C751583006FC720 /* SharingWithCalendarTools.swift */,
+				07BA3ED82C875F3800097ABB /* GlobalExtensions.swift */,
+				07BA3EE22C876FC500097ABB /* MoreSharedFunctions.swift */,
 				079F068F2A8ED215009A01F5 /* Views */,
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
 				0768C6F82A81E15600E29EBD /* The_North_40App.swift */,
@@ -345,6 +472,60 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		07BA3E902C87591F00097ABB /* North40Watch Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				07BA3ED52C875D1B00097ABB /* North40Watch-Watch-App-Info.plist */,
+				07BA3ED42C875CFE00097ABB /* North40Watch Watch App.entitlements */,
+				07BA3E912C87591F00097ABB /* North40WatchApp.swift */,
+				07BA3EDB2C87608200097ABB /* ContentViewWatch.swift */,
+				07BA3EDD2C87625D00097ABB /* WatchViews */,
+				07BA3E952C87592000097ABB /* Assets.xcassets */,
+				07BA3E972C87592000097ABB /* Preview Content */,
+			);
+			path = "North40Watch Watch App";
+			sourceTree = "<group>";
+		};
+		07BA3E972C87592000097ABB /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				07BA3E982C87592000097ABB /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		07BA3EA12C87592100097ABB /* North40Watch Watch AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				07BA3EA22C87592100097ABB /* North40Watch_Watch_AppTests.swift */,
+			);
+			path = "North40Watch Watch AppTests";
+			sourceTree = "<group>";
+		};
+		07BA3EAB2C87592100097ABB /* North40Watch Watch AppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				07BA3EAC2C87592100097ABB /* North40Watch_Watch_AppUITests.swift */,
+				07BA3EAE2C87592100097ABB /* North40Watch_Watch_AppUITestsLaunchTests.swift */,
+			);
+			path = "North40Watch Watch AppUITests";
+			sourceTree = "<group>";
+		};
+		07BA3EDD2C87625D00097ABB /* WatchViews */ = {
+			isa = PBXGroup;
+			children = (
+				07BA3EED2C88008C00097ABB /* ToDoViewWatch.swift */,
+				07BA3EE02C87677300097ABB /* DailyPlannerWatch.swift */,
+				07BA3EE82C877ED500097ABB /* EditEventViewWatch.swift */,
+				07BA3EEB2C87949C00097ABB /* ColorSchemeViewWatch.swift */,
+				07BA3EF02C88DCE600097ABB /* PersonListViewWatch.swift */,
+				07BA3EF22C88DDE900097ABB /* PersonViewWatch.swift */,
+				07BA3EF42C88E79400097ABB /* GoalListViewWatch.swift */,
+				07BA3EF62C88E79D00097ABB /* GoalViewWatch.swift */,
+			);
+			path = WatchViews;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -355,10 +536,12 @@
 				0768C6F12A81E15600E29EBD /* Sources */,
 				0768C6F22A81E15600E29EBD /* Frameworks */,
 				0768C6F32A81E15600E29EBD /* Resources */,
+				07BA3EB32C87592100097ABB /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				07BA3EB12C87592100097ABB /* PBXTargetDependency */,
 			);
 			name = "The North 40";
 			packageProductDependencies = (
@@ -404,6 +587,59 @@
 			productReference = 0768C7152A81E15600E29EBD /* The North 40UITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		07BA3E8E2C87591F00097ABB /* North40Watch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 07BA3EBA2C87592100097ABB /* Build configuration list for PBXNativeTarget "North40Watch Watch App" */;
+			buildPhases = (
+				07BA3E8B2C87591F00097ABB /* Sources */,
+				07BA3E8C2C87591F00097ABB /* Frameworks */,
+				07BA3E8D2C87591F00097ABB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "North40Watch Watch App";
+			productName = "North40Watch Watch App";
+			productReference = 07BA3E8F2C87591F00097ABB /* North40Watch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		07BA3E9D2C87592000097ABB /* North40Watch Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 07BA3EBB2C87592100097ABB /* Build configuration list for PBXNativeTarget "North40Watch Watch AppTests" */;
+			buildPhases = (
+				07BA3E9A2C87592000097ABB /* Sources */,
+				07BA3E9B2C87592000097ABB /* Frameworks */,
+				07BA3E9C2C87592000097ABB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				07BA3EA02C87592000097ABB /* PBXTargetDependency */,
+			);
+			name = "North40Watch Watch AppTests";
+			productName = "North40Watch Watch AppTests";
+			productReference = 07BA3E9E2C87592000097ABB /* North40Watch Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		07BA3EA72C87592100097ABB /* North40Watch Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 07BA3EBC2C87592100097ABB /* Build configuration list for PBXNativeTarget "North40Watch Watch AppUITests" */;
+			buildPhases = (
+				07BA3EA42C87592100097ABB /* Sources */,
+				07BA3EA52C87592100097ABB /* Frameworks */,
+				07BA3EA62C87592100097ABB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				07BA3EAA2C87592100097ABB /* PBXTargetDependency */,
+			);
+			name = "North40Watch Watch AppUITests";
+			productName = "North40Watch Watch AppUITests";
+			productReference = 07BA3EA82C87592100097ABB /* North40Watch Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -411,7 +647,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
+				LastSwiftUpdateCheck = 1510;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					0768C6F42A81E15600E29EBD = {
@@ -424,6 +660,17 @@
 					0768C7142A81E15600E29EBD = {
 						CreatedOnToolsVersion = 14.3.1;
 						TestTargetID = 0768C6F42A81E15600E29EBD;
+					};
+					07BA3E8E2C87591F00097ABB = {
+						CreatedOnToolsVersion = 15.1;
+					};
+					07BA3E9D2C87592000097ABB = {
+						CreatedOnToolsVersion = 15.1;
+						TestTargetID = 07BA3E8E2C87591F00097ABB;
+					};
+					07BA3EA72C87592100097ABB = {
+						CreatedOnToolsVersion = 15.1;
+						TestTargetID = 07BA3E8E2C87591F00097ABB;
 					};
 				};
 			};
@@ -446,6 +693,9 @@
 				0768C6F42A81E15600E29EBD /* The North 40 */,
 				0768C70A2A81E15600E29EBD /* The North 40Tests */,
 				0768C7142A81E15600E29EBD /* The North 40UITests */,
+				07BA3E8E2C87591F00097ABB /* North40Watch Watch App */,
+				07BA3E9D2C87592000097ABB /* North40Watch Watch AppTests */,
+				07BA3EA72C87592100097ABB /* North40Watch Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -469,6 +719,30 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0768C7132A81E15600E29EBD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3E8D2C87591F00097ABB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07BA3E992C87592000097ABB /* Preview Assets.xcassets in Resources */,
+				07BA3E962C87592000097ABB /* Assets.xcassets in Resources */,
+				07BA3ED32C875A5300097ABB /* holidays.csv in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3E9C2C87592000097ABB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3EA62C87592100097ABB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -502,6 +776,7 @@
 				07DD3CED2C04C5FD001C204E /* IndicatorsView.swift in Sources */,
 				07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */,
 				07815AFE2AD3A5FD00606B5C /* GoalTipsView.swift in Sources */,
+				07BA3ED92C875F3800097ABB /* GlobalExtensions.swift in Sources */,
 				0711DF032AA39D77006C0005 /* EditTransactionView.swift in Sources */,
 				0768C6FB2A81E15600E29EBD /* ContentView.swift in Sources */,
 				07361BBB2BC9E3AE00BA388B /* ColorSchemeView.swift in Sources */,
@@ -539,6 +814,7 @@
 				079F068E2A8ED14A009A01F5 /* ToDoView.swift in Sources */,
 				076773752B35F71F009454A4 /* ToDoView3.swift in Sources */,
 				0768C7742A87188C00E29EBD /* N40Group+CoreDataClass.swift in Sources */,
+				07BA3EE32C876FC500097ABB /* MoreSharedFunctions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -559,6 +835,62 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		07BA3E8B2C87591F00097ABB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07BA3ED02C8759C500097ABB /* N40Indicator+CoreDataProperties.swift in Sources */,
+				07BA3EC42C8759C500097ABB /* N40Group+CoreDataClass.swift in Sources */,
+				07BA3EC62C8759C500097ABB /* N40Person+CoreDataClass.swift in Sources */,
+				07BA3EE42C876FCC00097ABB /* MoreSharedFunctions.swift in Sources */,
+				07BA3EEC2C87949C00097ABB /* ColorSchemeViewWatch.swift in Sources */,
+				07BA3EC72C8759C500097ABB /* N40Event+CoreDataProperties.swift in Sources */,
+				07BA3EF52C88E79400097ABB /* GoalListViewWatch.swift in Sources */,
+				07BA3EE12C87677300097ABB /* DailyPlannerWatch.swift in Sources */,
+				07BA3EBD2C8759BF00097ABB /* The_North_40.xcdatamodeld in Sources */,
+				07BA3EE92C877ED500097ABB /* EditEventViewWatch.swift in Sources */,
+				07BA3EBE2C8759C500097ABB /* N40Envelope+CoreDataProperties.swift in Sources */,
+				07BA3ECD2C8759C500097ABB /* N40Note+CoreDataProperties.swift in Sources */,
+				07BA3EC12C8759C500097ABB /* Persistence.swift in Sources */,
+				07BA3ECF2C8759C500097ABB /* N40ColorScheme+CoreDataProperties.swift in Sources */,
+				07BA3EF12C88DCE600097ABB /* PersonListViewWatch.swift in Sources */,
+				07BA3EC52C8759C500097ABB /* N40Envelope+CoreDataClass.swift in Sources */,
+				07BA3ECE2C8759C500097ABB /* N40Transaction+CoreDataProperties.swift in Sources */,
+				07BA3EC02C8759C500097ABB /* N40ColorScheme+CoreDataClass.swift in Sources */,
+				07BA3EC22C8759C500097ABB /* N40Person+CoreDataProperties.swift in Sources */,
+				07BA3EC32C8759C500097ABB /* N40Goal+CoreDataClass.swift in Sources */,
+				07BA3ECB2C8759C500097ABB /* N40Indicator+CoreDataClass.swift in Sources */,
+				07BA3EC92C8759C500097ABB /* N40Goal+CoreDataProperties.swift in Sources */,
+				07BA3EBF2C8759C500097ABB /* N40Transaction+CoreDataClass.swift in Sources */,
+				07BA3EC82C8759C500097ABB /* N40Note+CoreDataClass.swift in Sources */,
+				07BA3EF32C88DDE900097ABB /* PersonViewWatch.swift in Sources */,
+				07BA3EF72C88E79D00097ABB /* GoalViewWatch.swift in Sources */,
+				07BA3EEE2C88008C00097ABB /* ToDoViewWatch.swift in Sources */,
+				07BA3E922C87591F00097ABB /* North40WatchApp.swift in Sources */,
+				07BA3EDA2C875F4500097ABB /* GlobalExtensions.swift in Sources */,
+				07BA3ECC2C8759C500097ABB /* N40Group+CoreDataProperties.swift in Sources */,
+				07BA3EDC2C87608200097ABB /* ContentViewWatch.swift in Sources */,
+				07BA3ECA2C8759C500097ABB /* N40Event+CoreDataClass.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3E9A2C87592000097ABB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07BA3EA32C87592100097ABB /* North40Watch_Watch_AppTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07BA3EA42C87592100097ABB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07BA3EAF2C87592100097ABB /* North40Watch_Watch_AppUITestsLaunchTests.swift in Sources */,
+				07BA3EAD2C87592100097ABB /* North40Watch_Watch_AppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -571,6 +903,21 @@
 			isa = PBXTargetDependency;
 			target = 0768C6F42A81E15600E29EBD /* The North 40 */;
 			targetProxy = 0768C7162A81E15600E29EBD /* PBXContainerItemProxy */;
+		};
+		07BA3EA02C87592000097ABB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 07BA3E8E2C87591F00097ABB /* North40Watch Watch App */;
+			targetProxy = 07BA3E9F2C87592000097ABB /* PBXContainerItemProxy */;
+		};
+		07BA3EAA2C87592100097ABB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 07BA3E8E2C87591F00097ABB /* North40Watch Watch App */;
+			targetProxy = 07BA3EA92C87592100097ABB /* PBXContainerItemProxy */;
+		};
+		07BA3EB12C87592100097ABB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 07BA3E8E2C87591F00097ABB /* North40Watch Watch App */;
+			targetProxy = 07BA3EB02C87592100097ABB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -692,11 +1039,12 @@
 		0768C7202A81E15600E29EBD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -729,11 +1077,12 @@
 		0768C7212A81E15600E29EBD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 49;
+				CURRENT_PROJECT_VERSION = 50;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -835,6 +1184,181 @@
 			};
 			name = Release;
 		};
+		07BA3EB42C87592100097ABB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "North40Watch Watch App/North40Watch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"North40Watch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = PT93WJ2ZNH;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "North40Watch-Watch-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = North40Watch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.addisonballif.The-North-40";
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.2;
+			};
+			name = Debug;
+		};
+		07BA3EB52C87592100097ABB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "North40Watch Watch App/North40Watch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"North40Watch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = PT93WJ2ZNH;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "North40Watch-Watch-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = North40Watch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.addisonballif.The-North-40";
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.The-North-40.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.2;
+			};
+			name = Release;
+		};
+		07BA3EB62C87592100097ABB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PT93WJ2ZNH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.North40Watch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/North40Watch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/North40Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 10.2;
+			};
+			name = Debug;
+		};
+		07BA3EB72C87592100097ABB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PT93WJ2ZNH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.North40Watch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/North40Watch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/North40Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 10.2;
+			};
+			name = Release;
+		};
+		07BA3EB82C87592100097ABB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PT93WJ2ZNH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.North40Watch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "North40Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 10.2;
+			};
+			name = Debug;
+		};
+		07BA3EB92C87592100097ABB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PT93WJ2ZNH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.addisonballif.North40Watch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "North40Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 10.2;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -870,6 +1394,33 @@
 			buildConfigurations = (
 				0768C7262A81E15600E29EBD /* Debug */,
 				0768C7272A81E15600E29EBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		07BA3EBA2C87592100097ABB /* Build configuration list for PBXNativeTarget "North40Watch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				07BA3EB42C87592100097ABB /* Debug */,
+				07BA3EB52C87592100097ABB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		07BA3EBB2C87592100097ABB /* Build configuration list for PBXNativeTarget "North40Watch Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				07BA3EB62C87592100097ABB /* Debug */,
+				07BA3EB72C87592100097ABB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		07BA3EBC2C87592100097ABB /* Build configuration list for PBXNativeTarget "North40Watch Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				07BA3EB82C87592100097ABB /* Debug */,
+				07BA3EB92C87592100097ABB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

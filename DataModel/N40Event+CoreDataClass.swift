@@ -20,6 +20,9 @@ public class N40Event: NSManagedObject {
 }
 
 public class EventRenderCalculator {
+    
+    private static let minimumEventHeight = 25.0 // must match the one in Daily Planner
+    
     //functions for calculating how events render on the calendar
     public static func precalculateEventColumns (_ allEvents: [N40Event]) -> EmptyView {
         //precalculates the event render indices for all events before they are iterated through one at a time.
@@ -92,7 +95,7 @@ public class EventRenderCalculator {
         var answer = false
         
         
-        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
+        let minDuration = (minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
         let testDuration = Int(event1.duration) > Int(minDuration) ? Int(event1.duration) : Int(minDuration)
         
         
@@ -153,51 +156,6 @@ public class EventRenderCalculator {
         
     }
 
-//    private static func getHighestEventIndex (allEvents: [N40Event], from: Date, to: Date) -> Int {
-//        
-//        var relevantEvents: [N40Event] = []
-//        
-//        let refTo = Calendar.current.date(bySetting: .second, value: 0, of: to) ?? to
-//        let refFrom = Calendar.current.date(bySetting: .second, value: 0, of: from) ?? from
-//        
-//        for eachEvent in allEvents {
-//            
-//            
-//            let endDate = Calendar.current.date(bySetting: .second, value: 0, of: Calendar.current.date(byAdding: .minute, value: getCellHeight(eachEvent), to: eachEvent.startDate) ?? eachEvent.startDate) ?? eachEvent.startDate
-//            let startDate = Calendar.current.date(bySetting: .second, value: 0, of: eachEvent.startDate) ?? eachEvent.startDate
-//            
-//            
-//            if (startDate >= refFrom && startDate < refTo) || (endDate > refFrom && endDate <= refTo) || (startDate < refFrom && endDate > refTo) || (startDate >= refFrom && endDate <= refTo) {
-//                //if the start time is within the interval, or the end time is within the interval, or the start time is before and the end time is after
-//                relevantEvents.append(eachEvent)
-//            }
-//        }
-//        
-//        var greatestEventIndex = 0
-//        //now find the greatestEventIndex
-//        for eachRelevantEvent in relevantEvents {
-//            if eachRelevantEvent.renderIdx ?? 0 > greatestEventIndex {
-//                greatestEventIndex = eachRelevantEvent.renderIdx ?? greatestEventIndex
-//            }
-//        }
-//        
-//        return greatestEventIndex
-//        
-//    }
-
-//    private static func getCellHeight(_ event: N40Event) -> Int {
-//        //Returns the true cell height in minutes
-//        //ex. if duration == 0, the cell still has some minimum width.
-//        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
-//        let testDuration = Int(event.duration) > Int(minDuration) ? Int(event.duration) : Int(minDuration)
-//        return testDuration
-//    }
-
-//    private static func getTestDuration(duration: Int) -> Int {
-//        let minDuration = (DailyPlanner.minimumEventHeight/UserDefaults.standard.double(forKey: "hourHeight")*60.0)
-//        return Int(duration) > Int(minDuration) ? Int(duration) : Int(minDuration)
-//        
-//    }
 
 }
 

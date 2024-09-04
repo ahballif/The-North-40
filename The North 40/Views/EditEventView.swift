@@ -96,8 +96,9 @@ struct EditEventView: View {
     
     
     @State var showingColorPickerSheet = false
-    
+
     var body: some View {
+        
         VStack {
             
             if (editEvent == nil) {
@@ -1186,7 +1187,7 @@ struct EditEventView: View {
                 for futureOccurance in newEvent.getFutureRecurringEvents(viewContext: viewContext) {
                     viewContext.delete(futureOccurance)
                 }
-                EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: Int(newEvent.repeatOnCompleteInDays), to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: Int(newEvent.repeatOnCompleteInDays), to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                 
                 // Make that duplicate on calendar if needed
                 if newEvent.sharedWithCalendar != "" {
@@ -1282,13 +1283,13 @@ struct EditEventView: View {
             if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                 if numberOfRepeats > 1 {
                     for i in 1...numberOfRepeats*30 {
-                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                     }
                 }
             } else {
                 var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 1, to: newEvent.startDate) ?? newEvent.startDate
                 while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
                     nextRepeatDay = Calendar.current.date(byAdding: .day, value: 1, to: nextRepeatDay) ?? nextRepeatDay
                 }
             }
@@ -1298,13 +1299,13 @@ struct EditEventView: View {
             if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                 if numberOfRepeats > 1 {
                     for i in 1...numberOfRepeats-1 {
-                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*7, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                     }
                 }
             } else {
                 var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 7, to: newEvent.startDate) ?? newEvent.startDate
                 while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
                     nextRepeatDay = Calendar.current.date(byAdding: .day, value: 7, to: nextRepeatDay) ?? nextRepeatDay
                 }
             }
@@ -1313,13 +1314,13 @@ struct EditEventView: View {
             if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                 if numberOfRepeats > 1 {
                     for i in 1...numberOfRepeats-1 {
-                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .day, value: i*14, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                     }
                 }
             } else {
                 var nextRepeatDay = Calendar.current.date(byAdding: .day, value: 14, to: newEvent.startDate) ?? newEvent.startDate
                 while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
                     nextRepeatDay = Calendar.current.date(byAdding: .day, value: 14, to: nextRepeatDay) ?? nextRepeatDay
                 }
             }
@@ -1329,13 +1330,13 @@ struct EditEventView: View {
             if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                 if numberOfRepeats > 1 {
                     for i in 1...numberOfRepeats-1 {
-                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .month, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                     }
                 }
             } else {
                 var nextRepeatDay = Calendar.current.date(byAdding: .month, value: 1, to: newEvent.startDate) ?? newEvent.startDate
                 while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
                     nextRepeatDay = Calendar.current.date(byAdding: .month, value: 1, to: nextRepeatDay) ?? nextRepeatDay
                 }
             }
@@ -1378,14 +1379,14 @@ struct EditEventView: View {
                     
                     
                     
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
                     lastCreatedDate = repeatDate
                     repeatsMade += 1
                 }
             } else {
                 while repeatDate.startOfDay <= repeatUntil.startOfDay {
                     if repeatDate != lastCreatedDate {
-                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: repeatDate, vc: viewContext)
                         lastCreatedDate = repeatDate
                     }
                     
@@ -1409,13 +1410,13 @@ struct EditEventView: View {
             if !UserDefaults.standard.bool(forKey: "repeatByEndDate") || neverEndingRepeat {
                 if numberOfRepeats > 1 {
                     for i in 1...numberOfRepeats-1 {
-                        EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
+                        duplicateN40Event(originalEvent: newEvent, newStartDate: Calendar.current.date(byAdding: .year, value: i, to: newEvent.startDate) ?? newEvent.startDate, vc: viewContext)
                     }
                 }
             } else {
                 var nextRepeatDay = Calendar.current.date(byAdding: .year, value: 1, to: newEvent.startDate) ?? newEvent.startDate
                 while nextRepeatDay.startOfDay <= repeatUntil.startOfDay {
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: nextRepeatDay, vc: viewContext)
                     nextRepeatDay = Calendar.current.date(byAdding: .year, value: 1, to: nextRepeatDay) ?? nextRepeatDay
                 }
             }
@@ -1430,7 +1431,7 @@ struct EditEventView: View {
             while lastCreatedDay.startOfDay <= repeatUntil.startOfDay {
                 if (lastCreatedDay.dayOfWeek() == "Monday" && repeatMonday) || (lastCreatedDay.dayOfWeek() == "Tuesday" && repeatTuesday) || (lastCreatedDay.dayOfWeek() == "Wednesday" && repeatWednesday) || (lastCreatedDay.dayOfWeek() == "Thursday" && repeatThursday) || (lastCreatedDay.dayOfWeek() == "Friday" && repeatFriday) || (lastCreatedDay.dayOfWeek() == "Saturday" && repeatSaturday) || (lastCreatedDay.dayOfWeek() == "Sunday" && repeatSunday) {
                     //the day matches a day that should be repeated
-                    EditEventView.duplicateN40Event(originalEvent: newEvent, newStartDate: lastCreatedDay, vc: viewContext)
+                    duplicateN40Event(originalEvent: newEvent, newStartDate: lastCreatedDay, vc: viewContext)
                 }
                 lastCreatedDay = Calendar.current.date(byAdding: .day, value: 1, to: lastCreatedDay) ?? lastCreatedDay
             }
@@ -1855,42 +1856,7 @@ struct EditEventView: View {
         
     }
     
-    public static func duplicateN40Event(originalEvent: N40Event, newStartDate: Date, vc: NSManagedObjectContext) {
-        
-        let newEvent = N40Event(context: vc)
-        newEvent.name = originalEvent.name
-        newEvent.isScheduled = originalEvent.isScheduled
-        newEvent.startDate = newStartDate // This one is different
-        newEvent.duration = originalEvent.duration
-        newEvent.location = originalEvent.location
-        newEvent.information = originalEvent.information
-        newEvent.status = 0 // This one is different
-        newEvent.summary = "" // also this one
-        newEvent.contactMethod = originalEvent.contactMethod
-        newEvent.allDay = originalEvent.allDay
-        newEvent.eventType = originalEvent.eventType
-        newEvent.color = originalEvent.color
-        newEvent.recurringTag = originalEvent.recurringTag
-        newEvent.repeatOnCompleteInDays = originalEvent.repeatOnCompleteInDays
-        originalEvent.getAttachedPeople.forEach {person in
-            newEvent.addToAttachedPeople(person)
-        }
-        originalEvent.getAttachedGoals.forEach {goal in
-            newEvent.addToAttachedGoals(goal)
-        }
-        
-        
-        
-        do {
-            try vc.save()
-        }
-        catch {
-            // Handle Error
-            print("Error info: \(error)")
-            
-        }
-        
-    }
+    
     
     public func setDate(date: Date) {
         chosenStartDate = date
@@ -1903,14 +1869,6 @@ struct EditEventView: View {
 
 
 
-func getMinutesDifferenceFromTwoDates(start: Date, end: Date) -> Int
-   {
-
-       let diff = Int(end.timeIntervalSince1970 - start.timeIntervalSince1970)
-       
-       let minutes = (diff) / 60
-       return minutes
-   }
 
 
 fileprivate extension Date {
@@ -1927,61 +1885,6 @@ fileprivate extension Date {
     
 }
 
-extension Color {
-    init?(hex: String) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-        
-        var rgb: UInt64 = 0
-        
-        var r: CGFloat = 0.0
-        var g: CGFloat = 0.0
-        var b: CGFloat = 0.0
-        var a: CGFloat = 1.0
-        
-        let length = hexSanitized.count
-        
-        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
-        
-        if length == 6 {
-            r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
-            g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
-            b = CGFloat(rgb & 0x0000FF) / 255.0
-            
-        } else if length == 8 {
-            r = CGFloat((rgb & 0xFF000000) >> 24) / 255.0
-            g = CGFloat((rgb & 0x00FF0000) >> 16) / 255.0
-            b = CGFloat((rgb & 0x0000FF00) >> 8) / 255.0
-            a = CGFloat(rgb & 0x000000FF) / 255.0
-            
-        } else {
-            return nil
-        }
-        
-        self.init(red: r, green: g, blue: b, opacity: a)
-    }
-    
-    func toHex() -> String? {
-        let uic = UIColor(self)
-        guard let components = uic.cgColor.components, components.count >= 3 else {
-            return nil
-        }
-        let r = Float(components[0])
-        let g = Float(components[1])
-        let b = Float(components[2])
-        var a = Float(1.0)
-        
-        if components.count >= 4 {
-            a = Float(components[3])
-        }
-        
-        if a != Float(1.0) {
-            return String(format: "%02lX%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255), lroundf(a * 255))
-        } else {
-            return String(format: "%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255))
-        }
-    }
-}
 
 
 
