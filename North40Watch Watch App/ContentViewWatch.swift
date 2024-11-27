@@ -28,6 +28,9 @@ struct ContentViewWatch: View {
                 NavigationLink(destination: GoalListViewWatch()) {
                     Label("Goals", systemImage: "pencil.and.ruler.fill")
                 }
+                NavigationLink(destination: SettingsViewWatch()) {
+                    Label("Settings", systemImage: "gearshape.2")
+                }
             }
         }
     }

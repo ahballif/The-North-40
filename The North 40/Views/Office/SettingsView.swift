@@ -583,6 +583,56 @@ struct SettingsView: View {
                 }.padding()
             }//.padding()
             
+        }.onAppear {
+            //Update the settings to what they should be
+            show7Days = UserDefaults.standard.bool(forKey: "show7Days")
+            
+            smallestDivision = Int( 60 * DailyPlanner.minimumEventHeight / UserDefaults.standard.double(forKey: "hourHeight"))
+            randomEventColor = UserDefaults.standard.bool(forKey: "randomEventColor")
+            guessEventColor = UserDefaults.standard.bool(forKey: "guessEventColor")
+            
+            showEventsWithGoalColor = UserDefaults.standard.bool(forKey: "showEventsInGoalColor")
+            showEventsWithoutGoalGray = UserDefaults.standard.bool(forKey: "showNoGoalEventsGray")
+            showEventsWithPersonColor = UserDefaults.standard.bool(forKey: "showEventsWithPersonColor")
+            
+            showAllDayTodos = UserDefaults.standard.bool(forKey: "showAllDayTodos")
+            
+             showReportablesOnTodo = UserDefaults.standard.bool(forKey: "reportablesOnTodoList")
+             showTodayTodosFront = UserDefaults.standard.bool(forKey: "showTodayTodosFront")
+            
+             contactMethod = N40Event.CONTACT_OPTIONS[UserDefaults.standard.integer(forKey: "defaultContactMethod")]
+            eventType = N40Event.EVENT_TYPE_OPTIONS[UserDefaults.standard.integer(forKey: "defaultCalendarEventType")]
+            
+             setTimeOnTodoCompletion_ToDoView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_ToDoView")
+             setTimeOnTodoCompletion_CalendarView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_CalendarView")
+             setTimeOnTodoCompletion_EditEventView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_EditEventView")
+             setTimeOnTodoCompletion_TimelineView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_TimelineView")
+             setTimeOnTodoCompletion_AgendaView = UserDefaults.standard.bool(forKey: "scheduleCompletedTodos_AgendaView")
+             roundScheduleCompletedTodos = UserDefaults.standard.bool(forKey: "roundScheduleCompletedTodos")
+            
+             autoFocusOnCalendarNewEvent = UserDefaults.standard.bool(forKey: "autoFocusOnCalendarNewEvent")
+            
+             onlyScheduleUnscheduledTodos = UserDefaults.standard.bool(forKey: "onlyScheduleUnscheduledTodos")
+            
+             colorToDoList = UserDefaults.standard.bool(forKey: "colorToDoList")
+            
+             showHolidays = UserDefaults.standard.bool(forKey: "showHolidays")
+            
+            
+            
+             defaultColor = (Color(hex: UserDefaults.standard.string(forKey: "defaultColor") ?? "#FF7051") ?? Color(.sRGB, red: 1, green: (112.0/255.0), blue: (81.0/255.0)))
+             randomFromColorScheme = UserDefaults.standard.bool(forKey: "randomFromColorScheme")
+             defaultEventDuration = UserDefaults.standard.integer(forKey: "defaultEventDuration")
+            
+             addContactOnCall = UserDefaults.standard.bool(forKey: "addContactOnCall")
+             repeatByEndDate = UserDefaults.standard.bool(forKey: "repeatByEndDate")
+             tintCompletedTodos = UserDefaults.standard.bool(forKey: "tintCompletedTodos")
+        
+             selectedCalendarsString = UserDefaults.standard.string(forKey: "selectedAppCalendars") ?? ""
+                
+             shareAllEventsToCalendar = UserDefaults.standard.bool(forKey: "shareEverythingToCalendar")
+            
+             
         }
     }
     

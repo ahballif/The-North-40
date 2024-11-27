@@ -78,7 +78,7 @@ public struct SelectPeopleView: View {
                             }
                             
                             //First people who's last names don't have letters
-                            let noLetterLastNames = allPeople.filter{$0.lastName.uppercased().filter(alphabetString.contains) == "" }.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                            let noLetterLastNames = allPeople.filter{$0.lastName.uppercased().filter(alphabetString.contains) == "" }.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.filter({ $0.isArchived == false || searchText != ""})
                             if noLetterLastNames.count > 0 {
                                 Section(header: Text("*")) {
                                     ForEach(noLetterLastNames, id: \.self) { person in
@@ -88,7 +88,7 @@ public struct SelectPeopleView: View {
                             }
                             //Now go through the letters
                             ForEach(alphabet, id: \.self) {letter in
-                                let letterSet = allPeople.filter {$0.lastName.hasPrefix(letter)}.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                                let letterSet = allPeople.filter {$0.lastName.hasPrefix(letter)}.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.filter({ $0.isArchived == false || searchText != ""})
                                 if (letterSet.count > 0) {
                                     Section(header: Text(letter)) {
                                         ForEach(letterSet, id: \.self) { person in
@@ -138,7 +138,7 @@ public struct SelectPeopleView: View {
                     
                     //first go through the groups
                     ForEach(allGroups) {group in
-                        let groupSet: [N40Person] = allPeople.filter{ $0.isInGroup(group)}.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                        let groupSet: [N40Person] = allPeople.filter{ $0.isInGroup(group)}.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.filter({ $0.isArchived == false || searchText != ""})
                         if groupSet.count > 0 {
                             Section(header: Text(group.name)) {
                                 ForEach(groupSet) {person in
@@ -148,7 +148,7 @@ public struct SelectPeopleView: View {
                         }
                     }
                     //now go through ungrouped people
-                    let ungroupedSet: [N40Person] = allPeople.filter{ $0.getGroups.count == 0}.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}
+                    let ungroupedSet: [N40Person] = allPeople.filter{ $0.getGroups.count == 0}.filter{(searchText == "" || $0.getFullName.uppercased().contains(searchText.uppercased()))}.filter({ $0.isArchived == false || searchText != ""})
                     if ungroupedSet.count > 0 {
                         Section(header: Text("Ungrouped People")) {
                             ForEach(ungroupedSet) {person in

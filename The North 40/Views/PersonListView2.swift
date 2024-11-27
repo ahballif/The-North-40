@@ -165,18 +165,29 @@ struct PersonListView2: View {
     
     private func personListItem (person: N40Person) -> some View {
         return NavigationLink(destination: PersonDetailView(selectedPerson: person)) {
-            HStack {
-                if person.title != "" || person.firstName != "" {
-                    Text("\(person.title) \(person.firstName)".trimmingCharacters(in: .whitespacesAndNewlines))
+            VStack {
+                HStack {
+                    if person.title != "" || person.firstName != "" {
+                        Text("\(person.title) \(person.firstName)".trimmingCharacters(in: .whitespacesAndNewlines))
+                    }
+                    if person.company == "" {
+                        Text("\(person.lastName)").bold()
+                    } else if person.company != "" && person.lastName != "" {
+                        Text("\(person.lastName) (\(person.company))").bold()
+                    } else {
+                        Text("\(person.company)").bold()
+                    }
+                    Spacer()
                 }
-                if person.company == "" {
-                    Text("\(person.lastName)").bold()
-                } else if person.company != "" && person.lastName != "" {
-                    Text("\(person.lastName) (\(person.company))").bold()
-                } else {
-                    Text("\(person.company)").bold()
+                let futureEvents = person.getTimelineEvents.sorted(by: {$0.startDate < $1.startDate }).filter({ $0.startDate > Date()})
+                if !futureEvents.isEmpty {
+                    HStack {
+                        Text("Next event: \(futureEvents.first?.startDate.dateAndTimeToString() ?? "")")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                        Spacer()
+                    }
                 }
-                Spacer()
             }
         }.swipeActions {
             if !person.isArchived {

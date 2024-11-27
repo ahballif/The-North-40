@@ -24,6 +24,7 @@
 		07180AFF2AAD56BE008DC9E0 /* AgendaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07180AFE2AAD56BE008DC9E0 /* AgendaView.swift */; };
 		07180B012AAE5F54008DC9E0 /* GroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07180B002AAE5F54008DC9E0 /* GroupsView.swift */; };
 		07180B032AC874B7008DC9E0 /* ExportImportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07180B022AC874B7008DC9E0 /* ExportImportData.swift */; };
+		0722D5FC2C89F33200692829 /* SettingsViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0722D5FB2C89F33200692829 /* SettingsViewWatch.swift */; };
 		07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D262A9596B2009DE0E0 /* PersonDetailView.swift */; };
 		07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D292A98E983009DE0E0 /* OfficeView.swift */; };
 		07361BBB2BC9E3AE00BA388B /* ColorSchemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07361BBA2BC9E3AE00BA388B /* ColorSchemeView.swift */; };
@@ -153,6 +154,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		0716DE4F2CB373F1006FCF72 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		07BA3EB32C87592100097ABB /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -182,10 +193,13 @@
 		0711DF022AA39D77006C0005 /* EditTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTransactionView.swift; sourceTree = "<group>"; };
 		0711DF0D2AAA1686006C0005 /* The_North_ 40_9-07-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_9-07-23.xcdatamodel"; sourceTree = "<group>"; };
 		0711DF1C2AAA4635006C0005 /* EnvelopeTransferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvelopeTransferView.swift; sourceTree = "<group>"; };
+		0716DE422CB373EF006FCF72 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		0716DE442CB373EF006FCF72 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		07180AFE2AAD56BE008DC9E0 /* AgendaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaView.swift; sourceTree = "<group>"; };
 		07180B002AAE5F54008DC9E0 /* GroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsView.swift; sourceTree = "<group>"; };
 		07180B022AC874B7008DC9E0 /* ExportImportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportImportData.swift; sourceTree = "<group>"; };
 		07180B042AC9BD36008DC9E0 /* The-North-40-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "The-North-40-Info.plist"; sourceTree = SOURCE_ROOT; };
+		0722D5FB2C89F33200692829 /* SettingsViewWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewWatch.swift; sourceTree = "<group>"; };
 		07241D262A9596B2009DE0E0 /* PersonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetailView.swift; sourceTree = "<group>"; };
 		07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_8-23-23.xcdatamodel"; sourceTree = "<group>"; };
 		07241D292A98E983009DE0E0 /* OfficeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeView.swift; sourceTree = "<group>"; };
@@ -335,6 +349,15 @@
 			path = Finances;
 			sourceTree = "<group>";
 		};
+		0716DE412CB373EF006FCF72 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0716DE422CB373EF006FCF72 /* WidgetKit.framework */,
+				0716DE442CB373EF006FCF72 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		0768C6EC2A81E15500E29EBD = {
 			isa = PBXGroup;
 			children = (
@@ -345,6 +368,7 @@
 				07BA3E902C87591F00097ABB /* North40Watch Watch App */,
 				07BA3EA12C87592100097ABB /* North40Watch Watch AppTests */,
 				07BA3EAB2C87592100097ABB /* North40Watch Watch AppUITests */,
+				0716DE412CB373EF006FCF72 /* Frameworks */,
 				0768C6F62A81E15600E29EBD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -522,6 +546,7 @@
 				07BA3EF22C88DDE900097ABB /* PersonViewWatch.swift */,
 				07BA3EF42C88E79400097ABB /* GoalListViewWatch.swift */,
 				07BA3EF62C88E79D00097ABB /* GoalViewWatch.swift */,
+				0722D5FB2C89F33200692829 /* SettingsViewWatch.swift */,
 			);
 			path = WatchViews;
 			sourceTree = "<group>";
@@ -594,6 +619,7 @@
 				07BA3E8B2C87591F00097ABB /* Sources */,
 				07BA3E8C2C87591F00097ABB /* Frameworks */,
 				07BA3E8D2C87591F00097ABB /* Resources */,
+				0716DE4F2CB373F1006FCF72 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -851,6 +877,7 @@
 				07BA3EE92C877ED500097ABB /* EditEventViewWatch.swift in Sources */,
 				07BA3EBE2C8759C500097ABB /* N40Envelope+CoreDataProperties.swift in Sources */,
 				07BA3ECD2C8759C500097ABB /* N40Note+CoreDataProperties.swift in Sources */,
+				0722D5FC2C89F33200692829 /* SettingsViewWatch.swift in Sources */,
 				07BA3EC12C8759C500097ABB /* Persistence.swift in Sources */,
 				07BA3ECF2C8759C500097ABB /* N40ColorScheme+CoreDataProperties.swift in Sources */,
 				07BA3EF12C88DCE600097ABB /* PersonListViewWatch.swift in Sources */,
@@ -1044,7 +1071,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 50;
+				CURRENT_PROJECT_VERSION = 54;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -1082,7 +1109,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 50;
+				CURRENT_PROJECT_VERSION = 54;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -1192,7 +1219,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "North40Watch Watch App/North40Watch Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"North40Watch Watch App/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -1230,7 +1257,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "North40Watch Watch App/North40Watch Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"North40Watch Watch App/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
