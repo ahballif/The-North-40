@@ -32,6 +32,8 @@ extension N40Event {
     @NSManaged public var bucketlist: Bool
     @NSManaged public var repeatOnCompleteInDays: Int16
     @NSManaged public var sharedWithCalendar: String
+    @NSManaged public var notificationID: String
+    @NSManaged public var notificationTime: Int16 // minutes before to post notification
     
     @NSManaged public var attachedPeople: NSSet?
     @NSManaged public var attachedGoals: NSSet?

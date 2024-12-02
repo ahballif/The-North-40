@@ -32,6 +32,13 @@ public func duplicateN40Event(originalEvent: N40Event, newStartDate: Date, vc: N
         newEvent.addToAttachedGoals(goal)
     }
     
+    #if os(iOS)
+    if originalEvent.notificationID != "" {
+        // If the original doesn't have a notification, this one needs one
+        NotificationHandler.instance.updateNotification(event: newEvent, pretime: originalEvent.notificationTime, viewContext: vc)
+    }
+    #endif
+    
     
     
     do {

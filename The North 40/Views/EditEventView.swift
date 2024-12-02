@@ -70,6 +70,9 @@ struct EditEventView: View {
     
     @State private var showOnCalendar: Bool = UserDefaults.standard.bool(forKey: "shareEverythingToCalendar")
     
+    @State private var eventHasNotification: Bool = false
+    @State private var eventNotificationTime = 0
+    
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .none
@@ -308,6 +311,21 @@ struct EditEventView: View {
                             Toggle("shareToCalendar", isOn: $showOnCalendar).labelsHidden()
                         }.padding()
                     }
+                    
+                    VStack {
+                        HStack {
+                            Text("Notify me")
+                            Spacer()
+                            Toggle("hasNotification", isOn: $eventHasNotification).labelsHidden()
+                        }
+                        if eventHasNotification {
+                            HStack {
+                                Text("\(eventNotificationTime) minutes before. ")
+                                Spacer()
+                                Stepper("", value: $eventNotificationTime, in: 0...1440, step: 5)
+                            }
+                        }
+                    }.padding()
                     
                     
                     VStack {
@@ -912,6 +930,9 @@ struct EditEventView: View {
             status = Int(editEvent?.status ?? 0)
             summary = editEvent?.summary ?? ""
             
+            eventHasNotification = editEvent?.notificationID != ""
+            eventNotificationTime = Int(editEvent?.notificationTime ?? 0)
+            
             repeatOnCompleteInDays = Int(editEvent!.repeatOnCompleteInDays)
             if repeatOnCompleteInDays > 0  {
                 repeatOptionSelected = "On Complete"
@@ -1074,6 +1095,12 @@ struct EditEventView: View {
                 newEvent.addToAttachedGoals(goal)
             }
             
+            // save the notification
+            if eventHasNotification {
+                NotificationHandler.instance.updateNotification(event: newEvent, pretime: Int16(eventNotificationTime), viewContext: viewContext)
+            } else if !eventHasNotification && newEvent.notificationID != "" {
+                NotificationHandler.instance.deletePendingNotification(event: newEvent)
+            }
             
             // Share it calendar if it needs to be shared
             if newEvent.sharedWithCalendar != "" && !showOnCalendar {
@@ -1443,6 +1470,11 @@ struct EditEventView: View {
         
         let oldEventDate = event.startDate
         let eventTag = event.sharedWithCalendar
+        
+        //check if there is a notification to cancel
+        if event.notificationID != "" {
+            NotificationHandler.instance.deletePendingNotification(event: event)
+        }
         
         // first see if there is an event in calendar that needs to get deleted also
         if event.sharedWithCalendar != "" {

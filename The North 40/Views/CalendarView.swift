@@ -1183,6 +1183,11 @@ struct DailyPlanner: View {
                                 
                                 event.startDate = Calendar.current.date(byAdding: .minute, value: Int(numOfMinutesMoved - roundMinutesDifference), to: event.startDate) ?? event.startDate
                                 
+                                if event.notificationID != "" {
+                                    //update the time of the notification
+                                    NotificationHandler.instance.updateNotification(event: event, pretime: event.notificationTime, viewContext: viewContext)
+                                }
+                                
                                 do {
                                     try viewContext.save()
                                 } catch {
@@ -1450,7 +1455,7 @@ struct SearchSheet: View {
                         if event.contactMethod != 0 {
                             Image(systemName: N40Event.CONTACT_OPTIONS[Int(event.contactMethod)][1])
                         }
-                        Text(event.startDate.formatted(.dateTime.hour().minute()))
+                        Text(event.startDate.dateAndTimeToString())
                         Text(event.name).bold()
                             .lineLimit(0)
                         Spacer()

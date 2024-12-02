@@ -27,6 +27,7 @@
 		0722D5FC2C89F33200692829 /* SettingsViewWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0722D5FB2C89F33200692829 /* SettingsViewWatch.swift */; };
 		07241D272A9596B2009DE0E0 /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D262A9596B2009DE0E0 /* PersonDetailView.swift */; };
 		07241D2A2A98E983009DE0E0 /* OfficeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07241D292A98E983009DE0E0 /* OfficeView.swift */; };
+		072D701D2CFD0971002987DF /* NotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 072D701C2CFD0971002987DF /* NotificationHandler.swift */; };
 		07361BBB2BC9E3AE00BA388B /* ColorSchemeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07361BBA2BC9E3AE00BA388B /* ColorSchemeView.swift */; };
 		07361BC22BC9EAD400BA388B /* N40ColorScheme+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07361BC02BC9EAD400BA388B /* N40ColorScheme+CoreDataClass.swift */; };
 		07361BC32BC9EAD400BA388B /* N40ColorScheme+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07361BC12BC9EAD400BA388B /* N40ColorScheme+CoreDataProperties.swift */; };
@@ -203,6 +204,7 @@
 		07241D262A9596B2009DE0E0 /* PersonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetailView.swift; sourceTree = "<group>"; };
 		07241D282A96F335009DE0E0 /* The_North_ 40_8-23-23.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "The_North_ 40_8-23-23.xcdatamodel"; sourceTree = "<group>"; };
 		07241D292A98E983009DE0E0 /* OfficeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeView.swift; sourceTree = "<group>"; };
+		072D701C2CFD0971002987DF /* NotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationHandler.swift; sourceTree = "<group>"; };
 		07361BBA2BC9E3AE00BA388B /* ColorSchemeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSchemeView.swift; sourceTree = "<group>"; };
 		07361BC02BC9EAD400BA388B /* N40ColorScheme+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40ColorScheme+CoreDataClass.swift"; sourceTree = "<group>"; };
 		07361BC12BC9EAD400BA388B /* N40ColorScheme+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "N40ColorScheme+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -396,6 +398,7 @@
 				0795AF0E2C751583006FC720 /* SharingWithCalendarTools.swift */,
 				07BA3ED82C875F3800097ABB /* GlobalExtensions.swift */,
 				07BA3EE22C876FC500097ABB /* MoreSharedFunctions.swift */,
+				072D701C2CFD0971002987DF /* NotificationHandler.swift */,
 				079F068F2A8ED215009A01F5 /* Views */,
 				0768C6FA2A81E15600E29EBD /* ContentView.swift */,
 				0768C6F82A81E15600E29EBD /* The_North_40App.swift */,
@@ -819,6 +822,7 @@
 				07815AFC2AD392FD00606B5C /* TutorialView.swift in Sources */,
 				0768C7702A87188C00E29EBD /* N40Person+CoreDataClass.swift in Sources */,
 				0711DEE62A9D3947006C0005 /* NotesView.swift in Sources */,
+				072D701D2CFD0971002987DF /* NotificationHandler.swift in Sources */,
 				0711DEFB2AA392BF006C0005 /* N40Envelope+CoreDataProperties.swift in Sources */,
 				07180B032AC874B7008DC9E0 /* ExportImportData.swift in Sources */,
 				0768C7842A89B63500E29EBD /* EditPersonView.swift in Sources */,
@@ -1071,7 +1075,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 54;
+				CURRENT_PROJECT_VERSION = 55;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;
@@ -1109,7 +1113,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "The North 40/The North 40.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 54;
+				CURRENT_PROJECT_VERSION = 55;
 				DEVELOPMENT_ASSET_PATHS = "\"The North 40/Preview Content\"";
 				DEVELOPMENT_TEAM = PT93WJ2ZNH;
 				ENABLE_PREVIEWS = YES;

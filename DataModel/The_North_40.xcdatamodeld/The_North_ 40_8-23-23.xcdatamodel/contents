@@ -23,6 +23,8 @@
         <attribute name="isScheduled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="location" attributeType="String" defaultValueString=""/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="notificationID" attributeType="String" defaultValueString=""/>
+        <attribute name="notificationTime" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="recurringTag" attributeType="String" defaultValueString=""/>
         <attribute name="repeatOnCompleteInDays" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sharedWithCalendar" attributeType="String" defaultValueString=""/>
